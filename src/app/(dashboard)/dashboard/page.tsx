@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   FileText,
   ArrowUpRight,
@@ -50,14 +51,16 @@ export default function DashboardPage() {
               Monitor your invoicing activity and business performance
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button className="bg-[#6B7280] hover:bg-[#4B5563] text-white rounded-lg">
-              <FileText className="h-4 w-4 mr-2" />
-              Create Invoice
-            </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/dashboard/sales/create-invoice" className="w-full sm:w-auto">
+              <Button className="bg-[#6B7280] hover:bg-[#4B5563] text-white rounded-lg w-full">
+                <FileText className="h-4 w-4 mr-2" />
+                Create Invoice
+              </Button>
+            </Link>
             <Button
               variant="outline"
-              className="rounded-lg border-border"
+              className="rounded-lg border-border w-full sm:w-auto"
             >
               <ArrowUpRight className="h-4 w-4 mr-2" />
               View Reports
