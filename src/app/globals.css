@@ -49,18 +49,18 @@
 }
 
 :root {
-  /* Light mode – Encova neutrals */
-  --background: #f3f4f6;          /* soft grey background */
-  --foreground: #111827;          /* near-black text */
+  /* Light mode – Gray primary #6B7280 */
+  --background: #f9fafb;
+  --foreground: #111827;
   --card: #ffffff;
   --card-foreground: #111827;
   --popover: #ffffff;
   --popover-foreground: #111827;
-  --primary: #6b7280;             /* Encova primary */
-  --primary-foreground: #ffffff;  /* white on primary */
-  --secondary: #e5e7eb;           /* neutral, not used as main accent */
+  --primary: #6b7280;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
   --secondary-foreground: #111827;
-  --muted: #e5e7eb;
+  --muted: #f3f4f6;
   --muted-foreground: #6b7280;
   --accent: #ffffff;
   --accent-foreground: #111827;
@@ -74,7 +74,7 @@
   --chart-3: #4b5563;
   --chart-4: #d1d5db;
   --chart-5: #6b7280;
-  --radius: 0.75rem;
+  --radius: 1rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #111827;
   --sidebar-primary: #6b7280;
@@ -86,7 +86,7 @@
 }
 
 .dark {
-  /* Dark mode – neutral slate, still using Encova primary */
+  /* Dark mode – Gray primary #6B7280 */
   --background: #020617;
   --foreground: #f9fafb;
   --card: #020617;

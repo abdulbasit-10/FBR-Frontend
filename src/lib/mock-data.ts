@@ -1036,6 +1036,40 @@ export {
   yearlyRevenue,
 };
 
+export const mockDashboard = {
+  transactionSummary: {
+    salesInvoices: { total: 830, posted: 821, unposted: 9, trend: 5.2 },
+    purchaseInvoices: { total: 90, posted: 85, unposted: 5, trend: -1.4 },
+    salesReturns: { total: 24, posted: 18, pending: 6, trend: 2.1 },
+    purchaseReturns: { total: 12, posted: 9, pending: 3, trend: -0.8 },
+  },
+  inventory: {
+    totalItems: 237,
+    stockAvailable: 189,
+    lowStockItems: 48,
+    inventoryAdjustments: { unposted: 15, posted: 42 },
+  },
+  masterData: {
+    customers: 209,
+    vendors: 13,
+    items: 237,
+  },
+  companyProfile: {
+    name: "ABDUL ALI TRADERS",
+    companyId: "00019",
+    ntn: "A721804",
+    province: "KHYBER PAKHTUNKHWA",
+    city: "SWAT",
+    licenseExpiry: "2025-12-31",
+  },
+  quickTips: [
+    "Use bulk actions to post multiple documents.",
+    "Run reports from Reports section.",
+    "Keep company information updated.",
+    "Import customers/items using templates.",
+  ],
+};
+
 export const fbrMockData = {
   dashboardFilters,
   dashboardCards,
@@ -1058,4 +1092,5 @@ export const fbrMockData = {
   recentApplications,
   recentApiLogs,
   topTaxpayersByTaxPaid,
+  mockDashboard,
 };
