@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, EyeOff, LockKeyhole, Mail, RefreshCw, ShieldCheck } from "lucide-react";
+import { api } from "@/lib/api";
+import { auth, type LoginData } from "@/lib/auth";
 
 function generateCaptcha() {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -14,29 +16,47 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [captchaCode, setCaptchaCode] = useState(generateCaptcha());
+  const [captchaCode, setCaptchaCode] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
+
+  // Generate captcha only on client — avoids SSR/client hydration mismatch
+  useEffect(() => {
+    setCaptchaCode(generateCaptcha());
+  }, []);
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [forgotSent, setForgotSent] = useState(false);
 
   const refreshCaptcha = () => {
     setCaptchaCode(generateCaptcha());
     setCaptchaInput("");
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError(null);
+
     if (captchaInput !== captchaCode) {
-      alert("Invalid captcha! Please try again.");
+      setError("Invalid CAPTCHA code. Please refresh and try again.");
       refreshCaptcha();
       return;
     }
-    if (email === "admin@example.com" && password === "password123") {
-      setIsSigningIn(true);
+
+    // Show overlay immediately — API runs in background
+    setIsSigningIn(true);
+
+    try {
+      const res = await api.post<LoginData>("/auth/login", { email, password });
+      auth.save(res.data.user, res.data.tokens);
       window.setTimeout(() => router.push("/dashboard?signedIn=1"), 1300);
-      return;
+    } catch (err) {
+      // Hide overlay and surface the error
+      setIsSigningIn(false);
+      setError(
+        err instanceof Error ? err.message : "Login failed. Please try again."
+      );
+      refreshCaptcha();
     }
-    alert("Invalid email or password!");
-    refreshCaptcha();
   };
 
   return (
@@ -51,7 +71,7 @@ export default function Home() {
           </div>
 
           {/* Form card — vertically centred */}
-          <div className="my-auto w-full h-[550px] overflow-hidden rounded-[10px] border border-[#dde1e7] bg-white shadow-[0_2px_12px_rgba(23,31,44,0.07)]">
+          <div className="my-auto w-full h-137.5 overflow-hidden rounded-[10px] border border-[#dde1e7] bg-white shadow-[0_2px_12px_rgba(23,31,44,0.07)]">
 
             {/* Gold header banner */}
             <div className="bg-linear-to-r from-[#c79a50] to-[#8f6516] px-6 py-5 text-white">
@@ -108,12 +128,27 @@ export default function Home() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => alert("Forgot password flow not implemented yet.")}
-                  className="text-[11.5px] text-[#556170] transition hover:text-[#b07a2a] hover:underline"
+                  onClick={() => setForgotSent(true)}
+                  className="text-[11.5px] text-[#b07a2a] transition hover:underline"
                 >
                   Forgot Password?
                 </button>
               </div>
+
+              {/* Forgot password notice */}
+              {forgotSent && (
+                <div className="mt-2 flex items-center justify-between rounded-[6px] border border-[#fde9c0] bg-[#fffbf0] px-3.5 py-2.5 text-[11.5px] text-[#8a6010]">
+                  <span>Contact your administrator to reset your password.</span>
+                  <button
+                    type="button"
+                    onClick={() => setForgotSent(false)}
+                    className="ml-3 shrink-0 text-[13px] leading-none text-[#b07a2a] hover:text-[#8a6010]"
+                    aria-label="Dismiss"
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
 
               {/* CAPTCHA */}
               <div className="mt-4 space-y-1.5">
@@ -140,6 +175,14 @@ export default function Home() {
                   />
                 </div>
               </div>
+
+              {/* Inline error */}
+              {error && (
+                <div className="mt-4 flex items-start gap-2 rounded-[6px] border border-[#f5c5c5] bg-[#fff5f5] px-3.5 py-2.5 text-[12px] leading-normal text-[#c03030]">
+                  <span className="mt-px shrink-0 text-[14px] leading-none">⚠</span>
+                  {error}
+                </div>
+              )}
 
               {/* Submit */}
               <button
@@ -189,14 +232,8 @@ export default function Home() {
                 <Pill>FBR compliant</Pill>
                 <Pill>Secure &amp; encrypted</Pill>
               </div>
-              <div className="flex h-[69px] w-[195px] shrink-0 items-center justify-center rounded-[18px] bg-white px-6 py-2.5 shadow-md">
-                <Image
-                  src="/brand/Digital.svg"
-                  alt="Digital Invoicing"
-                  width={200}
-                  height={60}
-                  className="h-auto w-full object-fit "
-                />
+              <div className="relative h-12.5 w-34 overflow-hidden rounded-[13px] bg-white shadow-md">
+                <Image src="/brand/Digital.svg" alt="Digital Invoicing" width={182} height={97} className="absolute -left-6 -top-4 w-46 max-w-none" />
               </div>
             </div>
 

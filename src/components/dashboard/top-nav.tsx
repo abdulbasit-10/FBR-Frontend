@@ -19,23 +19,12 @@ export function TopNav({
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-40 flex h-[64px] items-center justify-between border-b border-[#e7e7e7] bg-white px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#e7e7e7] bg-white px-6">
       <MobileSidebar>
         <Sidebar collapsed={false} />
       </MobileSidebar>
 
-      <div className="flex items-center gap-3">
-        {/* <div className="flex items-center gap-2 rounded-lg border border-[#E5E7EB] dark:border-[#1F2937] px-4 py-2 hover:bg-[#F9FAFB] dark:hover:bg-[#111827] transition-colors cursor-pointer">
-          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-            <span className="text-white font-semibold text-sm">BW</span>
-          </div>
-          <div className="hidden sm:block"> */}
-            {/* <div className="text-lg font-semibold text-foreground">Dashboard</div> */}
-            {/* <div className="text-xs text-muted-foreground">Company</div>
-          </div>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </div> */}
-      </div>
+      <div className="flex items-center gap-3"></div>
 
       <div className="flex items-center gap-2">
         <button type="button" onClick={() => router.push("/")} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] bg-white px-3 text-[11px] text-[#424b56] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
