@@ -1,331 +1,38 @@
 import Link from "next/link";
-import {
-  FileText,
-  ArrowUpRight,
-  RefreshCw,
-  Users,
-  Package,
-  Building2,
-} from "lucide-react";
+import { ArrowUpRight, Bell, Box, Building2, CircleHelp, FileText, MapPin, Package, RefreshCw } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { ChartCard } from "@/components/dashboard/chart-card";
-import { InventoryCard } from "@/components/dashboard/inventory-card";
-import { ProfileCard } from "@/components/dashboard/profile-card";
-import { QuickTipsCard } from "@/components/dashboard/quick-tips-card";
-import { mockDashboard, charts, notifications, provinceAnalytics } from "@/lib/mock-data";
-
-const currentDate = new Date().toLocaleDateString("en-PK", {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
-
-const salesInvoices =
-  charts.invoiceStatusDistribution.find((i) => i.label === "Verified")
-    ?.value || 0;
-const pendingInvoices =
-  charts.invoiceStatusDistribution.find((i) => i.label === "Submitted")
-    ?.value || 0;
-const processingInvoices =
-  charts.invoiceStatusDistribution.find((i) => i.label === "Processing")
-    ?.value || 0;
-const totalInvoices = salesInvoices + pendingInvoices + processingInvoices;
+const gold = "#c99d54";
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-6 p-0">
-      {/* Hero Section */}
-      <section className="rounded-xl border-border bg-white dark:bg-[#020617] p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{currentDate}</p>
-            <h1 className="text-2xl font-bold text-foreground">
-              Welcome back, Encova Solutions
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Monitor your invoicing activity and business performance
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href="/dashboard/sales/create-invoice" className="w-full sm:w-auto">
-              <Button className="bg-[#6B7280] hover:bg-[#4B5563] text-white rounded-lg w-full">
-                <FileText className="h-4 w-4 mr-2" />
-                Create Invoice
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              className="rounded-lg border-border w-full sm:w-auto"
-            >
-              <ArrowUpRight className="h-4 w-4 mr-2" />
-              View Reports
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-lg">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+    <div className="mx-auto max-w-[1440px] text-[#4f5967]">
+      <section className="relative overflow-hidden rounded-xl bg-[linear-gradient(110deg,#c99d54,#a6782d)] px-6 py-5 text-white shadow-sm">
+        <div className="absolute -right-7 -top-11 h-36 w-36 rounded-full bg-white/15" />
+        <p className="relative text-xs">Fri, 17 July 2026</p>
+        <h1 className="relative mt-1 text-[28px] font-semibold leading-none">Welcome Back!</h1>
+        <p className="relative mt-3 text-xs">BIO WORLD TRADERS — 873 documents · 41 awaiting post</p>
+        <div className="absolute bottom-5 right-5 flex gap-2"><Link href="/dashboard/sales/create-invoice" className="rounded-md bg-white px-3 py-2 text-[11px] font-medium text-[#5d5750]">New Sales Invoice <ArrowUpRight className="inline h-3 w-3" /></Link><button className="rounded-md bg-white px-3 py-2 text-[11px] text-[#5d5750]">View Reports</button><button className="rounded-md bg-white px-3 py-2 text-[11px] text-[#5d5750]"><RefreshCw className="inline h-3 w-3" /> Refresh data</button></div>
       </section>
 
-      {/* Main Grid */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        {/* Left Column */}
-        <div className="space-y-6">
-          {/* Transaction Summary */}
-          <div>
-            {/* <h2 className="text-lg font-semibold text-foreground mb-4">
-              Transaction Summary
-            </h2> */}
-            <div className="grid gap-4 md:grid-cols-4">
-              <StatCard
-                title="Sales Invoices"
-                value={mockDashboard.transactionSummary.salesInvoices.total}
-                subValue={`${mockDashboard.transactionSummary.salesInvoices.posted} posted · ${mockDashboard.transactionSummary.salesInvoices.unposted} unposted`}
-                icon={FileText}
-                trend={{
-                  value: mockDashboard.transactionSummary.salesInvoices.trend,
-                  label: "this month",
-                }}
-              />
-              <StatCard
-                title="Purchase Invoices"
-                value={mockDashboard.transactionSummary.purchaseInvoices.total}
-                subValue={`${mockDashboard.transactionSummary.purchaseInvoices.posted} posted · ${mockDashboard.transactionSummary.purchaseInvoices.unposted} unposted`}
-                icon={FileText}
-                trend={{
-                  value: mockDashboard.transactionSummary.purchaseInvoices.trend,
-                  label: "this month",
-                }}
-              />
-              <StatCard
-                title="Sales Returns"
-                value={mockDashboard.transactionSummary.salesReturns.total}
-                subValue={`${mockDashboard.transactionSummary.salesReturns.posted} posted · ${mockDashboard.transactionSummary.salesReturns.pending} pending`}
-                icon={ArrowUpRight}
-                trend={{
-                  value: mockDashboard.transactionSummary.salesReturns.trend,
-                  label: "this month",
-                }}
-              />
-              <StatCard
-                title="Purchase Returns"
-                value={mockDashboard.transactionSummary.purchaseReturns.total}
-                subValue={`${mockDashboard.transactionSummary.purchaseReturns.posted} posted · ${mockDashboard.transactionSummary.purchaseReturns.pending} pending`}
-                icon={ArrowUpRight}
-                trend={{
-                  value: mockDashboard.transactionSummary.purchaseReturns.trend,
-                  label: "this month",
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Activity Analytics */}
-          <div>
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              Activity Analytics
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <ChartCard title="Transaction Trend">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-[#6B7280]" />
-                    <span className="text-sm text-muted-foreground">Sales</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-gray-300" />
-                    <span className="text-sm text-muted-foreground">
-                      Purchases
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-orange-400" />
-                    <span className="text-sm text-muted-foreground">Returns</span>
-                  </div>
-                </div>
-                <div className="mt-4 h-32 flex items-end gap-1">
-                  {[40, 65, 55, 80, 45, 70, 50].map((height, i) => (
-                    <div
-                      key={i}
-                      className="flex-1 bg-[#6B7280]/20 rounded-t-sm transition-all hover:bg-[#6B7280]/40"
-                      style={{ height: `${height}%` }}
-                    />
-                  ))}
-                </div>
-                <div className="flex justify-between mt-2">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                    (day, i) => (
-                      <span key={i} className="text-xs text-muted-foreground">
-                        {day}
-                      </span>
-                    )
-                  )}
-                </div>
-              </ChartCard>
-
-              <ChartCard title="Sales vs Purchases">
-                <div className="flex items-center gap-8">
-                  <div className="relative flex h-24 w-24 items-center justify-center">
-                    <div className="absolute inset-0 rounded-full border-8 border-gray-200 dark:border-gray-800" />
-                    <div
-                      className="absolute inset-0 rounded-full border-8 border-[#6B7280]"
-                      style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
-                    />
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-foreground">
-                        830
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Total
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-8">
-                      <span className="text-sm text-muted-foreground">Sales</span>
-                      <span className="text-sm font-bold text-foreground">
-                        821
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-8">
-                      <span className="text-sm text-muted-foreground">
-                        Purchases
-                      </span>
-                      <span className="text-sm font-bold text-foreground">
-                        9
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </ChartCard>
-            </div>
-          </div>
-
-          {/* Workload Overview */}
-          <Card className="border-border bg-white dark:bg-[#020617] shadow-sm">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-foreground">
-                  Workload Overview
-                </CardTitle>
-                <Button variant="ghost" size="sm" className="text-xs">
-                  View All
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Posted Documents</span>
-                  <span className="font-medium">{salesInvoices}</span>
-                </div>
-                <Progress
-                  value={(salesInvoices / totalInvoices) * 100}
-                  className="h-2 bg-gray-200 dark:bg-gray-800"
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Pending Documents</span>
-                  <span className="font-medium">
-                    {pendingInvoices + processingInvoices}
-                  </span>
-                </div>
-                <Progress
-                  value={
-                    ((pendingInvoices + processingInvoices) / totalInvoices) * 100
-                  }
-                  className="h-2 bg-gray-200 dark:bg-gray-800"
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Inventory Activity
-                  </span>
-                  <span className="font-medium">142</span>
-                </div>
-                <Progress
-                  value={60}
-                  className="h-2 bg-gray-200 dark:bg-gray-800"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Master Data Summary */}
-          <div>
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              Master Data
-            </h2>
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card className="border-border bg-white dark:bg-[#020617] shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#6B7280]/10">
-                      <Users className="h-5 w-5 text-[#6B7280]" />
-                    </div>
-                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      Customers
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">
-                    {mockDashboard.masterData.customers}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-border bg-white dark:bg-[#020617] shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#6B7280]/10">
-                      <Building2 className="h-5 w-5 text-[#6B7280]" />
-                    </div>
-                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      Vendors
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">
-                    {mockDashboard.masterData.vendors}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-border bg-white dark:bg-[#020617] shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#6B7280]/10">
-                      <Package className="h-5 w-5 text-[#6B7280]" />
-                    </div>
-                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      Items
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">
-                    {mockDashboard.masterData.items}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_280px]">
+        <div className="space-y-4">
+          <DashboardSection title="Sales"><div className="grid gap-2 sm:grid-cols-2"><SummaryCard title="Sales Invoices" count="11" /><SummaryCard title="Sales Returns" count="0" returnCard /></div></DashboardSection>
+          <DashboardSection title="Purchases"><div className="grid gap-2 sm:grid-cols-2"><SummaryCard title="Sales Invoices" count="11" /><SummaryCard title="Purchase Returns" count="0" returnCard /></div></DashboardSection>
+          <DashboardSection title="Inventory"><div className="grid gap-2 sm:grid-cols-2"><SummaryCard title="Inventory Adjustments" count="11" inventory /><SummaryCard title="Inventory Adjustments" count="11" inventory /></div></DashboardSection>
+          <section><p className="mb-1 text-[9px] font-medium">Company Profile</p><div className="rounded-[8px] border border-[#e6e7e9] bg-white p-2 shadow-[0_1px_3px_rgba(0,0,0,.04)]"><div className="flex items-center gap-2"><span className="grid h-5 w-5 place-items-center rounded-[5px] bg-[linear-gradient(135deg,#c99d54,#8a6221)] text-[8px] text-white">ES</span><div><b className="text-[9px]">BIO Encova Solution</b><p className="text-[7px] text-[#a3aab3]">Enterprise Resource Planning Account</p></div></div><div className="mt-2 grid gap-1.5 sm:grid-cols-2"><ProfileItem icon={Building2} label="Company ID" value="BWTR" /><ProfileItem icon={Bell} label="NTN" value="AT73964" /><ProfileItem icon={MapPin} label="Province" value="KPK" /><ProfileItem icon={MapPin} label="City" value="Khyber Pakhtunkhwa" /><ProfileItem icon={Box} label="Sandbox" value="Yes" /><ProfileItem icon={Package} label="License Expiry" value="2028-11-19" /></div></div></section>
         </div>
-
-        {/* Right Sidebar */}
-        <div className="space-y-6">
-          <InventoryCard inventory={mockDashboard.inventory} />
-          <ProfileCard company={mockDashboard.companyProfile} />
-          <QuickTipsCard tips={mockDashboard.quickTips} />
-        </div>
+        <aside className="space-y-3"><SideStat title="Customers" value="209" label="Total registered customers" /><SideStat title="Items in Inventory" value="237" label="Products: 9  ·  Services: 228" /><Workload /><Activity /><MasterData /><Tips /></aside>
       </div>
     </div>
   );
 }
+
+function DashboardSection({ title, children }: { title: string; children: React.ReactNode }) { return <section><p className="mb-2 text-sm font-semibold text-[#3f4854]">{title}</p>{children}</section>; }
+function SummaryCard({ title, count, returnCard, inventory }: { title: string; count: string; returnCard?: boolean; inventory?: boolean }) { return <div className="rounded-xl border border-[#e8e9eb] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]"><div className="flex items-center justify-between"><span className="flex items-center gap-2 text-sm font-medium"><span className="grid h-6 w-6 place-items-center rounded-full bg-[#f5ead7] text-[#b88735]">{inventory ? <Box className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}</span>{title}</span><b className="text-sm">{count}</b></div><div className="mt-4 grid grid-cols-2 gap-2"><Status title="Posted" value={returnCard ? "11" : "11"} active /><Status title="Unposted" value="0" /></div></div>; }
+function Status({ title, value, active }: { title: string; value: string; active?: boolean }) { return <div className="rounded-md bg-[#d4ad68] px-2.5 py-2 text-[10px] text-[#4d422f]"><div className="flex justify-between"><span>{title}</span><b>{value}</b></div><span className="mt-1.5 inline-block rounded-full bg-white px-2 py-0.5 text-[9px]">{active ? "Active" : "Pending"}</span></div>; }
+function SideStat({ title, value, label }: { title: string; value: string; label: string }) { return <div className="rounded-xl border border-[#e8e9eb] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]"><div className="flex justify-between text-[11px]"><span>{title}</span><ArrowUpRight className="h-3 w-3" /></div><b className="mt-2 block text-[28px] leading-none text-[#222b34]">{value}</b><p className="mt-2 text-[10px] text-[#9fa6ae]">{label}</p></div>; }
+function Workload() { return <div className="rounded-xl border border-[#e8e9eb] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]"><p className="text-xs font-semibold">Workload Split</p><div className="mt-3 flex items-center gap-3"><div className="grid h-14 w-14 place-items-center rounded-full border-[8px] border-[#d4ad68] text-[11px] font-semibold">859</div><div className="flex-1 space-y-2 text-[10px]"><p><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-[#c99d54]" />Posted docs <b className="float-right">812</b></p><p><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-[#e8e2d9]" />Unposted docs <b className="float-right">47</b></p></div></div></div>; }
+function Activity() { return <div className="rounded-xl border border-[#e8e9eb] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]"><p className="text-xs font-semibold">Activity Trend</p><div className="mt-3 flex h-20 items-end gap-1 rounded-md bg-[linear-gradient(180deg,transparent,#f3ecdf)] px-2">{[17,25,22,35,28,42,38,51,49].map((h, i) => <span key={i} className="flex-1 rounded-t bg-[#c99d54]/45" style={{ height: `${h}%` }} />)}</div><p className="mt-2 text-[9px] text-[#a3aab3]">Sales Invoices &nbsp; Purchase Invoices &nbsp; Returns</p></div>; }
+function MasterData() { return <div className="rounded-xl border border-[#e8e9eb] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]"><p className="text-xs font-semibold">Master Data</p>{[["Customer","45%"],["Vendors","82%"],["Items","56%"]].map(([name, val]) => <div key={name} className="mt-3 text-[10px]"><div className="flex justify-between"><span>{name}</span><b>{val}</b></div><div className="mt-1.5 h-1 rounded bg-[#eee]" style={{ background: `linear-gradient(90deg,${gold} ${val},#eee ${val})` }} /></div>)}</div>; }
+function Tips() { return <div className="rounded-xl border border-[#e8e9eb] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]"><p className="flex items-center gap-1.5 text-xs font-semibold"><CircleHelp className="h-3.5 w-3.5" />Quick Tips</p><ul className="mt-3 space-y-2.5 text-[10px] leading-relaxed text-[#747e8a]"><li>Use bulk Actions list pages to post or delete multiple documents.</li><li>Run detail and summary reports from the Reports section.</li><li>Keep your company ERP data updated under Company Profile.</li><li>Use Master Import to upload customers, items, and sales invoices in one go.</li></ul></div>; }
+function ProfileItem({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: string }) { return <div className="flex items-center gap-2 rounded-md bg-[#f8f2e8] px-3 py-2.5"><Icon className="h-4 w-4 text-[#c99d54]" /><div><p className="text-[10px]">{label}</p><p className="text-[10px] text-[#bd8b38]">{value}</p></div></div>; }

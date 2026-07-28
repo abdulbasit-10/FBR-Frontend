@@ -6,7 +6,6 @@ import {
   Download,
   LifeBuoy,
   FileText,
-  Package,
   ArrowUpRight,
   ArrowDownRight,
   CreditCard,
@@ -46,7 +45,6 @@ export const primaryNav: NavItem[] = [
       { title: "Inventory Reports", href: "/dashboard/reports/inventory", icon: Boxes },
     ]
   },
-  { title: "Inventory", href: "/dashboard/inventory", icon: Package },
   { title: "Import/Export", href: "/dashboard/import-export", icon: Download },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
   { title: "Audit Logs", href: "/dashboard/audit-logs", icon: FileText },

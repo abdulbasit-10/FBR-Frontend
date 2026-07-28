@@ -7,4 +7,3 @@ export default function DashboardLayout({
 }) {
   return <SidebarShell>{children}</SidebarShell>;
 }
-
