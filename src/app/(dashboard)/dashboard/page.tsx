@@ -145,14 +145,23 @@ function SummaryCard({ title, count, returnCard, inventory }: { title: string; c
 
 function Status({ title, value, active }: { title: string; value: string; active?: boolean }) {
   return (
-    <div className="flex w-full flex-col gap-[10px] rounded-[8px] border border-[#c8a060]/40 bg-[#C69856]/90 p-[10px] text-[10px] text-[#4d422f]">
-      <div className="flex justify-between">
+    <div className="flex w-full flex-col justify-between rounded-[10px] bg-[#cb9d58] p-3 text-xs">
+      <div className="flex items-center justify-between text-white font-medium">
         <span>{title}</span>
-        <b>{value}</b>
+        <b className="font-bold">{value}</b>
       </div>
-      <span className="inline-block self-start rounded-full bg-white px-2 py-0.5 text-[9px]">
-        {active ? "Active" : "Pending"}
-      </span>
+      <div className="mt-3">
+        {active ? (
+          <span className="inline-block rounded-full bg-white px-3 py-1 text-[10px] font-semibold text-[#144f13] shadow-xs">
+            Active
+          </span>
+        ) : (
+          <span className="inline-block rounded-full bg-[#F4EEE457] px-3 py-1 text-[10px] font-semibold text-[#70490B];
+        ]">
+            Pending
+          </span>
+        )}
+      </div>
     </div>
   );
 }
