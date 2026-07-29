@@ -2,6 +2,9 @@
 
 import * as React from "react";
 
+import { useSearchParams } from "next/navigation";
+import { CheckCircle2 } from "lucide-react";
+
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { TopNav } from "@/components/dashboard/top-nav";
 import { GsapReveal } from "@/components/dashboard/gsap-reveal";
@@ -32,6 +35,7 @@ function SignedInToast({
 
 export function SidebarShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = React.useState(false);
+  const [showSignedIn, setShowSignedIn] = React.useState(false);
 
   return (
     <GsapReveal>
@@ -48,11 +52,12 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
             />
 
             <main className="relative flex-1 overflow-y-auto px-3 py-3 lg:px-4 lg:py-3">
-              {showSignedIn && (
-                <div className="fixed right-4 top-3 z-50 flex w-[157px] items-center gap-1.5 rounded-[4px] border border-[#b8ebca] bg-[#ecfff2] px-3 py-3 text-[9px] font-medium text-[#16753b] shadow-sm">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Signed in.
-                </div>
-              )}
+              <React.Suspense>
+                <SignedInToast
+                  showSignedIn={showSignedIn}
+                  setShowSignedIn={setShowSignedIn}
+                />
+              </React.Suspense>
               {children}
             </main>
           </div>
@@ -61,3 +66,4 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
     </GsapReveal>
   );
 }
+
