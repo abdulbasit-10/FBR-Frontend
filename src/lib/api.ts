@@ -6,21 +6,42 @@ export interface ApiResponse<T> {
     data: T;
 }
 
-async function request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-): Promise<ApiResponse<T>> {
+async function doFetch(endpoint: string, token: string | null, options: RequestInit) {
     const { headers, ...rest } = options;
-
-    const res = await fetch(`${BASE_URL}${endpoint}`, {
+    return fetch(`${BASE_URL}${endpoint}`, {
         headers: {
             "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...(headers ?? {}),
         },
         ...rest,
     });
+}
 
-    const json: ApiResponse<T> = await res.json();
+async function request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+    const isClient = typeof window !== "undefined";
+    let token = isClient ? localStorage.getItem("fbr_access_token") : null;
+
+    let res = await doFetch(endpoint, token, options);
+    let json: ApiResponse<T> = await res.json();
+
+    // Auto-refresh on expired token then retry once (skip for auth endpoints to avoid loops)
+    if (!res.ok && json.message === "Access token expired" && isClient && !endpoint.startsWith("/auth/")) {
+        const { auth } = await import("@/lib/auth");
+        const refreshed = await auth.refreshTokens();
+        if (refreshed) {
+            token = localStorage.getItem("fbr_access_token");
+            res = await doFetch(endpoint, token, options);
+            json = await res.json();
+        } else {
+            // Refresh failed — redirect to login
+            window.location.href = "/";
+            throw new Error("Session expired. Please log in again.");
+        }
+    }
 
     if (!res.ok || !json.success) {
         throw new Error(json.message ?? "Something went wrong. Please try again.");

@@ -114,14 +114,17 @@ export const auth = {
      */
     async logout(): Promise<void> {
         const refreshToken = auth.getRefreshToken();
+        // Use direct fetch — bypass api.ts middleware to avoid refresh loops
         try {
             if (refreshToken) {
-                await api.post(
-                    "/auth/logout",
-                    { refreshToken },
-                    { headers: auth.getAuthHeader() }
-                );
+                await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ refreshToken }),
+                });
             }
+        } catch {
+            // ignore — clear locally regardless
         } finally {
             auth.clear();
         }
