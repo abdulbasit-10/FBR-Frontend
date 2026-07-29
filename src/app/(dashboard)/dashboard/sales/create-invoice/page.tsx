@@ -1,19 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import {
-  ChevronRight,
-  Plus,
-  Trash2,
-  RefreshCw,
-  FileText,
-  Building2,
-} from "lucide-react";
+import { ChevronLeft, Plus, Trash2, RotateCcw, Save } from "lucide-react";
+import Image from "next/image";
 
 // Mock customer data
 const mockCustomers = [
@@ -62,14 +55,26 @@ interface Customer {
 }
 
 export default function CreateSalesInvoicePage() {
-  const [documentDate, setDocumentDate] = useState(new Date().toISOString().split('T')[0]);
-  const [postingDate, setPostingDate] = useState(new Date().toISOString().split('T')[0]);
+  const router = useRouter();
+  const [documentDate, setDocumentDate] = useState("");
+  const [postingDate, setPostingDate] = useState("");
   const [poDate, setPoDate] = useState("");
   const [poNumber, setPoNumber] = useState("");
   const [advanceTax, setAdvanceTax] = useState(0);
   const [notes, setNotes] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [showCustomerPicker, setShowCustomerPicker] = useState(false);
+  const [items, setItems] = useState<InvoiceItem[]>([
+    {
+      id: "1",
+      productId: null,
+      productName: "",
+      quantity: 1,
+      unitPrice: 0,
+      discount: 0,
+      tax: 0,
+    },
+  ]);
 
   const addItem = () => {
     setItems([
@@ -81,402 +86,455 @@ export default function CreateSalesInvoicePage() {
         quantity: 1,
         unitPrice: 0,
         discount: 0,
-        tax: 10, // 10% default
+        tax: 10,
       },
     ]);
   };
 
   const removeItem = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
+    setItems(items.filter((item) => item.id !== id));
   };
 
   const updateItem = (id: string, updates: Partial<InvoiceItem>) => {
-    setItems(items.map(item => 
-      item.id === id ? { ...item, ...updates } : item
-    ));
+    setItems(
+      items.map((item) => (item.id === id ? { ...item, ...updates } : item))
+    );
   };
 
   // Calculations
-  const calculateItemTotal = (item: InvoiceItem) => {
-    const lineTotal = item.quantity * item.unitPrice;
-    const discountAmount = (lineTotal * item.discount) / 100;
-    const afterDiscount = lineTotal - discountAmount;
-    const taxAmount = (afterDiscount * item.tax) / 100;
-    return afterDiscount + taxAmount;
-  };
-
-  const assessedValue = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-  const totalDiscount = items.reduce((sum, item) => sum + ((item.quantity * item.unitPrice * item.discount) / 100), 0);
-  const amountExclTax = items.reduce((sum, item) => sum + ((item.quantity * item.unitPrice * (100 - item.discount)) / 100), 0);
-  const totalTax = items.reduce((sum, item) => sum + (((item.quantity * item.unitPrice * (100 - item.discount)) / 100) * item.tax / 100), 0);
+  const assessedValue = items.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  );
+  const totalDiscount = items.reduce(
+    (sum, item) =>
+      sum + (item.quantity * item.unitPrice * item.discount) / 100,
+    0
+  );
+  const amountExclTax = items.reduce(
+    (sum, item) =>
+      sum + (item.quantity * item.unitPrice * (100 - item.discount)) / 100,
+    0
+  );
+  const totalTax = items.reduce(
+    (sum, item) =>
+      sum +
+      (((item.quantity * item.unitPrice * (100 - item.discount)) / 100) *
+        item.tax) /
+      100,
+    0
+  );
   const amountInclTax = amountExclTax + totalTax;
   const grandTotal = amountInclTax + advanceTax;
 
   const resetForm = () => {
-    setDocumentDate(new Date().toISOString().split('T')[0]);
-    setPostingDate(new Date().toISOString().split('T')[0]);
+    setDocumentDate("");
+    setPostingDate("");
     setPoDate("");
     setPoNumber("");
     setAdvanceTax(0);
     setNotes("");
     setSelectedCustomer(null);
-    setItems([]);
+    setItems([
+      {
+        id: "1",
+        productId: null,
+        productName: "",
+        quantity: 1,
+        unitPrice: 0,
+        discount: 0,
+        tax: 0,
+      },
+    ]);
   };
 
   const handleSave = () => {
-    // Add validation
     if (!documentDate || !postingDate || !selectedCustomer || items.length === 0) {
       alert("Please fill all required fields and add at least one item.");
       return;
     }
-
-    // Mock save
-    console.log("Saving invoice...", {
-      documentDate,
-      postingDate,
-      poDate,
-      poNumber,
-      advanceTax,
-      notes,
-      selectedCustomer,
-      items,
-      totals: {
-        assessedValue,
-        totalDiscount,
-        amountExclTax,
-        totalTax,
-        amountInclTax,
-        grandTotal,
-      },
-    });
     alert("Invoice saved successfully!");
   };
 
+  // Common Input Style variable to ensure perfect 1:1 match across all inputs
+  const inputStyleClass =
+    "h-[48px] rounded-[6px] border border-[#D1D5DB] !bg-white text-[13px] text-[#1E293B] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none [color-scheme:light]";
+
   return (
-    <div className="min-h-full space-y-6">
-      {/* Breadcrumb + Title + Actions */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Dashboard</span>
-            <ChevronRight className="h-4 w-4" />
-            <span>Sales</span>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-foreground font-medium">Create Invoice</span>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Create Sales Invoice</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={resetForm}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Reset
-          </Button>
-          <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700">
-            <FileText className="h-4 w-4 mr-2" />
-            Save Invoice
-          </Button>
+    <div
+      className="min-h-full space-y-4 text-[#4f5967]"
+      style={{ fontFamily: "'Inter', sans-serif" }}
+    >
+      {/* ── Page Header Controls ── */}
+      <div className="flex items-center justify-between pb-1">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-[20px] font-bold text-[#1E293B] hover:opacity-75 transition-opacity"
+        >
+          <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
+          New Sales Invoice
+        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={resetForm}
+            className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] bg-white px-4 text-[13px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+          >
+            <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="flex h-9 items-center gap-1.5 rounded-[5px] bg-[#C69A52] px-5 text-[13px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs"
+          >
+            <Save className="h-3.5 w-3.5" /> Save
+          </button>
         </div>
       </div>
 
-      {/* Main Layout: Two Column (Left Form, Right Summary) */}
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        {/* Left: Form */}
-        <div className="space-y-6">
-          {/* Sales Header Card */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Sales Header</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Row 1: Dates */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Document Date <span className="text-red-500">*</span></Label>
-                  <Input 
-                    type="date" 
-                    value={documentDate} 
-                    onChange={(e) => setDocumentDate(e.target.value)} 
+      <div className="space-y-4">
+        {/* ── SALES HEADER OUTER SECTION ── */}
+        <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-[18px] shadow-xs">
+          <p className="mb-4 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
+            Sales Header
+          </p>
+
+          <div className="grid gap-6 lg:grid-cols-[1fr_265px] items-stretch">
+            {/* Left Inputs Block */}
+            <div className="flex flex-col gap-4">
+              {/* Row 1: Document Date + Posting Date */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label className="text-[12px] font-medium text-[#4F5967]">
+                    Document Date <span className="text-[#A27B3A]">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    value={documentDate}
+                    onChange={(e) => setDocumentDate(e.target.value)}
+                    className={inputStyleClass}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Posting Date <span className="text-red-500">*</span></Label>
-                  <Input 
-                    type="date" 
-                    value={postingDate} 
-                    onChange={(e) => setPostingDate(e.target.value)} 
+                <div className="space-y-1.5">
+                  <Label className="text-[12px] font-medium bg-white text-[#4F5967]">
+                    Posting Date <span className="text-[#A27B3A]">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    value={postingDate}
+                    onChange={(e) => setPostingDate(e.target.value)}
+                    className={inputStyleClass}
                   />
                 </div>
               </div>
 
               {/* Row 2: PO Date + PO Number */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>PO Date</Label>
-                  <Input 
-                    type="date" 
-                    value={poDate} 
-                    onChange={(e) => setPoDate(e.target.value)} 
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label className="text-[12px] font-medium text-[#4F5967]">
+                    PO Date <span className="text-[#A27B3A]">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    value={poDate}
+                    onChange={(e) => setPoDate(e.target.value)}
+                    className={inputStyleClass}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>PO Number</Label>
-                  <Input 
-                    type="text" 
-                    placeholder="Enter PO number" 
-                    value={poNumber} 
-                    onChange={(e) => setPoNumber(e.target.value)} 
+                <div className="space-y-1.5">
+                  <Label className="text-[12px] font-medium text-[#4F5967]">
+                    PO Number <span className="text-[#A27B3A]">*</span>
+                  </Label>
+                  <Input
+                    type="text"
+                    placeholder="Optional"
+                    value={poNumber}
+                    onChange={(e) => setPoNumber(e.target.value)}
+                    className={inputStyleClass}
                   />
                 </div>
               </div>
 
-              {/* Row 3: Advance Tax */}
-              <div className="space-y-2">
-                <Label>Advance Tax (%)</Label>
-                <Input 
-                  type="number" 
-                  value={advanceTax} 
-                  onChange={(e) => setAdvanceTax(parseFloat(e.target.value) || 0)} 
+              {/* Advance Tax */}
+              <div className="space-y-1.5">
+                <Label className="text-[12px] font-medium text-[#4F5967]">
+                  Advance tax ({advanceTax.toFixed(2)}%) <span className="text-[#A27B3A]">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  value={advanceTax === 0 ? "" : advanceTax}
                   placeholder="0"
+                  onChange={(e) => setAdvanceTax(parseFloat(e.target.value) || 0)}
+                  className={inputStyleClass}
                 />
               </div>
 
-              {/* Notes */}
-              <div className="space-y-2">
-                <Label>Notes</Label>
-                <Textarea 
-                  placeholder="Add notes for this invoice..." 
-                  value={notes} 
-                  onChange={(e) => setNotes(e.target.value)} 
-                  rows={3}
+              {/* Note Textarea */}
+              <div className="space-y-1.5">
+                <Label className="text-[12px] font-medium text-[#4F5967]">
+                  Note <span className="text-[#A27B3A]">*</span>
+                </Label>
+                <Textarea
+                  placeholder="Add note"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="h-[115px] min-h-[115px] rounded-[6px] border border-[#D1D5DB] bg-white text-[13px] text-[#1E293B] placeholder:text-[#9CA3AF] pt-[13px] pb-[12px] pl-[15px] pr-[10px] resize-none focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Customer Selection Card */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Customer <span className="text-red-500">*</span></CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Select Customer</Label>
-                <select 
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2"
-                  value={selectedCustomer?.id || ""}
-                  onChange={(e) => {
-                    const customer = mockCustomers.find(c => c.id === parseInt(e.target.value));
-                    setSelectedCustomer(customer || null);
-                  }}
-                >
-                  <option value="">-- Select a customer --</option>
-                  {mockCustomers.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+            {/* ── RIGHT FIGMA PREVIEW CARD ── */}
+            <div className="w-[265px] rounded-[14px] border border-[#E5E7EB] bg-white px-[19px] py-[12px] flex flex-col justify-between gap-[16px]">
+              {/* Brand Header */}
+              <div className="flex flex-col items-center border-b border-[#F3F4F6] pb-[10px]">
+                <Image
+                  src="/brand/Digital.svg"
+                  alt="Encova Solution"
+                  width={48}
+                  height={48}
+                  className="h-12 w-auto mb-1.5 object-contain"
+                  priority
+                />
+                <h3 className="text-[14px] font-bold text-[#1E293B] leading-tight">
+                  Encova Solution
+                </h3>
+                <span className="text-[11px] text-[#9CA3AF] font-normal mt-0.5">
+                  Sales invoice preview
+                </span>
               </div>
 
-              {selectedCustomer && (
-                <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4 space-y-2">
-                  <h3 className="font-semibold text-foreground">{selectedCustomer.name}</h3>
-                  <p className="text-sm text-muted-foreground">{selectedCustomer.phone} • {selectedCustomer.email}</p>
-                  <p className="text-sm text-muted-foreground">{selectedCustomer.address}</p>
-                  <p className="text-sm text-muted-foreground">Tax ID: {selectedCustomer.taxId}</p>
-                </div>
-              )}
+              {/* Sales Total Items List */}
+              <div className="flex flex-col gap-[7px]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A] mb-1">
+                  Sales Total
+                </span>
 
-              <Button variant="outline" size="sm" className="mt-2">
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Customer
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Invoice Items Table */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Items</CardTitle>
-              <Button variant="outline" size="sm" onClick={addItem}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Line
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Product / Service</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Quantity</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Unit Price</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Discount (%)</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Tax (%)</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Total</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground w-16">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="py-8 text-center text-muted-foreground">
-                          No items added. Click "Add Line" to start.
-                        </td>
-                      </tr>
-                    ) : (
-                      items.map(item => (
-                        <tr key={item.id} className="border-b">
-                          <td className="py-3 px-2">
-                            <select 
-                              className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
-                              value={item.productId || ""}
-                              onChange={(e) => {
-                                const product = mockProducts.find(p => p.id === parseInt(e.target.value));
-                                if (product) {
-                                  updateItem(item.id, { productId: product.id, productName: product.name, unitPrice: product.price });
-                                } else {
-                                  updateItem(item.id, { productId: null, productName: "" });
-                                }
-                              }}
-                            >
-                              <option value="">-- Select product --</option>
-                              {mockProducts.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="py-3 px-2">
-                            <Input 
-                              type="number" 
-                              className="w-24"
-                              value={item.quantity}
-                              onChange={(e) => updateItem(item.id, { quantity: parseInt(e.target.value) || 0 })}
-                            />
-                          </td>
-                          <td className="py-3 px-2">
-                            <Input 
-                              type="number" 
-                              className="w-32"
-                              value={item.unitPrice}
-                              onChange={(e) => updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
-                            />
-                          </td>
-                          <td className="py-3 px-2">
-                            <Input 
-                              type="number" 
-                              className="w-24"
-                              value={item.discount}
-                              onChange={(e) => updateItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
-                            />
-                          </td>
-                          <td className="py-3 px-2">
-                            <Input 
-                              type="number" 
-                              className="w-24"
-                              value={item.tax}
-                              onChange={(e) => updateItem(item.id, { tax: parseFloat(e.target.value) || 0 })}
-                            />
-                          </td>
-                          <td className="py-3 px-2 font-medium">
-                            {calculateItemTotal(item).toFixed(2)}
-                          </td>
-                          <td className="py-3 px-2">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-red-500 hover:text-red-600"
-                              onClick={() => removeItem(item.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                {[
+                  ["Assessed value", assessedValue.toFixed(2)],
+                  ["Amount excl. discount", assessedValue.toFixed(2)],
+                  ["Discount", totalDiscount.toFixed(2)],
+                  ["Amount excl. sales tax", amountExclTax.toFixed(2)],
+                  ["Sales tax", totalTax.toFixed(2)],
+                  ["Amount incl. sales tax", amountInclTax.toFixed(2)],
+                  ["Further tax", "0.00"],
+                  ["Amount incl. further tax", amountInclTax.toFixed(2)],
+                  ["Advance tax", advanceTax.toFixed(2)],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex justify-between items-center text-[11px]">
+                    <span className="text-[#6B7280] font-normal">{label}</span>
+                    <span className="text-[#1E293B] font-bold">{value}</span>
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
+
+              {/* Grand Total Footer Highlight */}
+              <div className="w-full h-[39px] rounded-[7px] bg-[#FAF6EE] border border-[#F3EAD8] px-[14px] py-[8px] flex items-center justify-between mt-auto">
+                <span className="text-[11px] font-bold uppercase text-[#A27B3A] tracking-wider">
+                  Grand Total
+                </span>
+                <span className="text-[13px] font-bold text-[#A27B3A]">
+                  {grandTotal.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Right: Summary Panel */}
-        <div className="lg:sticky lg:top-24">
-          <Card className="shadow-sm border-l-4 border-l-emerald-600">
-            <CardHeader className="pb-4 text-center border-b">
-              <div className="flex flex-col items-center gap-2">
-                <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                  <Building2 className="h-8 w-8 text-emerald-600" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">ABDUL ALI TRADERS</h3>
-                <p className="text-sm text-muted-foreground">Sales Invoice Preview</p>
+
+        {/* ── CUSTOMER SECTION ── */}
+        <div className="h-[118.5px] rounded-[11px] border border-[#E5E7EB] bg-white p-[21px] flex flex-col justify-between shadow-xs">
+          <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
+            Customer
+          </p>
+
+          {selectedCustomer ? (
+            <div className="flex items-center justify-between rounded-[7px] border border-[#E5E7EB] bg-[#FAF6F0] px-4 py-2">
+              <div>
+                <p className="text-[13px] font-semibold text-[#1E293B]">{selectedCustomer.name}</p>
+                <p className="text-[11px] text-[#6B7280]">
+                  {selectedCustomer.phone} · {selectedCustomer.email} · Tax ID: {selectedCustomer.taxId}
+                </p>
               </div>
-            </CardHeader>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="text-[12px] text-[#A27B3A] hover:underline font-medium"
+              >
+                Change
+              </button>
+            </div>
+          ) : (
+            <div className="flex justify-center w-full">
+              <button
+                type="button"
+                onClick={() => setShowCustomerPicker(!showCustomerPicker)}
+                className="max-w-[392px] w-full h-[40.5px] rounded-[7px] border border-dashed border-[#C69B56] bg-[#C69A52]/[0.04] px-[28px] text-[13px] font-medium text-[#C69B56] hover:bg-[#C69A52]/[0.08] transition-colors flex items-center justify-center"
+              >
+                Select customer
+              </button>
+            </div>
+          )}
 
-            <CardContent className="pt-6 space-y-4">
-              <div className="space-y-3">
-                {/* Assessed Value */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Assessed Value</span>
-                  <span className="font-medium">{assessedValue.toFixed(2)}</span>
-                </div>
+          {showCustomerPicker && !selectedCustomer && (
+            <div className="absolute z-10 mt-12 max-w-[392px] w-full rounded-lg border border-[#E5E7EB] overflow-hidden shadow-md bg-white">
+              {mockCustomers.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    setSelectedCustomer(c);
+                    setShowCustomerPicker(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-[12px] hover:bg-[#FAF6F0] border-b border-[#E5E7EB] last:border-0"
+                >
+                  <span className="font-semibold text-[#1E293B]">{c.name}</span>
+                  <span className="ml-2 text-[11px] text-[#9CA3AF]">{c.taxId}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-                {/* Amount Excluding Discount */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Amount Excl. Discount</span>
-                  <span className="font-medium">{(assessedValue - totalDiscount).toFixed(2)}</span>
-                </div>
 
-                {/* Discount */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Discount</span>
-                  <span className="font-medium text-red-500">- {totalDiscount.toFixed(2)}</span>
-                </div>
+        {/* ── CUSTOMER LINE ITEMS TABLE SECTION ── */}
+        <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-[20px] py-[16px] shadow-xs space-y-[10px]">
 
-                {/* Amount Excluding Sales Tax */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Amount Excl. Sales Tax</span>
-                  <span className="font-medium">{amountExclTax.toFixed(2)}</span>
-                </div>
+          {/* Header Title + Action Controls */}
+          <div className="flex items-center justify-between pb-1">
+            <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
+              Customer
+            </p>
+            <button
+              type="button"
+              onClick={addItem}
+              className="flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-3 py-1 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5 text-[#A27B3A]" /> Add line
+            </button>
+          </div>
 
-                {/* Sales Tax */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Sales Tax</span>
-                  <span className="font-medium text-emerald-600">{totalTax.toFixed(2)}</span>
-                </div>
+          {/* Table Scroll Wrapper */}
+          <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB]">
+            <table className="w-full text-[12px] min-w-[850px] border-collapse">
+              <thead>
+                <tr className="bg-[#C69A52] text-white">
+                  <th className="w-12 py-3 px-3 text-center font-bold">#</th>
+                  <th className="w-20 py-3 px-3 text-left font-bold">Item no</th>
+                  <th className="w-[170px] py-3 px-3 text-left font-bold">Item name</th>
+                  <th className="w-16 py-3 px-3 text-center font-bold">Qty</th>
+                  <th className="w-24 py-3 px-3 text-center font-bold">Assessed/U</th>
+                  <th className="w-28 py-3 px-3 text-center font-bold">Assessed value</th>
+                  <th className="w-24 py-3 px-3 text-center font-bold">Unit price</th>
+                  <th className="w-24 py-3 px-3 text-center font-bold">Retail price</th>
+                  <th className="w-28 py-3 px-3 text-right font-bold pr-4">Amt excl. disc</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5E7EB] bg-white">
+                {items.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-[#FAF6F0]/40 transition-colors"
+                  >
+                    {/* Action Buttons & Index */}
+                    <td className="py-2 px-3 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={addItem}
+                          className="text-[#A27B3A] hover:text-[#b58b44] transition-colors"
+                          title="Add Line"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          className="text-red-400 hover:text-red-600 transition-colors"
+                          title="Remove Line"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="ml-0.5 text-[#9CA3AF] text-[11px] font-medium">{index + 1}</span>
+                      </div>
+                    </td>
 
-                {/* Amount Including Sales Tax */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Amount Incl. Sales Tax</span>
-                  <span className="font-medium">{amountInclTax.toFixed(2)}</span>
-                </div>
+                    {/* Item No */}
+                    <td className="py-2 px-3 text-[#9CA3AF]">—</td>
 
-                {/* Further Tax (placeholder) */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Further Tax</span>
-                  <span className="font-medium">0.00</span>
-                </div>
+                    {/* Item Name Dropdown (Figma Spec: 160px x 39.5px) */}
+                    <td className="py-2 px-3">
+                      <select
+                        className="w-[160px] h-[39.5px] rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 text-[12px] text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white transition-colors"
+                        value={item.productId || ""}
+                        onChange={(e) => {
+                          const product = mockProducts.find(
+                            (p) => p.id === parseInt(e.target.value)
+                          );
+                          if (product) {
+                            updateItem(item.id, {
+                              productId: product.id,
+                              productName: product.name,
+                              unitPrice: product.price,
+                            });
+                          } else {
+                            updateItem(item.id, { productId: null, productName: "" });
+                          }
+                        }}
+                      >
+                        <option value="">Select Item</option>
+                        {mockProducts.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
 
-                {/* Amount Including Further Tax */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Amount Incl. Further Tax</span>
-                  <span className="font-medium">{amountInclTax.toFixed(2)}</span>
-                </div>
+                    {/* Qty Input */}
+                    <td className="py-2 px-3 text-center">
+                      <Input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateItem(item.id, {
+                            quantity: parseInt(e.target.value) || 0,
+                          })
+                        }
+                        className="h-[39.5px] w-[50px] mx-auto rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] text-center text-[12px] px-1 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white shadow-none"
+                      />
+                    </td>
 
-                {/* Advance Tax */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Advance Tax</span>
-                  <span className="font-medium">{advanceTax.toFixed(2)}</span>
-                </div>
-              </div>
+                    {/* Assessed / U */}
+                    <td className="py-2 px-3 text-center text-[#9CA3AF]">—</td>
 
-              <div className="pt-4 border-t">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-foreground">GRAND TOTAL</span>
-                  <span className="text-2xl font-bold text-emerald-600">{grandTotal.toFixed(2)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                    {/* Assessed Value */}
+                    <td className="py-2 px-3 text-center text-[#9CA3AF]">—</td>
+
+                    {/* Unit Price Input */}
+                    <td className="py-2 px-3 text-center">
+                      <Input
+                        type="number"
+                        value={item.unitPrice === 0 ? "" : item.unitPrice}
+                        placeholder="0"
+                        onChange={(e) =>
+                          updateItem(item.id, {
+                            unitPrice: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="h-[39.5px] w-[75px] mx-auto rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] text-center text-[12px] px-2 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white shadow-none"
+                      />
+                    </td>
+
+                    {/* Retail Price */}
+                    <td className="py-2 px-3 text-center text-[#9CA3AF]">—</td>
+
+                    {/* Amount Excl. Discount */}
+                    <td className="py-2 px-3 text-right pr-4 font-bold text-[#1E293B]">
+                      {(item.quantity * item.unitPrice).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
