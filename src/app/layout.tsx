@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -43,6 +45,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <ToastContainer position="top-right" autoClose={3000} hideProgressBar closeOnClick pauseOnHover />
         </ThemeProvider>
       </body>
     </html>

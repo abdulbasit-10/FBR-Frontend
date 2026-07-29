@@ -28,8 +28,8 @@ async function request<T>(
     let res = await doFetch(endpoint, token, options);
     let json: ApiResponse<T> = await res.json();
 
-    // Auto-refresh on expired token then retry once
-    if (!res.ok && json.message === "Access token expired" && isClient) {
+    // Auto-refresh on expired token then retry once (skip for auth endpoints to avoid loops)
+    if (!res.ok && json.message === "Access token expired" && isClient && !endpoint.startsWith("/auth/")) {
         const { auth } = await import("@/lib/auth");
         const refreshed = await auth.refreshTokens();
         if (refreshed) {
