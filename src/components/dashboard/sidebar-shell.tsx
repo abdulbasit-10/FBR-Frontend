@@ -32,4 +32,3 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
     </GsapReveal>
   );
 }
-
