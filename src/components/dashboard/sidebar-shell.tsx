@@ -32,9 +32,9 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
 
   return (
     <GsapReveal>
-      <div className="min-h-screen w-screen bg-background overflow-hidden">
-        <div className="flex min-h-screen w-full">
-          <div className="hidden lg:block">
+      <div className="h-screen w-full bg-[#f0f2f5] overflow-x-hidden">
+        <div className="flex h-full w-full">
+          <div className="hidden lg:block h-full flex-shrink-0">
             <Sidebar collapsed={collapsed} onCollapsedChange={setCollapsed} />
           </div>
 
@@ -45,7 +45,7 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
               onSidebarCollapsedChange={setCollapsed}
             />
 
-            <main className="relative flex-1 overflow-y-auto px-3 py-3 lg:px-4 lg:py-3">
+            <main className="relative flex-1 overflow-y-auto bg-[#f0f2f5] px-3 py-3 lg:px-4 lg:py-3">
               <React.Suspense>
                 <SignedInToast />
               </React.Suspense>
