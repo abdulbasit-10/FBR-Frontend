@@ -1,8 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useSearchParams } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
 
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { TopNav } from "@/components/dashboard/top-nav";
@@ -10,36 +8,22 @@ import { GsapReveal } from "@/components/dashboard/gsap-reveal";
 
 export function SidebarShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = React.useState(false);
-  const searchParams = useSearchParams();
-
-  React.useEffect(() => {
-    if (!searchParams.get("signedIn")) return;
-    setShowSignedIn(true);
-    const timer = window.setTimeout(() => setShowSignedIn(false), 4000);
-    return () => window.clearTimeout(timer);
-  }, [searchParams]);
 
   return (
     <GsapReveal>
-      <div className="min-h-screen w-screen bg-background overflow-hidden">
-        <div className="flex min-h-screen w-full">
-          <div className="hidden lg:block">
+      <div className="h-screen w-full bg-[#f0f2f5] overflow-x-hidden">
+        <div className="flex h-full w-full">
+          <div className="hidden lg:block h-full flex-shrink-0">
             <Sidebar collapsed={collapsed} onCollapsedChange={setCollapsed} />
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col">
             <TopNav
-              user={{ name: "Kainat Tajammul", role: "Developer" }}
               sidebarCollapsed={collapsed}
               onSidebarCollapsedChange={setCollapsed}
             />
 
-            <main className="relative flex-1 overflow-y-auto px-3 py-3 lg:px-4 lg:py-3">
-              {showSignedIn && (
-                <div className="fixed right-4 top-3 z-50 flex w-[157px] items-center gap-1.5 rounded-[4px] border border-[#b8ebca] bg-[#ecfff2] px-3 py-3 text-[9px] font-medium text-[#16753b] shadow-sm">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Signed in.
-                </div>
-              )}
+            <main className="relative flex-1 overflow-y-auto bg-[#f0f2f5] px-3 py-3 lg:px-4 lg:py-3">
               {children}
             </main>
           </div>

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Eye, EyeOff, LockKeyhole, Mail, RefreshCw, ShieldCheck } from "lucide-react";
 import { api } from "@/lib/api";
 import { auth, type LoginData } from "@/lib/auth";
+import { toast } from "react-toastify";
 
 function generateCaptcha() {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -49,7 +50,8 @@ export default function Home() {
     try {
       const res = await api.post<LoginData>("/auth/login", { email, password });
       auth.save(res.data.user, res.data.tokens);
-      window.setTimeout(() => router.push("/dashboard?signedIn=1"), 1300);
+      toast.success("Signed in successfully!");
+      window.setTimeout(() => router.push("/dashboard"), 1300);
     } catch (err) {
 
       setIsSigningIn(false);
