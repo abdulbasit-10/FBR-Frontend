@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type React from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, EyeOff, LockKeyhole, Mail, RefreshCw, ShieldCheck } from "lucide-react";
@@ -42,7 +43,7 @@ export default function Home() {
       return;
     }
 
-    // Show overlay immediately — API runs in background
+
     setIsSigningIn(true);
 
     try {
@@ -50,7 +51,7 @@ export default function Home() {
       auth.save(res.data.user, res.data.tokens);
       window.setTimeout(() => router.push("/dashboard?signedIn=1"), 1300);
     } catch (err) {
-      // Hide overlay and surface the error
+
       setIsSigningIn(false);
       setError(
         err instanceof Error ? err.message : "Login failed. Please try again."
