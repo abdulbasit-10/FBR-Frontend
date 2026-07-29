@@ -7,26 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ChevronLeft, Plus, Trash2, RotateCcw, Save } from "lucide-react";
 import Image from "next/image";
-
-// Mock customer data
-const mockCustomers = [
-  {
-    id: 1,
-    name: "ABC Corporation",
-    phone: "123-456-7890",
-    email: "info@abccorp.com",
-    address: "123 Main St, City",
-    taxId: "TAX123456",
-  },
-  {
-    id: 2,
-    name: "XYZ Ltd",
-    phone: "987-654-3210",
-    email: "contact@xyzltd.com",
-    address: "456 Oak Ave, Town",
-    taxId: "TAX987654",
-  },
-];
+import {
+  SelectCustomerModal,
+  type Customer,
+} from "@/components/dashboard/select-customer-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "react-toastify";
 
 // Mock products
 const mockProducts = [
@@ -45,15 +31,6 @@ interface InvoiceItem {
   tax: number;
 }
 
-interface Customer {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
-  address: string;
-  taxId: string;
-}
-
 export default function CreateSalesInvoicePage() {
   const router = useRouter();
   const [documentDate, setDocumentDate] = useState("");
@@ -63,7 +40,8 @@ export default function CreateSalesInvoicePage() {
   const [advanceTax, setAdvanceTax] = useState(0);
   const [notes, setNotes] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [showCustomerPicker, setShowCustomerPicker] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [items, setItems] = useState<InvoiceItem[]>([
     {
       id: "1",
@@ -177,7 +155,7 @@ export default function CreateSalesInvoicePage() {
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={resetForm}
+            onClick={() => setShowResetConfirm(true)}
             className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] bg-white px-4 text-[13px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
           >
             <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
@@ -352,11 +330,11 @@ export default function CreateSalesInvoicePage() {
               <div>
                 <p className="text-[13px] font-semibold text-[#1E293B]">{selectedCustomer.name}</p>
                 <p className="text-[11px] text-[#6B7280]">
-                  {selectedCustomer.phone} · {selectedCustomer.email} · Tax ID: {selectedCustomer.taxId}
+                  {selectedCustomer.customerNo} · NTN: {selectedCustomer.ntn} · {selectedCustomer.province}
                 </p>
               </div>
               <button
-                onClick={() => setSelectedCustomer(null)}
+                onClick={() => setShowCustomerModal(true)}
                 className="text-[12px] text-[#A27B3A] hover:underline font-medium"
               >
                 Change
@@ -366,7 +344,7 @@ export default function CreateSalesInvoicePage() {
             <div className="flex justify-center w-full">
               <button
                 type="button"
-                onClick={() => setShowCustomerPicker(!showCustomerPicker)}
+                onClick={() => setShowCustomerModal(true)}
                 className="max-w-[392px] w-full h-[40.5px] rounded-[7px] border border-dashed border-[#C69B56] bg-[#C69A52]/[0.04] px-[28px] text-[13px] font-medium text-[#C69B56] hover:bg-[#C69A52]/[0.08] transition-colors flex items-center justify-center"
               >
                 Select customer
@@ -374,23 +352,11 @@ export default function CreateSalesInvoicePage() {
             </div>
           )}
 
-          {showCustomerPicker && !selectedCustomer && (
-            <div className="absolute z-10 mt-12 max-w-[392px] w-full rounded-lg border border-[#E5E7EB] overflow-hidden shadow-md bg-white">
-              {mockCustomers.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    setSelectedCustomer(c);
-                    setShowCustomerPicker(false);
-                  }}
-                  className="w-full text-left px-4 py-2.5 text-[12px] hover:bg-[#FAF6F0] border-b border-[#E5E7EB] last:border-0"
-                >
-                  <span className="font-semibold text-[#1E293B]">{c.name}</span>
-                  <span className="ml-2 text-[11px] text-[#9CA3AF]">{c.taxId}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          <SelectCustomerModal
+            isOpen={showCustomerModal}
+            onClose={() => setShowCustomerModal(false)}
+            onSelect={(c) => { setSelectedCustomer(c); setShowCustomerModal(false); }}
+          />
         </div>
 
 
@@ -537,6 +503,16 @@ export default function CreateSalesInvoicePage() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={() => { resetForm(); setShowResetConfirm(false); toast.success("Invoice reset successfully."); }}
+        title="Reset sales invoice?"
+        message="Are you sure you want to reset the sales invoice? Header, customer, lines, and all entered values on this page will be cleared."
+        confirmLabel="Reset"
+        cancelLabel="Cancel"
+      />
     </div>
   );
 }
