@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { auth, type AuthUser } from "@/lib/auth";
 import { MobileSidebar } from "@/components/dashboard/mobile-sidebar";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function TopNav({
   sidebarCollapsed,
@@ -66,42 +67,17 @@ export function TopNav({
       </header>
 
 
-      {/* Figma-Exact Logout Confirmation Modal */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4 backdrop-blur-[2px] font-sans">
-          <div className="absolute inset-0" onClick={() => !isLoggingOut && setShowConfirm(false)} />
-
-          <div className="relative flex w-[635px] min-h-[117.73px] flex-col justify-between rounded-[10.64px] border-[1.06px] border-[#D4D4D4] bg-white px-[21.27px] py-[14.89px] shadow-xl">
-            {/* Top Left Text Content */}
-            <div className="text-left">
-              <h2 className="text-[15px] font-bold leading-tight text-[#111827]">Logout</h2>
-              <p className="mt-1 text-[12px] font-normal leading-snug text-[#8E95A2]">
-                Are you sure you want to logout?
-              </p>
-            </div>
-
-            {/* Bottom Right Action Buttons */}
-            <div className="flex justify-end items-center gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowConfirm(false)}
-                disabled={isLoggingOut}
-                className="rounded-[8px] border border-[#94D8D5] bg-[#F1F8F8] px-5 py-1.5 text-[12px] font-medium text-[#2C3E50] transition hover:bg-[#e4f3f3] disabled:opacity-50"
-              >
-                Cancle
-              </button>
-              <button
-                type="button"
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="rounded-[8px] border border-[#FCA5A5] bg-[#FFF5F5] px-5 py-1.5 text-[12px] font-medium text-[#2C3E50] transition hover:bg-[#fee2e2] disabled:opacity-60"
-              >
-                {isLoggingOut ? "Logging out…" : "Logout"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleLogout}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        isLoading={isLoggingOut}
+        loadingLabel="Logging out…"
+      />
     </>
   );
 }
