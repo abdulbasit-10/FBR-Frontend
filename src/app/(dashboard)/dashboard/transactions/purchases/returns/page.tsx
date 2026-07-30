@@ -154,7 +154,7 @@ export default function PurchaseReturnPage() {
                             placeholder="Name, customer no, mapping id, NTN, STRN,"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] !bg-white text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
+                            className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button
@@ -174,7 +174,7 @@ export default function PurchaseReturnPage() {
                             type="date"
                             value={dateFrom}
                             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] !bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none [color-scheme:light]"
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
@@ -183,18 +183,18 @@ export default function PurchaseReturnPage() {
                             type="date"
                             value={dateTo}
                             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] !bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none [color-scheme:light]"
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] block">Status</label>
-                        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectCls, "h-10 min-w-[120px]")} style={selectArrow}>
+                        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectCls, "h-10 min-w-30")} style={selectArrow}>
                             {STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] block">Source</label>
-                        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectCls, "h-10 min-w-[120px]")} style={selectArrow}>
+                        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectCls, "h-10 min-w-30")} style={selectArrow}>
                             {SOURCE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
@@ -206,7 +206,7 @@ export default function PurchaseReturnPage() {
             </div>
 
             {/* ── SECTION 2: TABLE & ACTIONS CONTAINER ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-[16px] shadow-xs space-y-3">
+            <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-4 shadow-xs space-y-3">
 
                 {/* Export & Scroll Indicator Bar */}
                 <div className="flex items-center justify-between">

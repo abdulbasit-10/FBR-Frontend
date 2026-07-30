@@ -180,7 +180,7 @@ export default function SalesInvoicesPage() {
             </div>
 
             {/* ── SECTION 1: FILTER CONTAINER ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4 space-y-3 min-h-[173px]">
+            <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4 space-y-3 min-h-43.25">
                 {/* Search Input Row */}
                 <div className="flex items-center gap-2">
                     <div className="flex-1 relative">
@@ -189,7 +189,7 @@ export default function SalesInvoicesPage() {
                             placeholder="Name, customer no, mapping id, NTN, STRN,"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] !bg-white text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
+                            className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button
@@ -209,7 +209,7 @@ export default function SalesInvoicesPage() {
                             type="date"
                             value={dateFrom}
                             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] !bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none [color-scheme:light]"
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
@@ -218,18 +218,18 @@ export default function SalesInvoicesPage() {
                             type="date"
                             value={dateTo}
                             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] !bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none [color-scheme:light]"
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] block">Status</label>
-                        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectStyle, "h-10 min-w-[120px]")} style={selectArrow}>
+                        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectStyle, "h-10 min-w-30")} style={selectArrow}>
                             {STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] block">Source</label>
-                        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectStyle, "h-10 min-w-[120px]")} style={selectArrow}>
+                        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectStyle, "h-10 min-w-30")} style={selectArrow}>
                             {SOURCE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
@@ -243,7 +243,7 @@ export default function SalesInvoicesPage() {
 
 
             {/* ── SECTION 2: TABLE & ACTIONS CONTAINER ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-[16px] shadow-xs space-y-3">
+            <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-4 shadow-xs space-y-3">
 
                 {/* Export & Row Info Bar */}
                 <div className="flex items-center justify-between">
@@ -258,7 +258,7 @@ export default function SalesInvoicesPage() {
 
                 {/* Data Table */}
                 <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB]">
-                    <table className="w-full text-[12px] min-w-[900px] border-collapse">
+                    <table className="w-full text-[12px] min-w-225 border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
                                 <th className="w-10 px-3 py-2.5 text-center">
