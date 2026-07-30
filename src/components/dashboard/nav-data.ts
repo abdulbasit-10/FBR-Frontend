@@ -39,7 +39,7 @@ export const primaryNav: NavItem[] = [
         children: [
           { title: "Sales Invoice", href: "/dashboard/transactions/sales", icon: FileText },
           { title: "FBR Deleted Invoices", href: "/dashboard/transactions/sales/fbr-deleted", icon: FileX },
-          { title: "Sales Return", href: "/dashboard/transactions/returns", icon: RotateCcw },
+          { title: "Sales Return", href: "/dashboard/transactions/sales/returns", icon: RotateCcw },
         ],
       },
       {
