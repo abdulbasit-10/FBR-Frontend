@@ -4,7 +4,11 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, Download, Printer, RefreshCw, FileSearch } from "lucide-react";
+import { ChevronLeft, Download, Printer, RefreshCw, FileSearch, ChevronDown, X } from "lucide-react";
+import {
+    SelectCustomerModal,
+    type Customer,
+} from "@/components/dashboard/select-customer-modal";
 
 const DOCUMENT_TYPES = [
     { value: "all", label: "All" },
@@ -23,14 +27,15 @@ export default function SalesDetailReportPage() {
     const [postingDateFrom, setPostingDateFrom] = useState("");
     const [postingDateTo, setPostingDateTo] = useState("");
     const [documentType, setDocumentType] = useState("all");
-    const [customer, setCustomer] = useState("");
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [showCustomerModal, setShowCustomerModal] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
 
     const handleReset = () => {
         setPostingDateFrom("");
         setPostingDateTo("");
         setDocumentType("all");
-        setCustomer("");
+        setSelectedCustomer(null);
         setHasApplied(false);
     };
 
@@ -133,18 +138,28 @@ export default function SalesDetailReportPage() {
                             </select>
                         </div>
 
-                        {/* Customers Input (Pure White BG) */}
+                        {/* Customers — opens SelectCustomerModal */}
                         <div className="flex-1 min-w-42.5 space-y-1.5">
                             <Label className="text-[12px] font-medium text-[#4F5967]">
                                 Customers
                             </Label>
-                            <Input
-                                type="text"
-                                placeholder="All Customers"
-                                value={customer}
-                                onChange={(e) => setCustomer(e.target.value)}
-                                className={inputStyleClass}
-                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowCustomerModal(true)}
+                                className="h-10 w-full rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] px-3 flex items-center justify-between hover:border-[#C69A52] transition-colors focus:outline-none focus:border-[#C69A52]"
+                            >
+                                <span className={selectedCustomer ? "text-[#1E293B]" : "text-[#9CA3AF]"}>
+                                    {selectedCustomer ? selectedCustomer.name : "All Customers"}
+                                </span>
+                                {selectedCustomer ? (
+                                    <X
+                                        className="h-3.5 w-3.5 text-[#9CA3AF] hover:text-[#A27B3A] shrink-0"
+                                        onClick={(e) => { e.stopPropagation(); setSelectedCustomer(null); }}
+                                    />
+                                ) : (
+                                    <ChevronDown className="h-3.5 w-3.5 text-[#9CA3AF] shrink-0" />
+                                )}
+                            </button>
                         </div>
 
                         {/* Action Buttons */}
@@ -198,6 +213,12 @@ export default function SalesDetailReportPage() {
                     </div>
                 )}
             </div>
+
+            <SelectCustomerModal
+                isOpen={showCustomerModal}
+                onClose={() => setShowCustomerModal(false)}
+                onSelect={(c) => { setSelectedCustomer(c); setShowCustomerModal(false); }}
+            />
         </div>
     );
 }

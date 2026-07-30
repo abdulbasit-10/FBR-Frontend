@@ -102,6 +102,18 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
         }
     }, [isOpen, loadCustomers]);
 
+    // Lock body scroll and compensate for scrollbar width to prevent layout shift
+    useEffect(() => {
+        if (!isOpen) return;
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        document.body.style.overflow = "hidden";
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+        return () => {
+            document.body.style.overflow = "";
+            document.body.style.paddingRight = "";
+        };
+    }, [isOpen]);
+
     // Close on Escape
     useEffect(() => {
         if (!isOpen) return;
