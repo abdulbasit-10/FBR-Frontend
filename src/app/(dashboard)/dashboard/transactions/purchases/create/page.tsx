@@ -13,8 +13,8 @@ import { toast } from "react-toastify";
 
 interface PurchaseItem {
     id: string;
-    itemNo: string;
-    itemName: string;
+    productId: number | null;
+    productName: string;
     qty: number;
     assessedPerUnit: number;
     unitPrice: number;
@@ -22,6 +22,12 @@ interface PurchaseItem {
     discount: number;
     tax: number;
 }
+
+const mockProducts = [
+    { id: 1, name: "Product A", price: 100 },
+    { id: 2, name: "Product B", price: 250 },
+    { id: 3, name: "Service X", price: 75 },
+];
 
 const inputCls =
     "h-[48px] rounded-[6px] border border-[#D1D5DB] !bg-white text-[13px] text-[#1E293B] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none [color-scheme:light]";
@@ -38,12 +44,12 @@ export default function CreatePurchaseInvoicePage() {
     const [showVendorModal, setShowVendorModal] = useState(false);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
     const [items, setItems] = useState<PurchaseItem[]>([{
-        id: "1", itemNo: "", itemName: "", qty: 1,
+        id: "1", productId: null, productName: "", qty: 1,
         assessedPerUnit: 0, unitPrice: 0, retailPrice: 0, discount: 0, tax: 0,
     }]);
 
     const addItem = () => setItems((prev) => [...prev, {
-        id: Math.random().toString(36).slice(2), itemNo: "", itemName: "", qty: 1,
+        id: Math.random().toString(36).slice(2), productId: null, productName: "", qty: 1,
         assessedPerUnit: 0, unitPrice: 0, retailPrice: 0, discount: 0, tax: 0,
     }]);
 
@@ -62,7 +68,8 @@ export default function CreatePurchaseInvoicePage() {
     const resetForm = () => {
         setDocumentDate(""); setPostingDate(""); setPoDate(""); setPoNumber("");
         setAdvanceTax(0); setNotes(""); setSelectedVendor(null);
-        setItems([{ id: "1", itemNo: "", itemName: "", qty: 1, assessedPerUnit: 0, unitPrice: 0, retailPrice: 0, discount: 0, tax: 0 }]);
+        setItems([{ id: "1", productId: null, productName: "", qty: 1, assessedPerUnit: 0, unitPrice: 0, retailPrice: 0, discount: 0, tax: 0 }]);
+        toast.info("Form has been reset.");
     };
 
     const handleSave = () => {
@@ -73,7 +80,6 @@ export default function CreatePurchaseInvoicePage() {
         toast.success("Purchase invoice saved successfully!");
     };
 
-    const cellCls = "h-8 w-full rounded border border-[#D1D5DB] bg-white px-2 text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#C69A52]";
 
     return (
         <div className="min-h-full space-y-4 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -188,47 +194,79 @@ export default function CreatePurchaseInvoicePage() {
             </div>
 
             {/* ── Customer / Items section ── */}
-            <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-4.5 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
+            <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-5 py-4 shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between pb-1">
                     <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">Customer</p>
-                    <button type="button" onClick={addItem} className="flex h-8 items-center gap-1.5 rounded-[5px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors">
-                        <Plus className="h-3.5 w-3.5" /> Add line
+                    <button type="button" onClick={addItem} className="flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-3 py-1 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors">
+                        <Plus className="h-3.5 w-3.5 text-[#A27B3A]" /> Add line
                     </button>
                 </div>
 
                 <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB]">
-                    <table className="w-full text-[12px] min-w-225">
+                    <table className="w-full text-[12px] min-w-212.5 border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
-                                <th className="w-8 px-2 py-2.5"></th>
-                                <th className="px-3 py-2.5 text-left font-semibold">#</th>
-                                {["Item no", "Item name", "Qty", "Assessed/U", "Assessed value", "Unit price", "Retail price", "Amt excl disc", "Discount %", "Tax %"].map((h) => (
-                                    <th key={h} className="px-3 py-2.5 text-left font-semibold whitespace-nowrap">{h}</th>
-                                ))}
+                                <th className="w-12 py-3 px-3 text-center font-bold">#</th>
+                                <th className="w-20 py-3 px-3 text-left font-bold">Item no</th>
+                                <th className="w-42.5 py-3 px-3 text-left font-bold">Item name</th>
+                                <th className="w-16 py-3 px-3 text-center font-bold">Qty</th>
+                                <th className="w-24 py-3 px-3 text-center font-bold">Assessed/U</th>
+                                <th className="w-28 py-3 px-3 text-center font-bold">Assessed value</th>
+                                <th className="w-24 py-3 px-3 text-center font-bold">Unit price</th>
+                                <th className="w-24 py-3 px-3 text-center font-bold">Retail price</th>
+                                <th className="w-28 py-3 px-3 text-right font-bold pr-4">Amt excl. disc</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#F3F4F6]">
-                            {items.map((item, i) => {
+                        <tbody className="divide-y divide-[#E5E7EB] bg-white">
+                            {items.map((item, index) => {
                                 const assessed = item.qty * item.assessedPerUnit;
                                 const amtExclDisc = assessed * (1 - item.discount / 100);
                                 return (
-                                    <tr key={item.id} className={i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30"}>
-                                        <td className="px-2 py-2">
-                                            <button onClick={() => removeItem(item.id)} disabled={items.length === 1} className="text-[#9CA3AF] hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </button>
+                                    <tr key={item.id} className="hover:bg-[#FAF6F0]/40 transition-colors">
+                                        <td className="py-2 px-3 text-center">
+                                            <div className="flex items-center justify-center gap-1.5">
+                                                <button type="button" onClick={addItem} className="text-[#A27B3A] hover:text-[#b58b44] transition-colors" title="Add Line">
+                                                    <Plus className="h-3.5 w-3.5" />
+                                                </button>
+                                                <button type="button" onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600 transition-colors" title="Remove Line">
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </button>
+                                                <span className="ml-0.5 text-[#9CA3AF] text-[11px] font-medium">{index + 1}</span>
+                                            </div>
                                         </td>
-                                        <td className="px-3 py-2 text-[#9CA3AF]">{i + 1}</td>
-                                        <td className="px-3 py-2"><input value={item.itemNo} onChange={(e) => updateItem(item.id, { itemNo: e.target.value })} placeholder="—" className={cellCls} style={{ width: 70 }} /></td>
-                                        <td className="px-3 py-2"><input value={item.itemName} onChange={(e) => updateItem(item.id, { itemName: e.target.value })} placeholder="Select item" className={cellCls} style={{ width: 120 }} /></td>
-                                        <td className="px-3 py-2"><input type="number" min={1} value={item.qty} onChange={(e) => updateItem(item.id, { qty: +e.target.value || 1 })} className={cellCls} style={{ width: 56 }} /></td>
-                                        <td className="px-3 py-2"><input type="number" min={0} value={item.assessedPerUnit} onChange={(e) => updateItem(item.id, { assessedPerUnit: +e.target.value || 0 })} className={cellCls} style={{ width: 80 }} /></td>
-                                        <td className="px-3 py-2 font-mono text-[#1E293B]">{assessed.toFixed(2)}</td>
-                                        <td className="px-3 py-2"><input type="number" min={0} value={item.unitPrice} onChange={(e) => updateItem(item.id, { unitPrice: +e.target.value || 0 })} className={cellCls} style={{ width: 80 }} /></td>
-                                        <td className="px-3 py-2"><input type="number" min={0} value={item.retailPrice} onChange={(e) => updateItem(item.id, { retailPrice: +e.target.value || 0 })} className={cellCls} style={{ width: 80 }} /></td>
-                                        <td className="px-3 py-2 font-mono text-[#1E293B]">{amtExclDisc.toFixed(2)}</td>
-                                        <td className="px-3 py-2"><input type="number" min={0} max={100} value={item.discount} onChange={(e) => updateItem(item.id, { discount: +e.target.value || 0 })} className={cellCls} style={{ width: 56 }} /></td>
-                                        <td className="px-3 py-2"><input type="number" min={0} max={100} value={item.tax} onChange={(e) => updateItem(item.id, { tax: +e.target.value || 0 })} className={cellCls} style={{ width: 56 }} /></td>
+                                        <td className="py-2 px-3 text-[#9CA3AF]">—</td>
+                                        <td className="py-2 px-3">
+                                            <select
+                                                className="w-40 h-[39.5px] rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 text-[12px] text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white transition-colors"
+                                                value={item.productId ?? ""}
+                                                onChange={(e) => {
+                                                    const p = mockProducts.find((p) => p.id === parseInt(e.target.value));
+                                                    if (p) updateItem(item.id, { productId: p.id, productName: p.name, unitPrice: p.price });
+                                                    else updateItem(item.id, { productId: null, productName: "" });
+                                                }}
+                                            >
+                                                <option value="">Select Item</option>
+                                                {mockProducts.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                            </select>
+                                        </td>
+                                        <td className="py-2 px-3 text-center">
+                                            <input type="number" min={1} value={item.qty} onChange={(e) => updateItem(item.id, { qty: +e.target.value || 1 })}
+                                                className="w-14 h-8.5 rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] text-center text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white" />
+                                        </td>
+                                        <td className="py-2 px-3 text-center">
+                                            <input type="number" min={0} value={item.assessedPerUnit} onChange={(e) => updateItem(item.id, { assessedPerUnit: +e.target.value || 0 })}
+                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] text-center text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white" />
+                                        </td>
+                                        <td className="py-2 px-3 text-center font-mono text-[#1E293B] font-medium">{assessed.toFixed(2)}</td>
+                                        <td className="py-2 px-3 text-center">
+                                            <input type="number" min={0} value={item.unitPrice} onChange={(e) => updateItem(item.id, { unitPrice: +e.target.value || 0 })}
+                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] text-center text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white" />
+                                        </td>
+                                        <td className="py-2 px-3 text-center">
+                                            <input type="number" min={0} value={item.retailPrice} onChange={(e) => updateItem(item.id, { retailPrice: +e.target.value || 0 })}
+                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] text-center text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white" />
+                                        </td>
+                                        <td className="py-2 px-4 text-right font-mono text-[#1E293B] font-medium">{amtExclDisc.toFixed(2)}</td>
                                     </tr>
                                 );
                             })}
