@@ -16,62 +16,66 @@ export type SidebarProps = {
   onCollapsedChange?: (collapsed: boolean) => void;
 };
 
-function NavItemComponent({ item, collapsed, pathname }: { item: NavItem; collapsed: boolean; pathname: string }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const isActive = pathname === item.href;
+function NavItemComponent({
+  item, collapsed, pathname, depth = 0,
+}: {
+  item: NavItem; collapsed: boolean; pathname: string; depth?: number;
+}) {
+  const hasChildren = !!item.children?.length;
+
+  const containsActive = (node: NavItem): boolean =>
+    pathname === node.href || !!node.children?.some(containsActive);
+
+  const [isExpanded, setIsExpanded] = useState(() => containsActive(item));
+  const isActiveLeaf = !hasChildren && pathname === item.href;
+  const isActiveParent = hasChildren && containsActive(item);
   const Icon = item.icon;
-  const hasChildren = item.children && item.children.length > 0;
+
+  const pl = depth === 0 ? "px-3" : depth === 1 ? "pl-5 pr-3" : "pl-8 pr-3";
+  const textSize = depth >= 2 ? "text-[12px]" : "text-[13px]";
+  const iconSize = depth >= 2 ? "h-3.5 w-3.5" : "h-4 w-4";
+
+  // active state differs by depth — matches Figma exactly
+  const activeCls =
+    isActiveLeaf && depth >= 2 ? "bg-[#FAF6EE] text-[#A27B3A]" :
+      isActiveParent && depth === 0 ? "bg-[#d4ad68] text-white" :
+        isActiveParent && depth === 1 ? "bg-[#FAF6F0] text-[#1E293B]" :
+          "text-[#4F5967]";
+
+  const iconCls =
+    isActiveLeaf && depth >= 2 ? "text-[#A27B3A]" :
+      isActiveParent && depth === 0 ? "text-white" :
+        "text-[#9CA3AF] group-hover:text-[#a4782d]";
 
   return (
     <div className="flex flex-col">
       <Link
-        href={item.href}
-        onClick={(e) => {
-          if (hasChildren) {
-            e.preventDefault();
-            setIsExpanded(!isExpanded);
-          }
-        }}
+        href={hasChildren ? "#" : item.href}
+        onClick={(e) => { if (hasChildren) { e.preventDefault(); setIsExpanded((v) => !v); } }}
         className={cn(
-          "group flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium transition-all duration-200",
-          "hover:bg-[#f7f2e8] dark:hover:bg-[#111827] rounded-[4px]",
-          isActive
-            ? "bg-[#d4ad68] text-white"
-            : "text-gray-600 dark:text-gray-300",
-          collapsed && "justify-center px-2 py-2.5",
+          "group flex items-center gap-2.5 py-2 rounded font-medium transition-colors",
+          pl, textSize, activeCls,
+          !isActiveLeaf && !isActiveParent && "hover:bg-[#f7f2e8]",
+          collapsed && depth === 0 && "justify-center px-2",
         )}
       >
-        <Icon className={cn("h-4 w-4", isActive ? "text-white" : "text-gray-400 dark:text-gray-500 group-hover:text-[#a4782d]")} />
-        {!collapsed && <span>{item.title}</span>}
+        <Icon className={cn(iconSize, "shrink-0", iconCls)} />
+        {!collapsed && <span className="flex-1 leading-none">{item.title}</span>}
         {!collapsed && hasChildren && (
-          <ChevronDown 
-            className={cn("ml-auto h-4 w-4 transition-transform", isExpanded && "rotate-180")} 
-          />
+          <ChevronDown className={cn(
+            "ml-auto h-3.5 w-3.5 shrink-0 transition-transform",
+            isActiveParent && depth === 0 ? "text-white" : "text-[#9CA3AF]",
+            isExpanded && "rotate-180"
+          )} />
         )}
         {collapsed && <span className="sr-only">{item.title}</span>}
       </Link>
+
       {!collapsed && hasChildren && isExpanded && (
-        <div className="flex flex-col ml-4">
-          {item.children?.map((child) => {
-            const ChildIcon = child.icon;
-            const isChildActive = pathname === child.href;
-            return (
-              <Link
-                key={child.href}
-                href={child.href}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-2 text-sm font-medium transition-all duration-200",
-                  "hover:bg-[#F3F4F6] dark:hover:bg-[#111827] rounded-lg",
-                  isChildActive
-                    ? "bg-[#6B7280]/10 text-[#6B7280] dark:bg-[#9CA3AF]/10 dark:text-[#9CA3AF]"
-                    : "text-gray-500 dark:text-gray-400",
-                )}
-              >
-                <ChildIcon className="h-4 w-4" />
-                <span>{child.title}</span>
-              </Link>
-            );
-          })}
+        <div className={cn("flex flex-col gap-0.5 mt-0.5", depth === 0 && "border-l border-[#F3EAD8] ml-5")}>
+          {item.children!.map((child) => (
+            <NavItemComponent key={child.href} item={child} collapsed={collapsed} pathname={pathname} depth={depth + 1} />
+          ))}
         </div>
       )}
     </div>
@@ -84,32 +88,30 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
   return (
     <aside
       className={cn(
-        "sidebar flex h-full flex-col bg-white dark:bg-[#020617] border-r border-[#E5E7EB] dark:border-[#1F2937] shadow-[0_1px_3px_rgba(0,0,0,0.02)]",
+        "sidebar flex h-full flex-col bg-white border-r border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.02)]",
         collapsed ? "w-[72px]" : "w-[220px]",
       )}
     >
       <div className={cn("flex h-[64px] items-center px-5", collapsed ? "px-2 justify-center" : "justify-start")}>
         {collapsed ? (
-          // Collapsed: Only show menu toggle button
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#111827] transition-all"
+            className="h-8 w-8 rounded-lg hover:bg-[#F3F4F6] transition-all"
             onClick={() => onCollapsedChange?.(!collapsed)}
           >
             <Menu className="h-4 w-4" />
             <span className="sr-only">Toggle sidebar</span>
           </Button>
         ) : (
-          // Expanded: Show logo + text + toggle button
           <div className="flex flex-1 items-center">
             <span className="text-sm font-semibold text-[#a87827]">BioWorld Traders</span>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="ml-auto h-8 w-8 rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#111827] transition-all"
+              className="ml-auto h-8 w-8 rounded-lg hover:bg-[#F3F4F6] transition-all"
               onClick={() => onCollapsedChange?.(!collapsed)}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -125,11 +127,11 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
         <p className={cn("px-5 pb-3 text-[10px] font-medium tracking-wide text-[#9aa2ac]", collapsed && "sr-only")}>MENU</p>
         <nav className={cn("flex flex-col gap-1.5 px-4", collapsed && "px-2")}>
           {primaryNav.map((item) => (
-            <NavItemComponent 
-              key={item.href} 
-              item={item} 
-              collapsed={collapsed} 
-              pathname={pathname} 
+            <NavItemComponent
+              key={item.href}
+              item={item}
+              collapsed={collapsed}
+              pathname={pathname}
             />
           ))}
         </nav>
