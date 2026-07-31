@@ -46,10 +46,7 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col">
-            <TopNav
-              sidebarCollapsed={collapsed}
-              onSidebarCollapsedChange={setCollapsed}
-            />
+            <TopNav />
 
             <main className="relative flex-1 overflow-y-auto px-3 py-3 lg:px-4 lg:py-3">
               <React.Suspense>
