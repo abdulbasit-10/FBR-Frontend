@@ -33,9 +33,9 @@ export default function DashboardPage() {
           <Link href="/dashboard/sales/create-invoice" className="flex h-[33px] items-center gap-1 rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
             New Sales Invoice <ArrowUpRight className="inline h-3 w-3" />
           </Link>
-          <button className="flex h-[33px] items-center rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
+          <Link href="/dashboard/reports/sales" className="flex h-[33px] items-center rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
             View Reports
-          </button>
+          </Link>
           <button className="flex h-[33px] items-center gap-1 rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
             <RefreshCw className="inline h-3 w-3" /> Refresh data
           </button>
