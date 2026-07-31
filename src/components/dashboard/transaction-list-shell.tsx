@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { Download, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
@@ -40,6 +41,7 @@ export const statusBadge = (s: StatusType) => (
 
 export interface TransactionListShellProps {
     title: string;
+    backHref?: string;
     headerActions: React.ReactNode;
     columns: string[];
     withCheckbox?: boolean;
@@ -50,6 +52,7 @@ export interface TransactionListShellProps {
     loadingLabel: string;
     emptyMessage: string;
     dateHint?: string;
+    searchPlaceholder?: string;
     search: string;
     onSearchChange: (v: string) => void;
     dateFrom: string;
@@ -70,6 +73,7 @@ export interface TransactionListShellProps {
 
 export function TransactionListShell({
     title,
+    backHref,
     headerActions,
     columns,
     withCheckbox,
@@ -80,6 +84,7 @@ export function TransactionListShell({
     loadingLabel,
     emptyMessage,
     dateHint,
+    searchPlaceholder = "Name, vendor/customer no, mapping id, NTN, STRN",
     search, onSearchChange,
     dateFrom, onDateFromChange,
     dateTo, onDateToChange,
@@ -89,6 +94,7 @@ export function TransactionListShell({
     page, totalPages, onPageChange,
     children,
 }: TransactionListShellProps) {
+    const router = useRouter();
     const colSpan = columns.length + (withCheckbox ? 1 : 0);
 
     return (
@@ -96,20 +102,28 @@ export function TransactionListShell({
 
             {/* ── Header ── */}
             <div className="flex items-center justify-between pb-1">
-                <h1 className="text-[18px] font-bold text-[#1E293B]">{title}</h1>
+                {backHref ? (
+                    <button onClick={() => router.push(backHref)}
+                        className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] hover:opacity-75 transition-opacity">
+                        <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
+                        {title}
+                    </button>
+                ) : (
+                    <h1 className="text-[18px] font-bold text-[#1E293B]">{title}</h1>
+                )}
                 <div className="flex items-center gap-2">{headerActions}</div>
             </div>
 
             {/* ── Filter card ── */}
             <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4 space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 max-w-2xl">
                     <div className="flex-1">
                         <Input
                             type="text"
-                            placeholder="Name, vendor/customer no, mapping id, NTN, STRN"
+                            placeholder={searchPlaceholder}
                             value={search}
                             onChange={(e) => { onSearchChange(e.target.value); onPageChange(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
+                            className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button type="button" onClick={() => onPageChange(1)}
