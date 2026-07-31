@@ -48,6 +48,9 @@ export interface LedgerShellProps {
     totalPages: number;
     onPageChange: (p: number) => void;
     onRefresh: () => void;
+    dateFromLabel?: string;
+    dateToLabel?: string;
+    filterHint?: string;
     children: React.ReactNode; // rendered <tr> rows
 }
 
@@ -68,6 +71,9 @@ export function LedgerShell({
     rowsPerPage, onRowsPerPageChange,
     page, totalPages, onPageChange,
     onRefresh,
+    dateFromLabel = "Posting date from",
+    dateToLabel = "Posting date to",
+    filterHint,
     children,
 }: LedgerShellProps) {
     const router = useRouter();
@@ -103,14 +109,14 @@ export function LedgerShell({
 
             {/* ── Filters ── */}
             <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4 space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 max-w-2xl">
                     <div className="flex-1">
                         <Input
                             type="text"
                             placeholder="Name, customer no, mapping id, NTN, STRN"
                             value={search}
                             onChange={(e) => { onSearchChange(e.target.value); onPageChange(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
+                            className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button
@@ -123,13 +129,13 @@ export function LedgerShell({
                 </div>
                 <div className="flex flex-wrap items-end gap-3 pt-1">
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Posting date from</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] block">{dateFromLabel}</label>
                         <input type="date" value={dateFrom}
                             onChange={(e) => { onDateFromChange(e.target.value); onPageChange(1); }}
                             className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Posting date to</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] block">{dateToLabel}</label>
                         <input type="date" value={dateTo}
                             onChange={(e) => { onDateToChange(e.target.value); onPageChange(1); }}
                             className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
@@ -149,6 +155,7 @@ export function LedgerShell({
                         </select>
                     </div>
                 </div>
+                {filterHint && <p className="text-[11px] text-[#9CA3AF] pt-0.5">{filterHint}</p>}
             </div>
 
             {/* ── Table container ── */}
