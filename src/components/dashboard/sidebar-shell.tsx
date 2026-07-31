@@ -39,7 +39,7 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
 
   return (
     <GsapReveal>
-      <div className="h-screen w-full bg-[#f0f2f5] overflow-x-hidden">
+      <div className="h-screen w-full bg-[#f0f2f5] dark:bg-[#191919] overflow-x-hidden">
         <div className="flex h-full w-full">
           <div className="hidden lg:block h-full flex-shrink-0">
             <Sidebar collapsed={collapsed} onCollapsedChange={setCollapsed} />

@@ -30,7 +30,7 @@ const mockProducts = [
 ];
 
 const inputCls =
-    "h-[48px] rounded-[6px] border border-[#D1D5DB] !bg-white text-[13px] text-[#1E293B] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none [color-scheme:light]";
+    "h-[48px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none [color-scheme:light]";
 
 export default function CreatePurchaseInvoicePage() {
     const router = useRouter();
@@ -82,16 +82,16 @@ export default function CreatePurchaseInvoicePage() {
 
 
     return (
-        <div className="min-h-full space-y-4 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Header ── */}
             <div className="flex items-center justify-between pb-1">
-                <button onClick={() => router.back()} className="flex items-center gap-1.5 text-[20px] font-bold text-[#1E293B] hover:opacity-75 transition-opacity">
+                <button onClick={() => router.back()} className="flex items-center gap-1.5 text-[20px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity">
                     <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
                     New Purchase Invoice
                 </button>
                 <div className="flex items-center gap-2.5">
-                    <button type="button" onClick={() => setShowResetConfirm(true)} className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] bg-white px-4 text-[13px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors">
+                    <button type="button" onClick={() => setShowResetConfirm(true)} className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[13px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
                     </button>
                     <button type="button" onClick={handleSave} className="flex h-9 items-center gap-1.5 rounded-[5px] bg-[#C69A52] px-5 text-[13px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
@@ -101,7 +101,7 @@ export default function CreatePurchaseInvoicePage() {
             </div>
 
             {/* ── Purchase Header card ── */}
-            <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-4.5 shadow-xs">
+            <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4.5 shadow-xs">
                 <p className="mb-4 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">Purchase Header</p>
 
                 <div className="grid gap-6 lg:grid-cols-[1fr_265px] items-stretch">
@@ -134,15 +134,15 @@ export default function CreatePurchaseInvoicePage() {
                         <div className="space-y-1.5">
                             <Label className="text-[12px] font-medium text-[#4F5967]">Note <span className="text-[#A27B3A]">*</span></Label>
                             <Textarea placeholder="Add note" value={notes} onChange={(e) => setNotes(e.target.value)}
-                                className="h-28.75 min-h-28.75 rounded-[6px] border border-[#D1D5DB] bg-white text-[13px] text-[#1E293B] placeholder:text-[#9CA3AF] pt-3.25 pb-3 pl-3.75 pr-2.5 resize-none focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" />
+                                className="h-28.75 min-h-28.75 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-3.25 pb-3 pl-3.75 pr-2.5 resize-none focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" />
                         </div>
                     </div>
 
                     {/* Right preview card — reused from create-invoice */}
-                    <div className="w-66.25 rounded-[14px] border border-[#E5E7EB] bg-white px-4.75 py-3 flex flex-col justify-between gap-4">
-                        <div className="flex flex-col items-center border-b border-[#F3F4F6] pb-2.5">
+                    <div className="w-66.25 rounded-[14px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] px-4.75 py-3 flex flex-col justify-between gap-4">
+                        <div className="flex flex-col items-center border-b border-[#F3F4F6] dark:border-[#3a3a3a] pb-2.5">
                             <Image src="/brand/Digital.svg" alt="Encova Solution" width={48} height={48} className="h-12 w-auto mb-1.5 object-contain" priority />
-                            <h3 className="text-[14px] font-bold text-[#1E293B] leading-tight">Encova Solution</h3>
+                            <h3 className="text-[14px] font-bold text-[#1E293B] dark:text-[#f0f0f0] leading-tight">Encova Solution</h3>
                             <span className="text-[11px] text-[#9CA3AF] font-normal mt-0.5">Sales invoice preview</span>
                         </div>
                         <div className="flex flex-col gap-1.75">
@@ -159,12 +159,12 @@ export default function CreatePurchaseInvoicePage() {
                                 ["Advance tax", advanceTax.toFixed(2)],
                             ].map(([label, value]) => (
                                 <div key={label} className="flex justify-between items-center text-[11px]">
-                                    <span className="text-[#6B7280]">{label}</span>
-                                    <span className="text-[#1E293B] font-bold">{value}</span>
+                                    <span className="text-[#6B7280] dark:text-[#9ca3af]">{label}</span>
+                                    <span className="text-[#1E293B] dark:text-[#f0f0f0] font-bold">{value}</span>
                                 </div>
                             ))}
                         </div>
-                        <div className="w-full h-9.75 rounded-[7px] bg-[#FAF6EE] border border-[#F3EAD8] px-3.5 py-2 flex items-center justify-between mt-auto">
+                        <div className="w-full h-9.75 rounded-[7px] bg-[#FAF6EE] dark:bg-[#2a1e0a] border border-[#F3EAD8] dark:border-[#4a3a20] px-3.5 py-2 flex items-center justify-between mt-auto">
                             <span className="text-[11px] font-bold uppercase text-[#A27B3A] tracking-wider">Grand Total</span>
                             <span className="text-[13px] font-bold text-[#A27B3A]">{grandTotal.toFixed(2)}</span>
                         </div>
@@ -173,7 +173,7 @@ export default function CreatePurchaseInvoicePage() {
             </div>
 
             {/* ── Vendor section ── */}
-            <div className="h-[118.5px] rounded-[11px] border border-[#E5E7EB] bg-white p-5.25 flex flex-col justify-between shadow-xs">
+            <div className="h-[118.5px] rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-5.25 flex flex-col justify-between shadow-xs">
                 <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">Vendor <span className="text-[#A27B3A]">*</span></p>
                 {selectedVendor ? (
                     <div className="flex items-center justify-between rounded-[7px] border border-[#E5E7EB] bg-[#FAF6F0] px-4 py-2">
@@ -194,15 +194,15 @@ export default function CreatePurchaseInvoicePage() {
             </div>
 
             {/* ── Customer / Items section ── */}
-            <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-5 py-4 shadow-xs space-y-2.5">
+            <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-5 py-4 shadow-xs space-y-2.5">
                 <div className="flex items-center justify-between pb-1">
                     <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">Customer</p>
-                    <button type="button" onClick={addItem} className="flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-3 py-1 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors">
+                    <button type="button" onClick={addItem} className="flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 py-1 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <Plus className="h-3.5 w-3.5 text-[#A27B3A]" /> Add line
                     </button>
                 </div>
 
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB]">
+                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
                     <table className="w-full text-[12px] min-w-212.5 border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
@@ -217,12 +217,12 @@ export default function CreatePurchaseInvoicePage() {
                                 <th className="w-28 py-3 px-3 text-right font-bold pr-4">Amt excl. disc</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E5E7EB] bg-white">
+                        <tbody className="divide-y divide-[#E5E7EB] dark:divide-[#2e2e2e] bg-white dark:bg-[#242424]">
                             {items.map((item, index) => {
                                 const assessed = item.qty * item.assessedPerUnit;
                                 const amtExclDisc = assessed * (1 - item.discount / 100);
                                 return (
-                                    <tr key={item.id} className="hover:bg-[#FAF6F0]/40 transition-colors">
+                                    <tr key={item.id} className="hover:bg-[#FAF6F0]/40 dark:hover:bg-[#2a2a2a] transition-colors">
                                         <td className="py-2 px-3 text-center">
                                             <div className="flex items-center justify-center gap-1.5">
                                                 <button type="button" onClick={addItem} className="text-[#A27B3A] hover:text-[#b58b44] transition-colors" title="Add Line">
@@ -237,7 +237,7 @@ export default function CreatePurchaseInvoicePage() {
                                         <td className="py-2 px-3 text-[#9CA3AF]">—</td>
                                         <td className="py-2 px-3">
                                             <select
-                                                className="w-40 h-[39.5px] rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 text-[12px] text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white transition-colors"
+                                                className="w-40 h-[39.5px] rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2.5 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] transition-colors"
                                                 value={item.productId ?? ""}
                                                 onChange={(e) => {
                                                     const p = mockProducts.find((p) => p.id === parseInt(e.target.value));
@@ -251,22 +251,22 @@ export default function CreatePurchaseInvoicePage() {
                                         </td>
                                         <td className="py-2 px-3 text-center">
                                             <input type="number" min={1} value={item.qty} onChange={(e) => updateItem(item.id, { qty: +e.target.value || 1 })}
-                                                className="w-14 h-8.5 rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] text-center text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white" />
+                                                className="w-14 h-8.5 rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2 text-[12px] text-center text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333]" />
                                         </td>
                                         <td className="py-2 px-3 text-center">
                                             <input type="number" min={0} value={item.assessedPerUnit} onChange={(e) => updateItem(item.id, { assessedPerUnit: +e.target.value || 0 })}
-                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] text-center text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white" />
+                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2 text-[12px] text-center text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333]" />
                                         </td>
-                                        <td className="py-2 px-3 text-center font-mono text-[#1E293B] font-medium">{assessed.toFixed(2)}</td>
+                                        <td className="py-2 px-3 text-center font-mono text-[#1E293B] dark:text-[#f0f0f0] font-medium">{assessed.toFixed(2)}</td>
                                         <td className="py-2 px-3 text-center">
                                             <input type="number" min={0} value={item.unitPrice} onChange={(e) => updateItem(item.id, { unitPrice: +e.target.value || 0 })}
-                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] text-center text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white" />
+                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2 text-[12px] text-center text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333]" />
                                         </td>
                                         <td className="py-2 px-3 text-center">
                                             <input type="number" min={0} value={item.retailPrice} onChange={(e) => updateItem(item.id, { retailPrice: +e.target.value || 0 })}
-                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] text-center text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white" />
+                                                className="w-20 h-8.5 rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2 text-[12px] text-center text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333]" />
                                         </td>
-                                        <td className="py-2 px-4 text-right font-mono text-[#1E293B] font-medium">{amtExclDisc.toFixed(2)}</td>
+                                        <td className="py-2 px-4 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0] font-medium">{amtExclDisc.toFixed(2)}</td>
                                     </tr>
                                 );
                             })}

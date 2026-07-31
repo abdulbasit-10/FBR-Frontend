@@ -136,18 +136,18 @@ export default function CreateSalesInvoicePage() {
 
   // Common Input Style variable to ensure perfect 1:1 match across all inputs
   const inputStyleClass =
-    "h-[48px] rounded-[6px] border border-[#D1D5DB] !bg-white text-[13px] text-[#1E293B] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none [color-scheme:light]";
+    "h-[48px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none [color-scheme:light]";
 
   return (
     <div
-      className="min-h-full space-y-4 text-[#4f5967]"
+      className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       {/* ── Page Header Controls ── */}
       <div className="flex items-center justify-between pb-1">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-[20px] font-bold text-[#1E293B] hover:opacity-75 transition-opacity"
+          className="flex items-center gap-1.5 text-[20px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity"
         >
           <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
           New Sales Invoice
@@ -156,7 +156,7 @@ export default function CreateSalesInvoicePage() {
           <button
             type="button"
             onClick={() => setShowResetConfirm(true)}
-            className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] bg-white px-4 text-[13px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+            className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[13px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
           >
             <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
           </button>
@@ -172,7 +172,7 @@ export default function CreateSalesInvoicePage() {
 
       <div className="space-y-4">
         {/* ── SALES HEADER OUTER SECTION ── */}
-        <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-[18px] shadow-xs">
+        <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[18px] shadow-xs">
           <p className="mb-4 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
             Sales Header
           </p>
@@ -194,7 +194,7 @@ export default function CreateSalesInvoicePage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[12px] font-medium bg-white text-[#4F5967]">
+                  <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                     Posting Date <span className="text-[#A27B3A]">*</span>
                   </Label>
                   <Input
@@ -256,15 +256,15 @@ export default function CreateSalesInvoicePage() {
                   placeholder="Add note"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="h-[115px] min-h-[115px] rounded-[6px] border border-[#D1D5DB] bg-white text-[13px] text-[#1E293B] placeholder:text-[#9CA3AF] pt-[13px] pb-[12px] pl-[15px] pr-[10px] resize-none focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+                  className="h-[115px] min-h-[115px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[13px] pb-[12px] pl-[15px] pr-[10px] resize-none focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
                 />
               </div>
             </div>
 
             {/* ── RIGHT FIGMA PREVIEW CARD ── */}
-            <div className="w-[265px] rounded-[14px] border border-[#E5E7EB] bg-white px-[19px] py-[12px] flex flex-col justify-between gap-[16px]">
+            <div className="w-[265px] rounded-[14px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] px-[19px] py-[12px] flex flex-col justify-between gap-[16px]">
               {/* Brand Header */}
-              <div className="flex flex-col items-center border-b border-[#F3F4F6] pb-[10px]">
+              <div className="flex flex-col items-center border-b border-[#F3F4F6] dark:border-[#3a3a3a] pb-[10px]">
                 <Image
                   src="/brand/Digital.svg"
                   alt="Encova Solution"
@@ -273,7 +273,7 @@ export default function CreateSalesInvoicePage() {
                   className="h-12 w-auto mb-1.5 object-contain"
                   priority
                 />
-                <h3 className="text-[14px] font-bold text-[#1E293B] leading-tight">
+                <h3 className="text-[14px] font-bold text-[#1E293B] dark:text-[#f0f0f0] leading-tight">
                   Encova Solution
                 </h3>
                 <span className="text-[11px] text-[#9CA3AF] font-normal mt-0.5">
@@ -299,14 +299,14 @@ export default function CreateSalesInvoicePage() {
                   ["Advance tax", advanceTax.toFixed(2)],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between items-center text-[11px]">
-                    <span className="text-[#6B7280] font-normal">{label}</span>
-                    <span className="text-[#1E293B] font-bold">{value}</span>
+                    <span className="text-[#6B7280] dark:text-[#9ca3af] font-normal">{label}</span>
+                    <span className="text-[#1E293B] dark:text-[#f0f0f0] font-bold">{value}</span>
                   </div>
                 ))}
               </div>
 
               {/* Grand Total Footer Highlight */}
-              <div className="w-full h-[39px] rounded-[7px] bg-[#FAF6EE] border border-[#F3EAD8] px-[14px] py-[8px] flex items-center justify-between mt-auto">
+              <div className="w-full h-[39px] rounded-[7px] bg-[#FAF6EE] dark:bg-[#2a1e0a] border border-[#F3EAD8] dark:border-[#4a3a20] px-[14px] py-[8px] flex items-center justify-between mt-auto">
                 <span className="text-[11px] font-bold uppercase text-[#A27B3A] tracking-wider">
                   Grand Total
                 </span>
@@ -320,16 +320,16 @@ export default function CreateSalesInvoicePage() {
 
 
         {/* ── CUSTOMER SECTION ── */}
-        <div className="h-[118.5px] rounded-[11px] border border-[#E5E7EB] bg-white p-[21px] flex flex-col justify-between shadow-xs">
+        <div className="h-[118.5px] rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[21px] flex flex-col justify-between shadow-xs">
           <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
             Customer
           </p>
 
           {selectedCustomer ? (
-            <div className="flex items-center justify-between rounded-[7px] border border-[#E5E7EB] bg-[#FAF6F0] px-4 py-2">
+            <div className="flex items-center justify-between rounded-[7px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-[#FAF6F0] dark:bg-[#2a2a2a] px-4 py-2">
               <div>
-                <p className="text-[13px] font-semibold text-[#1E293B]">{selectedCustomer.name}</p>
-                <p className="text-[11px] text-[#6B7280]">
+                <p className="text-[13px] font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{selectedCustomer.name}</p>
+                <p className="text-[11px] text-[#6B7280] dark:text-[#9ca3af]">
                   {selectedCustomer.customerNo} · NTN: {selectedCustomer.ntn} · {selectedCustomer.province}
                 </p>
               </div>
@@ -361,7 +361,7 @@ export default function CreateSalesInvoicePage() {
 
 
         {/* ── CUSTOMER LINE ITEMS TABLE SECTION ── */}
-        <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-[20px] py-[16px] shadow-xs space-y-[10px]">
+        <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[20px] py-[16px] shadow-xs space-y-[10px]">
 
           {/* Header Title + Action Controls */}
           <div className="flex items-center justify-between pb-1">
@@ -371,14 +371,14 @@ export default function CreateSalesInvoicePage() {
             <button
               type="button"
               onClick={addItem}
-              className="flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-3 py-1 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors"
+              className="flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 py-1 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
             >
               <Plus className="h-3.5 w-3.5 text-[#A27B3A]" /> Add line
             </button>
           </div>
 
           {/* Table Scroll Wrapper */}
-          <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB]">
+          <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
             <table className="w-full text-[12px] min-w-[850px] border-collapse">
               <thead>
                 <tr className="bg-[#C69A52] text-white">
@@ -393,11 +393,11 @@ export default function CreateSalesInvoicePage() {
                   <th className="w-28 py-3 px-3 text-right font-bold pr-4">Amt excl. disc</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5E7EB] bg-white">
+              <tbody className="divide-y divide-[#E5E7EB] dark:divide-[#2e2e2e] bg-white dark:bg-[#242424]">
                 {items.map((item, index) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-[#FAF6F0]/40 transition-colors"
+                    className="hover:bg-[#FAF6F0]/40 dark:hover:bg-[#2a2a2a] transition-colors"
                   >
                     {/* Action Buttons & Index */}
                     <td className="py-2 px-3 text-center">
@@ -428,7 +428,7 @@ export default function CreateSalesInvoicePage() {
                     {/* Item Name Dropdown (Figma Spec: 160px x 39.5px) */}
                     <td className="py-2 px-3">
                       <select
-                        className="w-[160px] h-[39.5px] rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 text-[12px] text-[#1E293B] focus:outline-none focus:border-[#C69A52] focus:bg-white transition-colors"
+                        className="w-[160px] h-[39.5px] rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2.5 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] transition-colors"
                         value={item.productId || ""}
                         onChange={(e) => {
                           const product = mockProducts.find(
@@ -464,7 +464,7 @@ export default function CreateSalesInvoicePage() {
                             quantity: parseInt(e.target.value) || 0,
                           })
                         }
-                        className="h-[39.5px] w-[50px] mx-auto rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] text-center text-[12px] px-1 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white shadow-none"
+                        className="h-[39.5px] w-[50px] mx-auto rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] text-center text-[12px] px-1 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] shadow-none"
                       />
                     </td>
 
@@ -485,7 +485,7 @@ export default function CreateSalesInvoicePage() {
                             unitPrice: parseFloat(e.target.value) || 0,
                           })
                         }
-                        className="h-[39.5px] w-[75px] mx-auto rounded-[6px] border border-[#E5E7EB] bg-[#F9FAFB] text-center text-[12px] px-2 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white shadow-none"
+                        className="h-[39.5px] w-[75px] mx-auto rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] text-center text-[12px] px-2 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] shadow-none"
                       />
                     </td>
 

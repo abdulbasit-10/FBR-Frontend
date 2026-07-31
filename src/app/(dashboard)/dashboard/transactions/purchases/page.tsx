@@ -122,24 +122,24 @@ export default function PurchaseInvoicePage() {
         >
             {paginated.map((inv, i) => (
                 <tr key={inv.id}
-                    className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0]", selected.has(inv.id) ? "bg-[#FDF3E3]" : i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30")}
+                    className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]", selected.has(inv.id) ? "bg-[#FDF3E3] dark:bg-[#3a2a10]" : i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]")}
                     onClick={() => toggleSelect(inv.id)}>
                     <td className="px-3 py-2.5 text-center">
                         <input type="checkbox" checked={selected.has(inv.id)} onChange={() => toggleSelect(inv.id)}
                             onClick={(e) => e.stopPropagation()} className="h-3.5 w-3.5 accent-[#C69A52] cursor-pointer" />
                     </td>
-                    <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{inv.invoiceNo}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{inv.vendorNo}</td>
-                    <td className="px-3 py-2.5 font-semibold text-[#1E293B] whitespace-nowrap">{inv.vendorName}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{inv.vendorInvoiceNo}</td>
+                    <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorNo}</td>
+                    <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.vendorName}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorInvoiceNo}</td>
                     <td className="px-3 py-2.5">{statusBadge(inv.status)}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{inv.source}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{inv.user}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{inv.docDate}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{inv.postingDate}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{fmt(inv.assessedValue)}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(inv.discount)}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(inv.salesTax)}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.source}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.user}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
                     <td className="px-3 py-2.5 text-right font-mono text-[#A27B3A] font-semibold">{fmt(inv.furtherTax)}</td>
                 </tr>
             ))}

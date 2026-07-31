@@ -1,8 +1,9 @@
 "use client";
 
-import { LogOut, Moon } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 
 import { auth, type AuthUser } from "@/lib/auth";
 import { MobileSidebar } from "@/components/dashboard/mobile-sidebar";
@@ -11,6 +12,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function TopNav() {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
@@ -36,7 +38,7 @@ export function TopNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#e7e7e7] bg-white px-4 lg:px-6">
+      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#e7e7e7] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] px-4 lg:px-6">
         <div className="flex items-center gap-2">
           {/* Mobile hamburger */}
           <MobileSidebar>
@@ -47,12 +49,14 @@ export function TopNav() {
         <div className="flex items-center gap-3" />
 
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => router.push("/")} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] bg-white px-2 sm:px-3 text-[11px] text-[#424b56] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
-            <span className="grid h-5 w-5 place-items-center rounded-full bg-[#fff4df] text-[#c39445]"><Moon className="h-3 w-3" /></span>
-            <span className="hidden sm:inline">Modes</span>
+          <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-2 sm:px-3 text-[11px] text-[#424b56] dark:text-[#9ca3af] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-[#fff4df] dark:bg-[#2a2a2a] text-[#c39445]">
+              {theme === "dark" ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
+            </span>
+            <span className="hidden sm:inline">{theme === "dark" ? "Light" : "Dark"}</span>
           </button>
-          <button type="button" onClick={() => setShowConfirm(true)} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] bg-white px-2 sm:px-3 text-[11px] text-[#424b56] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
-            <span className="grid h-5 w-5 place-items-center rounded-full bg-[#fff4df] text-[#c39445]"><LogOut className="h-3 w-3" /></span>
+          <button type="button" onClick={() => setShowConfirm(true)} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-2 sm:px-3 text-[11px] text-[#424b56] dark:text-[#9ca3af] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-[#fff4df] dark:bg-[#2a2a2a] text-[#c39445]"><LogOut className="h-3 w-3" /></span>
             <span className="hidden sm:inline">Logout</span>
           </button>
           <button type="button" className="flex h-9 items-center gap-2 rounded-full bg-[#c99d54] py-0.5 pl-1 sm:pr-3 pr-1 text-left text-white shadow-sm">

@@ -22,10 +22,10 @@ export const selectArrow = {
 };
 
 export const selectCls =
-    "h-10 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer";
+    "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer";
 
 export const btnOutline =
-    "flex items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors";
+    "flex items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors";
 
 type StatusType = "Posted" | "UnPosted" | "Cancelled";
 const STATUS_MAP: Record<StatusType, string> = {
@@ -98,24 +98,24 @@ export function TransactionListShell({
     const colSpan = columns.length + (withCheckbox ? 1 : 0);
 
     return (
-        <div className="min-h-full space-y-4 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Header ── */}
             <div className="flex items-center justify-between pb-1">
                 {backHref ? (
                     <button onClick={() => router.push(backHref)}
-                        className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] hover:opacity-75 transition-opacity">
+                        className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity">
                         <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
                         {title}
                     </button>
                 ) : (
-                    <h1 className="text-[18px] font-bold text-[#1E293B]">{title}</h1>
+                    <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">{title}</h1>
                 )}
                 <div className="flex items-center gap-2">{headerActions}</div>
             </div>
 
             {/* ── Filter card ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4 space-y-3">
+            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3">
                 <div className="flex items-center gap-2 max-w-2xl">
                     <div className="flex-1">
                         <Input
@@ -123,7 +123,7 @@ export function TransactionListShell({
                             placeholder={searchPlaceholder}
                             value={search}
                             onChange={(e) => { onSearchChange(e.target.value); onPageChange(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
+                            className="h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button type="button" onClick={() => onPageChange(1)}
@@ -133,26 +133,26 @@ export function TransactionListShell({
                 </div>
                 <div className="flex flex-wrap items-end gap-3 pt-1">
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Date from</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Date from</label>
                         <input type="date" value={dateFrom}
                             onChange={(e) => { onDateFromChange(e.target.value); onPageChange(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Date to</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Date to</label>
                         <input type="date" value={dateTo}
                             onChange={(e) => { onDateToChange(e.target.value); onPageChange(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Status</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Status</label>
                         <select value={status} onChange={(e) => { onStatusChange(e.target.value); onPageChange(1); }}
                             className={cn(selectCls, "min-w-30")} style={selectArrow}>
                             {STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Source</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Source</label>
                         <select value={source} onChange={(e) => { onSourceChange(e.target.value); onPageChange(1); }}
                             className={cn(selectCls, "min-w-30")} style={selectArrow}>
                             {SOURCE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
@@ -163,16 +163,16 @@ export function TransactionListShell({
             </div>
 
             {/* ── Table card ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-4 shadow-xs space-y-3">
+            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                     <button type="button"
-                        className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors">
+                        className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>
                     <p className="text-[11px] text-[#9CA3AF] italic">Scroll right to view row actions</p>
                 </div>
 
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                     <table className="w-full text-[12px] border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
@@ -187,16 +187,16 @@ export function TransactionListShell({
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#F3F4F6]">
+                        <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={colSpan} className="py-12 text-center bg-white">
+                                    <td colSpan={colSpan} className="py-12 text-center bg-white dark:bg-[#242424]">
                                         <LogoSpinner label={loadingLabel} className="mx-auto" />
                                     </td>
                                 </tr>
                             ) : !hasRows ? (
                                 <tr>
-                                    <td colSpan={colSpan} className="py-12 text-center bg-white">
+                                    <td colSpan={colSpan} className="py-12 text-center bg-white dark:bg-[#242424]">
                                         <div className="flex flex-col items-center gap-2">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6EE]">
                                                 <FileText className="h-5 w-5 text-[#C69A52]" />
@@ -213,24 +213,24 @@ export function TransactionListShell({
                 {/* ── Pagination ── */}
                 <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center gap-2">
-                        <span className="text-[12px] text-[#4F5967]">Row</span>
+                        <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">Row</span>
                         <select value={rowsPerPage} onChange={(e) => { onRowsPerPageChange(Number(e.target.value)); onPageChange(1); }}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
+                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
                             style={selectArrow}>
                             {ROW_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                         </select>
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[#4F5967] hover:bg-[#FAF6F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                             <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
-                        <span className="text-[12px] text-[#4F5967]">
-                            Page <span className="font-semibold text-[#1E293B]">{page}</span> of{" "}
-                            <span className="font-semibold text-[#1E293B]">{totalPages}</span>
+                        <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">
+                            Page <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{page}</span> of{" "}
+                            <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{totalPages}</span>
                         </span>
                         <button onClick={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page === totalPages}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[#4F5967] hover:bg-[#FAF6F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                             <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                     </div>

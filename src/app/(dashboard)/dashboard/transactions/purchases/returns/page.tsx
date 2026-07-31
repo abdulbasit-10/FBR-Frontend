@@ -130,25 +130,25 @@ export default function PurchaseReturnPage() {
                     const isSelected = selected.has(r.id);
                     return (
                         <tr key={r.id}
-                            className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0]", isSelected ? "bg-[#FAF6F0]" : i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30")}
+                            className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]", isSelected ? "bg-[#FAF6F0] dark:bg-[#3a2a10]" : i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]")}
                             onClick={() => toggleSelect(r.id)}>
                             <td className="px-3 py-2.5 text-center">
                                 <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(r.id)}
                                     onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer" />
                             </td>
-                            <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{r.returnNo}</td>
-                            <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{r.originalPI}</td>
-                            <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{r.vendorNo}</td>
-                            <td className="px-3 py-2.5 font-semibold text-[#1E293B] whitespace-nowrap">{r.vendorName}</td>
+                            <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{r.returnNo}</td>
+                            <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.originalPI}</td>
+                            <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.vendorNo}</td>
+                            <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{r.vendorName}</td>
                             <td className="px-3 py-2.5 whitespace-nowrap">{statusBadge(r.status)}</td>
-                            <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{r.source}</td>
-                            <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{r.user}</td>
-                            <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{r.docDate}</td>
-                            <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{r.postingDate}</td>
-                            <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] whitespace-nowrap">{fmt(r.assessedValue)}</td>
-                            <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] whitespace-nowrap">{fmt(r.discount)}</td>
-                            <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] whitespace-nowrap">{fmt(r.salesTax)}</td>
-                            <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] whitespace-nowrap">{fmt(r.furtherTax)}</td>
+                            <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.source}</td>
+                            <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.user}</td>
+                            <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.docDate}</td>
+                            <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.postingDate}</td>
+                            <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{fmt(r.assessedValue)}</td>
+                            <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{fmt(r.discount)}</td>
+                            <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{fmt(r.salesTax)}</td>
+                            <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{fmt(r.furtherTax)}</td>
                             <td className="px-3 py-2.5 text-right font-mono font-semibold text-[#A27B3A] whitespace-nowrap">{fmt(r.advanceTax)}</td>
                         </tr>
                     );

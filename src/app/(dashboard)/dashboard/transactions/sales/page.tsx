@@ -58,7 +58,7 @@ const TABLE_COLS = [
     "Amt excl disc", "Discount", "Amt excl ST", "Sales tax", "Amt incl ST",
 ];
 
-const selectStyle = "h-10 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer";
+const selectStyle = "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer";
 const selectArrow = {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
     backgroundRepeat: "no-repeat" as const,
@@ -173,14 +173,14 @@ export default function SalesInvoicesPage() {
             </div>
 
             {/* ── SMTP warning banner ── */}
-            <div className="rounded-[6px] border border-[#F3D89A] bg-[#FFFBEB] px-4 py-2.5">
+            <div className="rounded-[6px] border border-[#F3D89A] dark:border-[#4a3010] bg-[#FFFBEB] dark:bg-[#1e1a08] px-4 py-2.5">
                 <p className="text-[11px] text-[#92590A] italic">
                     Email filter is hidden until SMTP is configured on the company profile.
                 </p>
             </div>
 
             {/* ── SECTION 1: FILTER CONTAINER ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4 space-y-3 min-h-43.25">
+            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3 min-h-43.25">
                 {/* Search Input Row */}
                 <div className="flex items-center gap-2">
                     <div className="flex-1 relative">
@@ -189,7 +189,7 @@ export default function SalesInvoicesPage() {
                             placeholder="Name, customer no, mapping id, NTN, STRN,"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
+                            className="h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button
@@ -204,31 +204,31 @@ export default function SalesInvoicesPage() {
                 {/* Filter Dropdowns Row */}
                 <div className="flex flex-wrap items-end gap-3 pt-1">
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Date from</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Date from</label>
                         <input
                             type="date"
                             value={dateFrom}
                             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Date to</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Date to</label>
                         <input
                             type="date"
                             value={dateTo}
                             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Status</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Status</label>
                         <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectStyle, "h-10 min-w-30")} style={selectArrow}>
                             {STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Source</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Source</label>
                         <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectStyle, "h-10 min-w-30")} style={selectArrow}>
                             {SOURCE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
@@ -243,13 +243,13 @@ export default function SalesInvoicesPage() {
 
 
             {/* ── SECTION 2: TABLE & ACTIONS CONTAINER ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-4 shadow-xs space-y-3">
+            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
 
                 {/* Export & Row Info Bar */}
                 <div className="flex items-center justify-between">
                     <button
                         type="button"
-                        className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                        className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
                     >
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>
@@ -257,7 +257,7 @@ export default function SalesInvoicesPage() {
                 </div>
 
                 {/* Data Table */}
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB]">
+                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
                     <table className="w-full text-[12px] min-w-225 border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
@@ -277,16 +277,16 @@ export default function SalesInvoicesPage() {
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#F3F4F6]">
+                        <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 1} className="py-10 text-center bg-white">
+                                    <td colSpan={TABLE_COLS.length + 1} className="py-10 text-center bg-white dark:bg-[#242424]">
                                         <LogoSpinner label="Loading Sales Invoices..." className="mx-auto" />
                                     </td>
                                 </tr>
                             ) : paginated.length === 0 ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 1} className="py-12 text-center bg-white">
+                                    <td colSpan={TABLE_COLS.length + 1} className="py-12 text-center bg-white dark:bg-[#242424]">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6EE]">
                                                 <FileText className="h-5 w-5 text-[#C69A52]" />
@@ -301,9 +301,9 @@ export default function SalesInvoicesPage() {
                                         key={inv.id}
                                         className={cn(
                                             "cursor-pointer transition-colors",
-                                            i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30",
-                                            "hover:bg-[#FAF6F0]",
-                                            selected.has(inv.id) && "bg-[#FAF6F0]"
+                                            i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]",
+                                            "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]",
+                                            selected.has(inv.id) && "bg-[#FAF6F0] dark:bg-[#3a2a10]"
                                         )}
                                         onClick={() => toggleSelect(inv.id)}
                                     >
@@ -316,17 +316,17 @@ export default function SalesInvoicesPage() {
                                                 className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer"
                                             />
                                         </td>
-                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{inv.invoiceNo}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967]">{inv.customerNo}</td>
-                                        <td className="px-3 py-2.5 font-semibold text-[#1E293B] whitespace-nowrap">{inv.customerName}</td>
+                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.customerNo}</td>
+                                        <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.customerName}</td>
                                         <td className="px-3 py-2.5">{statusBadge(inv.status)}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{inv.docDate}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{inv.postingDate}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{fmt(inv.assessedValue)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{fmt(inv.amtExclDisc)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(inv.discount)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{fmt(inv.amtExclST)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(inv.salesTax)}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclDisc)}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
                                         <td className="px-3 py-2.5 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
                                     </tr>
                                 ))
@@ -338,11 +338,11 @@ export default function SalesInvoicesPage() {
                 {/* Footer / Pagination Controls — Positioned directly below table */}
                 <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center gap-2">
-                        <span className="text-[12px] text-[#4F5967]">Row</span>
+                        <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">Row</span>
                         <select
                             value={rowsPerPage}
                             onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
+                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
                             style={selectArrow}
                         >
                             {ROW_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -352,18 +352,18 @@ export default function SalesInvoicesPage() {
                         <button
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] bg-white text-[#4F5967] hover:bg-[#FAF6F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </button>
-                        <span className="text-[12px] text-[#4F5967]">
-                            Page <span className="font-semibold text-[#1E293B]">{page}</span> of{" "}
-                            <span className="font-semibold text-[#1E293B]">{totalPages}</span>
+                        <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">
+                            Page <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{page}</span> of{" "}
+                            <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{totalPages}</span>
                         </span>
                         <button
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] bg-white text-[#4F5967] hover:bg-[#FAF6F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                             <ChevronRight className="h-4 w-4" />
                         </button>
