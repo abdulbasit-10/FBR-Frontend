@@ -16,6 +16,9 @@ import {
   FileBarChart,
   TrendingUp,
   Boxes,
+  Users,
+  Building2,
+  Package,
 } from "lucide-react";
 
 export type NavItem = {
@@ -51,7 +54,16 @@ export const primaryNav: NavItem[] = [
           { title: "Purchase Return", href: "/dashboard/transactions/purchases/returns", icon: RotateCcw },
         ],
       },
-      { title: "Ledger", href: "/dashboard/transactions/ledger", icon: BookOpen },
+      {
+        title: "Ledger",
+        href: "/dashboard/transactions/ledger",
+        icon: BookOpen,
+        children: [
+          { title: "Customer Ledger", href: "/dashboard/transactions/ledger/customer-ledger", icon: Users },
+          { title: "Vendor Ledger", href: "/dashboard/transactions/ledger/vendor-ledger", icon: Building2 },
+          { title: "Item Ledger", href: "/dashboard/transactions/ledger/item-ledger", icon: Package },
+        ],
+      },
       { title: "Inventory Adjustment", href: "/dashboard/transactions/inventory-adjustment", icon: PackagePlus },
     ],
   },
