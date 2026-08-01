@@ -55,7 +55,7 @@ const selectArrow = {
     backgroundPosition: "right 10px center" as const,
     paddingRight: "28px",
 };
-const selectCls = "h-10 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer";
+const selectCls = "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -114,12 +114,12 @@ export default function FbrDeletedInvoicesPage() {
     };
 
     return (
-        <div className="min-h-full space-y-4 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
-            <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-5 shadow-xs space-y-4">
+        <div className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-5 shadow-xs space-y-4">
 
                 {/* ── Header ── */}
                 <div className="flex items-center justify-between">
-                    <h1 className="text-[18px] font-bold text-[#1E293B]">FBR Deleted Sales Invoices</h1>
+                    <h1 className="text-[18px] font-bold dark:text-white text-[#1E293B]">FBR Deleted Sales Invoices</h1>
                     <button
                         type="button"
                         onClick={() => load()}
@@ -130,7 +130,7 @@ export default function FbrDeletedInvoicesPage() {
                 </div>
 
                 {/* ── FBR info banner ── */}
-                <div className="rounded-[6px] border border-[#F3D89A] bg-[#FFFBEB] px-4 py-2.5">
+                <div className="rounded-[6px] border border-[#F3D89A] dark:border-[#4a3010] bg-[#FFFBEB] dark:bg-[#1e1a08] px-4 py-2.5">
                     <p className="text-[11px] text-[#92590A] italic">
                         These invoices are kept in the system but marked deleted at FBR.
                     </p>
@@ -144,7 +144,7 @@ export default function FbrDeletedInvoicesPage() {
                             placeholder="Invoice no, FBR invoice no, mapping id, customer name"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                            className="h-9 rounded-[5px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
+                            className="h-9 rounded-[5px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button
@@ -159,31 +159,31 @@ export default function FbrDeletedInvoicesPage() {
                 {/* ── Filter row ── */}
                 <div className="flex flex-wrap items-end gap-3">
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Date from</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Date from</label>
                         <input
                             type="date"
                             value={dateFrom}
                             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Date to</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Date to</label>
                         <input
                             type="date"
                             value={dateTo}
                             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
+                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Status</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Status</label>
                         <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectCls, "min-w-27.5")} style={selectArrow}>
                             {STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] block">Source</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Source</label>
                         <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectCls, "min-w-27.5")} style={selectArrow}>
                             {SOURCE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
@@ -207,7 +207,7 @@ export default function FbrDeletedInvoicesPage() {
                 </div>
 
                 {/* ── Table ── */}
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB]">
+                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
                     <table className="w-full text-[12px] min-w-225 border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
@@ -226,7 +226,7 @@ export default function FbrDeletedInvoicesPage() {
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#F3F4F6]">
+                        <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
                                 <tr>
                                     <td colSpan={TABLE_COLS.length + 1} className="py-14 text-center">
@@ -248,9 +248,9 @@ export default function FbrDeletedInvoicesPage() {
                                         key={inv.id}
                                         className={cn(
                                             "cursor-pointer transition-colors",
-                                            i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30",
-                                            "hover:bg-[#FAF6F0]",
-                                            selected.has(inv.id) && "bg-[#FDF3E3]"
+                                            i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]",
+                                            "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]",
+                                            selected.has(inv.id) && "bg-[#FDF3E3] dark:bg-[#3a2a10]"
                                         )}
                                         onClick={() => toggleSelect(inv.id)}
                                     >
@@ -263,16 +263,16 @@ export default function FbrDeletedInvoicesPage() {
                                                 className="h-3.5 w-3.5 accent-[#C69A52] cursor-pointer"
                                             />
                                         </td>
-                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{inv.invoiceNo}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967]">{inv.customerNo}</td>
-                                        <td className="px-3 py-2.5 font-semibold text-[#1E293B] whitespace-nowrap">{inv.customerName}</td>
+                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.customerNo}</td>
+                                        <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.customerName}</td>
                                         <td className="px-3 py-2.5">{statusBadge(inv.status)}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{inv.docDate}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{inv.postingDate}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{fmt(inv.assessedValue)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(inv.discount)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(inv.salesTax)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(inv.furtherTax)}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
+                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.furtherTax)}</td>
                                         <td className="px-3 py-2.5 text-right font-mono text-[#A27B3A] font-semibold">{fmt(inv.advanceTax)}</td>
                                         <td className="px-3 py-2.5 text-right font-mono text-[#A27B3A]">{inv.advanceTaxPct.toFixed(2)}%</td>
                                     </tr>

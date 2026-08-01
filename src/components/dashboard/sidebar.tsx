@@ -7,7 +7,6 @@ import { ChevronLeft, ChevronDown, Menu } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { primaryNav, type NavItem } from "@/components/dashboard/nav-data";
 
@@ -29,33 +28,33 @@ function NavItemComponent({
   const [isExpanded, setIsExpanded] = useState(() => containsActive(item));
   const isActiveLeaf = !hasChildren && pathname === item.href;
   const isActiveParent = hasChildren && containsActive(item);
+  const isActive = isActiveLeaf || isActiveParent;
   const Icon = item.icon;
 
   const pl = depth === 0 ? "px-3" : depth === 1 ? "pl-5 pr-3" : "pl-8 pr-3";
   const textSize = depth >= 2 ? "text-[12px]" : "text-[13px]";
   const iconSize = depth >= 2 ? "h-3.5 w-3.5" : "h-4 w-4";
 
-  // active state differs by depth — matches Figma exactly
   const activeCls =
-    isActiveLeaf && depth >= 2 ? "bg-[#FAF6EE] text-[#A27B3A]" :
-      isActiveParent && depth === 0 ? "bg-[#d4ad68] text-white" :
-        isActiveParent && depth === 1 ? "bg-[#FAF6F0] text-[#1E293B]" :
-          "text-[#4F5967]";
+    isActive && depth === 0 ? "bg-[#d4ad68] text-white" :
+      isActive && depth === 1 ? "bg-[#FAF6F0] dark:bg-[#2a2a2a] text-[#1E293B] dark:text-[#f0f0f0]" :
+        isActive ? "bg-[#FAF6EE] dark:bg-[#2a2a2a] text-[#A27B3A]" :
+          "text-[#4F5967] dark:text-[#9ca3af]";
 
   const iconCls =
-    isActiveLeaf && depth >= 2 ? "text-[#A27B3A]" :
-      isActiveParent && depth === 0 ? "text-white" :
-        "text-[#9CA3AF] group-hover:text-[#a4782d]";
+    isActive && depth === 0 ? "text-white" :
+      isActive ? "text-[#A27B3A]" :
+        "text-[#9CA3AF] dark:text-[#666] group-hover:text-[#a4782d]";
 
   return (
     <div className="flex flex-col">
       <Link
         href={hasChildren ? "#" : item.href}
-        onClick={(e) => { if (hasChildren) { e.preventDefault(); setIsExpanded((v) => !v); } }}
+        onClick={(e) => { if (hasChildren) { e.preventDefault(); e.stopPropagation(); setIsExpanded((v) => !v); } }}
         className={cn(
           "group flex items-center gap-2.5 py-2 rounded font-medium transition-colors",
           pl, textSize, activeCls,
-          !isActiveLeaf && !isActiveParent && "hover:bg-[#f7f2e8]",
+          !isActive && "hover:bg-[#f7f2e8] dark:hover:bg-[#2a2a2a]",
           collapsed && depth === 0 && "justify-center px-2",
         )}
       >
@@ -64,7 +63,7 @@ function NavItemComponent({
         {!collapsed && hasChildren && (
           <ChevronDown className={cn(
             "ml-auto h-3.5 w-3.5 shrink-0 transition-transform",
-            isActiveParent && depth === 0 ? "text-white" : "text-[#9CA3AF]",
+            isActive && depth === 0 ? "text-white" : "text-[#9CA3AF]",
             isExpanded && "rotate-180"
           )} />
         )}
@@ -72,7 +71,7 @@ function NavItemComponent({
       </Link>
 
       {!collapsed && hasChildren && isExpanded && (
-        <div className={cn("flex flex-col gap-0.5 mt-0.5", depth === 0 && "border-l border-[#F3EAD8] ml-5")}>
+        <div className={cn("flex flex-col gap-0.5 mt-0.5", depth === 0 && "border-l border-[#F3EAD8] dark:border-[#3a2a1a] ml-5")}>
           {item.children!.map((child) => (
             <NavItemComponent key={child.href} item={child} collapsed={collapsed} pathname={pathname} depth={depth + 1} />
           ))}
@@ -88,58 +87,57 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
   return (
     <aside
       className={cn(
-        "sidebar flex h-full flex-col bg-white border-r border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.02)]",
+        "sidebar flex h-full flex-col bg-white dark:bg-[#1e1e1e] border-r border-[#E5E7EB] dark:border-[#2e2e2e] shadow-[0_1px_3px_rgba(0,0,0,0.02)]",
         collapsed ? "w-[72px]" : "w-[220px]",
       )}
     >
-      <div className={cn("flex h-[64px] items-center px-5", collapsed ? "px-2 justify-center" : "justify-start")}>
+      <div className={cn("flex h-16 shrink-0 items-center px-3", collapsed ? "justify-center" : "justify-start")}>
         {collapsed ? (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-lg hover:bg-[#F3F4F6] transition-all"
             onClick={() => onCollapsedChange?.(!collapsed)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#F3F4F6] dark:hover:bg-[#2a2a2a] transition-all"
+            title="Expand sidebar"
           >
             <Menu className="h-4 w-4" />
-            <span className="sr-only">Toggle sidebar</span>
-          </Button>
+          </button>
         ) : (
-          <div className="flex flex-1 items-center">
-            <span className="text-sm font-semibold text-[#a87827]">BioWorld Traders</span>
-            <Button
+          <div className="flex flex-1 items-center gap-2 overflow-hidden">
+            <span className="flex-1 truncate text-sm font-semibold text-[#a87827]">BioWorld Traders</span>
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
-              className="ml-auto h-8 w-8 rounded-lg hover:bg-[#F3F4F6] transition-all"
               onClick={() => onCollapsedChange?.(!collapsed)}
+              className="shrink-0 flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#F3F4F6] dark:hover:bg-[#2a2a2a] transition-all"
+              title="Collapse sidebar"
             >
               <ChevronLeft className="h-4 w-4" />
-              <span className="sr-only">Toggle sidebar</span>
-            </Button>
+            </button>
           </div>
         )}
       </div>
 
-      <Separator className="opacity-50" />
+      <Separator className="opacity-50 shrink-0" />
 
-      <div className="flex-1 py-5">
-        <p className={cn("px-5 pb-3 text-[10px] font-medium tracking-wide text-[#9aa2ac]", collapsed && "sr-only")}>MENU</p>
-        <nav className={cn("flex flex-col gap-1.5 px-4", collapsed && "px-2")}>
-          {primaryNav.map((item) => (
-            <NavItemComponent
-              key={item.href}
-              item={item}
-              collapsed={collapsed}
-              pathname={pathname}
-            />
-          ))}
-        </nav>
-      </div>
+      {/* scrollable area — nav pushes Encova Solution down when dropdowns open */}
+      <div className="flex flex-1 flex-col overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
+        <div className="py-5">
+          <p className={cn("px-5 pb-3 text-[10px] font-medium tracking-wide text-[#9aa2ac] dark:text-[#555]", collapsed && "sr-only")}>MENU</p>
+          <nav className={cn("flex flex-col gap-1.5 px-4", collapsed && "px-2")}>
+            {primaryNav.map((item) => (
+              <NavItemComponent
+                key={item.href}
+                item={item}
+                collapsed={collapsed}
+                pathname={pathname}
+              />
+            ))}
+          </nav>
+        </div>
 
-      <div className="mb-8 flex h-[120px] items-center justify-center border-t border-[#eeeeee]">
-        <div className="relative h-[58px] w-[118px]">
-          <Image src="/brand/lOGO.ai.svg" alt="Encova Solution" fill sizes="118px" className="object-contain" />
+        <div className="mt-auto mb-8 flex h-30 items-center justify-center border-t border-[#eeeeee] shrink-0">
+          <div className="relative h-14.5 w-29.5">
+            <Image src="/brand/lOGO.ai.svg" alt="Encova Solution" fill sizes="118px" className="object-contain" />
+          </div>
         </div>
       </div>
     </aside>

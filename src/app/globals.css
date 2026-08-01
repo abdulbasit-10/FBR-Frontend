@@ -86,39 +86,39 @@
 }
 
 .dark {
-  /* Dark mode – Gray primary #6B7280 */
-  --background: #020617;
-  --foreground: #f9fafb;
-  --card: #020617;
-  --card-foreground: #f9fafb;
-  --popover: #020617;
-  --popover-foreground: #f9fafb;
-  --primary: #9ca3af;
-  --primary-foreground: #020617;
-  --secondary: #111827;
-  --secondary-foreground: #f9fafb;
-  --muted: #111827;
-  --muted-foreground: #9ca3af;
-  --accent: #020617;
-  --accent-foreground: #f9fafb;
+  /* Warm dark palette — matches Figma dashboard dark mode */
+  --background: #191919;
+  --foreground: #f0f0f0;
+  --card: #242424;
+  --card-foreground: #f0f0f0;
+  --popover: #242424;
+  --popover-foreground: #f0f0f0;
+  --primary: #c99d54;
+  --primary-foreground: #ffffff;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #f0f0f0;
+  --muted: #2a2a2a;
+  --muted-foreground: #8c8c8c;
+  --accent: #2a2a2a;
+  --accent-foreground: #f0f0f0;
   --destructive: #f97373;
-  --destructive-foreground: #020617;
-  --border: #1f2937;
-  --input: #1f2937;
-  --ring: #9ca3af;
-  --chart-1: #9ca3af;
-  --chart-2: #6b7280;
-  --chart-3: #4b5563;
-  --chart-4: #374151;
-  --chart-5: #9ca3af;
-  --sidebar: #020617;
-  --sidebar-foreground: #f9fafb;
-  --sidebar-primary: #9ca3af;
-  --sidebar-primary-foreground: #020617;
-  --sidebar-accent: #111827;
-  --sidebar-accent-foreground: #f9fafb;
-  --sidebar-border: #1f2937;
-  --sidebar-ring: #9ca3af;
+  --destructive-foreground: #ffffff;
+  --border: #2e2e2e;
+  --input: #2a2a2a;
+  --ring: #c99d54;
+  --chart-1: #c99d54;
+  --chart-2: #a27b3a;
+  --chart-3: #7a5c2a;
+  --chart-4: #4a3a20;
+  --chart-5: #c99d54;
+  --sidebar: #1e1e1e;
+  --sidebar-foreground: #f0f0f0;
+  --sidebar-primary: #c99d54;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2a2a2a;
+  --sidebar-accent-foreground: #f0f0f0;
+  --sidebar-border: #2e2e2e;
+  --sidebar-ring: #c99d54;
 }
 
 @layer base {

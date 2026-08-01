@@ -18,7 +18,7 @@ export function MobileSidebar({
         type="button"
         variant="ghost"
         size="icon"
-        className="lg:hidden"
+        className="lg:hidden text-[#4F5967] hover:text-[#4F5967]"
         onClick={() => setOpen(true)}
       >
         <Menu className="h-5 w-5" />
@@ -31,7 +31,7 @@ export function MobileSidebar({
             className="absolute inset-0 bg-background/70 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute left-0 top-0 h-full w-[86%] max-w-[320px] overflow-hidden rounded-r-3xl border-r bg-sidebar text-sidebar-foreground shadow-2xl">
+          <div className="absolute left-0 top-0 h-full w-[86%] max-w-[320px] overflow-hidden rounded-r-2xl border-r border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] shadow-2xl">
             <div className="h-full" onClick={() => setOpen(false)}>
               {children}
             </div>
