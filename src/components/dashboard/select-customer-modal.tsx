@@ -138,20 +138,20 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
             />
 
             {/* Panel (Exact width: 928px) */}
-            <div className="relative z-10 w-full max-w-[928px] rounded-[16px] border-[1.14px] border-[#CDCBCB] bg-white shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+            <div className="relative z-10 w-full max-w-[928px] rounded-[16px] border-[1.14px] border-[#CDCBCB] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
 
                 {/* ── Header ── */}
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-[#F3F4F6] shrink-0">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6F0] border border-[#E3D2BA]">
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-[#F3F4F6] dark:border-[#2e2e2e] shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6F0] dark:bg-[#2a2a2a] border border-[#E3D2BA] dark:border-[#3a3a3a]">
                         <User className="h-5 w-5 text-[#A27B3A]" />
                     </div>
                     <div className="flex-1">
-                        <p className="text-[15px] font-bold text-[#1E293B]">Select Customer</p>
+                        <p className="text-[15px] font-bold text-[#1E293B] dark:text-white">Select Customer</p>
                         <p className="text-[11px] text-[#9CA3AF]">Search and select a customer to continue</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-3 py-1.5 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors"
+                        className="flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 py-1.5 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors"
                     >
                         <X className="h-3.5 w-3.5" />
                         Close
@@ -169,7 +169,7 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                 placeholder="Name, customer no, mapping id, NTN, STRN,"
-                                className="h-[40px] w-full rounded-[6px] border border-[#D1D5DB] bg-white pl-9 pr-3 text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#C69A52] shadow-none"
+                                className="h-[40px] w-full rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] pl-9 pr-3 text-[12px] text-[#1E293B] dark:text-white placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#C69A52] shadow-none"
                             />
                         </div>
                         <button
@@ -185,11 +185,11 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
                 <div className="flex items-center justify-between px-6 pb-4 pt-1 shrink-0">
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2">
-                            <span className="text-[12px] text-[#4F5967] font-medium">Type</span>
+                            <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af] font-medium">Type</span>
                             <select
                                 value={typeFilter}
                                 onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-                                className="h-8 rounded-[6px] border border-[#D1D5DB] bg-white px-3 pr-8 text-[12px] text-[#1E293B] focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
+                                className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 pr-8 text-[12px] text-[#1E293B] dark:text-white focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
                                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}
                             >
                                 {TYPE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
@@ -197,11 +197,11 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <span className="text-[12px] text-[#4F5967] font-medium">Registration</span>
+                            <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af] font-medium">Registration</span>
                             <select
                                 value={registrationFilter}
                                 onChange={(e) => { setRegistrationFilter(e.target.value); setPage(1); }}
-                                className="h-8 rounded-[6px] border border-[#D1D5DB] bg-white px-3 pr-8 text-[12px] text-[#1E293B] focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
+                                className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 pr-8 text-[12px] text-[#1E293B] dark:text-white focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
                                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}
                             >
                                 {REGISTRATION_OPTIONS.map((o) => <option key={o}>{o}</option>)}
@@ -211,7 +211,7 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
 
                     <button
                         onClick={loadCustomers}
-                        className="flex items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3 py-1.5 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors"
+                        className="flex items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 py-1.5 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors"
                     >
                         <RefreshCw className="h-3.5 w-3.5" />
                         Refresh
@@ -247,23 +247,23 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
                                         key={c.id}
                                         className={cn(
                                             "transition-colors cursor-pointer",
-                                            i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30",
-                                            "hover:bg-[#FAF6F0]"
+                                            i % 2 === 0 ? "bg-white dark:bg-[#1a1a1a]" : "bg-[#FAF6F0]/30 dark:bg-[#1e1e1e]",
+                                            "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]"
                                         )}
                                         onClick={() => { onSelect(c); onClose(); }}
                                     >
                                         <td className="px-4 py-2.5">
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onSelect(c); onClose(); }}
-                                                className="h-7 rounded-[5px] border border-[#E3D2BA] bg-white px-3 text-[11px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors"
+                                                className="h-7 rounded-[5px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 text-[11px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors"
                                             >
                                                 Select
                                             </button>
                                         </td>
-                                        <td className="px-4 py-2.5 text-[#4F5967] font-medium">{c.customerNo}</td>
-                                        <td className="px-4 py-2.5 text-[#1E293B] font-bold">{c.name}</td>
-                                        <td className="px-4 py-2.5 text-[#4F5967]">{c.province}</td>
-                                        <td className="px-4 py-2.5 text-[#4F5967]">{c.type}</td>
+                                        <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af] font-medium">{c.customerNo}</td>
+                                        <td className="px-4 py-2.5 text-[#1E293B] dark:text-white font-bold">{c.name}</td>
+                                        <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{c.province}</td>
+                                        <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{c.type}</td>
                                         <td className="px-4 py-2.5">
                                             <span className={cn(
                                                 "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold",
@@ -274,8 +274,8 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
                                                 {c.registration}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-2.5 text-[#4F5967] font-mono">{c.ntn}</td>
-                                        <td className="px-4 py-2.5 text-[#4F5967] font-mono">{c.strn}</td>
+                                        <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af] font-mono">{c.ntn}</td>
+                                        <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af] font-mono">{c.strn}</td>
                                     </tr>
                                 ))
                             )}
@@ -284,22 +284,22 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
                 </div>
 
                 {/* ── Pagination ── */}
-                <div className="flex items-center justify-center gap-3 border-t border-[#F3F4F6] bg-[#FAF6EE] px-5 py-2.5 shrink-0">
+                <div className="flex items-center justify-center gap-3 border-t border-[#F3F4F6] dark:border-[#2e2e2e] bg-[#FAF6EE] dark:bg-[#1e1e1e] px-5 py-2.5 shrink-0">
                     <button
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={page === 1}
-                        className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] bg-white text-[#4F5967] hover:bg-[#FAF6F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                         <ChevronLeft className="h-3.5 w-3.5" />
                     </button>
-                    <span className="text-[12px] text-[#4F5967]">
-                        Page <span className="font-semibold text-[#1E293B]">{page}</span> of{" "}
-                        <span className="font-semibold text-[#1E293B]">{totalPages}</span>
+                    <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">
+                        Page <span className="font-semibold text-[#1E293B] dark:text-white">{page}</span> of{" "}
+                        <span className="font-semibold text-[#1E293B] dark:text-white">{totalPages}</span>
                     </span>
                     <button
                         onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                         disabled={page === totalPages}
-                        className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] bg-white text-[#4F5967] hover:bg-[#FAF6F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                         <ChevronRight className="h-3.5 w-3.5" />
                     </button>

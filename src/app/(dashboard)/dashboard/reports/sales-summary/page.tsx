@@ -32,7 +32,9 @@ export default function SalesSummaryReportPage() {
                 onSelectPartyClick={() => setShowModal(true)}
                 onClearParty={() => setSelectedParty(null)}
                 actionOptions={SALES_ACTIONS}
-                dateFrom={dateFrom} onDateFromChange={setDateFrom}
+                dateFromLabel="Posting date from"
+                dateToLabel="Posting date to"
+                actionLabel="Document type"
                 dateTo={dateTo} onDateToChange={setDateTo}
                 action={action} onActionChange={setAction}
                 onApplyFilters={handleApply}

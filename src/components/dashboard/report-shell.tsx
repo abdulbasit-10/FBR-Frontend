@@ -25,6 +25,9 @@ export interface ReportShellProps {
     onSelectPartyClick: () => void;
     onClearParty: () => void;
     actionOptions: string[];
+    dateFromLabel?: string;
+    dateToLabel?: string;
+    actionLabel?: string;
     dateFrom: string;
     onDateFromChange: (v: string) => void;
     dateTo: string;
@@ -47,6 +50,9 @@ export function ReportShell({
     onSelectPartyClick,
     onClearParty,
     actionOptions,
+    dateFromLabel = "Created at from",
+    dateToLabel = "Created at to",
+    actionLabel = "Action",
     dateFrom, onDateFromChange,
     dateTo, onDateToChange,
     action, onActionChange,
@@ -115,17 +121,17 @@ export function ReportShell({
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Filters</p>
                 <div className="flex flex-wrap items-end gap-3">
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Created at from</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">{dateFromLabel}</label>
                         <input type="date" value={dateFrom} onChange={(e) => onDateFromChange(e.target.value)}
                             className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#1e1e1e]! text-[12px] text-[#1E293B] dark:text-white px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Created at to</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">{dateToLabel}</label>
                         <input type="date" value={dateTo} onChange={(e) => onDateToChange(e.target.value)}
                             className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#1e1e1e]! text-[12px] text-[#1E293B] dark:text-white px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Action</label>
+                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">{actionLabel}</label>
                         <select value={action} onChange={(e) => onActionChange(e.target.value)}
                             className="h-10 min-w-35 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] text-[12px] text-[#1E293B] dark:text-white px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
                             style={selectArrow}>
