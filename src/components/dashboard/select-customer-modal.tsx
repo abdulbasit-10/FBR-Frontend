@@ -29,40 +29,23 @@ interface SelectCustomerModalProps {
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
 const MOCK_CUSTOMERS: Customer[] = [
-    {
-        id: 1,
-        customerNo: "C-0001",
-        name: "ABC Corporation",
-        province: "Punjab",
-        type: "Registered",
-        registration: "Active",
-        ntn: "1234567-8",
-        strn: "16-00-1234-567-89",
-    },
-    {
-        id: 2,
-        customerNo: "C-0002",
-        name: "XYZ Ltd",
-        province: "Sindh",
-        type: "Unregistered",
-        registration: "Active",
-        ntn: "9876543-2",
-        strn: "—",
-    },
-    {
-        id: 3,
-        customerNo: "C-0003",
-        name: "Global Traders",
-        province: "KPK",
-        type: "Registered",
-        registration: "Inactive",
-        ntn: "1122334-4",
-        strn: "16-00-1122-334-45",
-    },
+    { id: 1, customerNo: "C-000209", name: "DINAR HOSPITAL D.I KHAN", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—" },
+    { id: 2, customerNo: "C-000208", name: "A_one Pharmacy", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—" },
+    { id: 3, customerNo: "C-000207", name: "AMIN WZIRSTAN PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "1110181965", strn: "—" },
+    { id: 4, customerNo: "C-000206", name: "Musa Pharmacy", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—" },
+    { id: 5, customerNo: "C-000205", name: "ONCOMED PHARMA", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "1521135", strn: "—" },
+    { id: 6, customerNo: "C-000204", name: "FARMAN MEDICINE COMPANY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "F617441", strn: "—" },
+    { id: 7, customerNo: "C-000203", name: "AL HAMZA PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "8131978", strn: "—" },
+    { id: 8, customerNo: "C-000202", name: "HEALTHCARE VACCINE HOUSE", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "9997735", strn: "—" },
+    { id: 9, customerNo: "C-000201", name: "FAIR PRICE PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "5051406", strn: "—" },
+    { id: 10, customerNo: "C-000200", name: "MAX HEALTH PHARMACY", province: "Punjab", type: "Individual", registration: "Unregistered", ntn: "332024545", strn: "—" },
+    { id: 11, customerNo: "C-000199", name: "SHAH SAUD", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "332024545", strn: "—" },
+    { id: 12, customerNo: "C-000198", name: "KOHAT BANNU", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—" },
+    { id: 13, customerNo: "C-000197", name: "IBRAHIM MUSA PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "C895660", strn: "—" },
 ];
 
-const TYPE_OPTIONS = ["All", "Registered", "Unregistered"];
-const REGISTRATION_OPTIONS = ["All", "Active", "Inactive"];
+const TYPE_OPTIONS = ["All", "Individual", "Company", "AOP"];
+const REGISTRATION_OPTIONS = ["All", "Registered", "Unregistered"];
 const PAGE_SIZE = 10;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -272,9 +255,10 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
                                         <td className="px-4 py-2.5">
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onSelect(c); onClose(); }}
-                                                className="h-4 w-4 rounded-full border-2 border-[#C69A52] bg-white hover:bg-[#C69A52] transition-colors block"
-                                                aria-label={`Select ${c.name}`}
-                                            />
+                                                className="h-7 rounded-[5px] border border-[#E3D2BA] bg-white px-3 text-[11px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors"
+                                            >
+                                                Select
+                                            </button>
                                         </td>
                                         <td className="px-4 py-2.5 text-[#4F5967] font-medium">{c.customerNo}</td>
                                         <td className="px-4 py-2.5 text-[#1E293B] font-bold">{c.name}</td>
@@ -283,9 +267,9 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
                                         <td className="px-4 py-2.5">
                                             <span className={cn(
                                                 "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold",
-                                                c.registration === "Active"
+                                                c.registration === "Registered"
                                                     ? "bg-green-50 text-green-700 border border-green-200"
-                                                    : "bg-gray-100 text-gray-500 border border-gray-200"
+                                                    : "bg-[#F3F4F6] text-[#6B7280] border border-[#E5E7EB]"
                                             )}>
                                                 {c.registration}
                                             </span>
