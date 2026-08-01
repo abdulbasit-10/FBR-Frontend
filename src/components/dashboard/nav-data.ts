@@ -14,6 +14,9 @@ import {
   Users,
   Building2,
   Package,
+  Download,
+  Upload,
+  ShoppingBag,
 } from "lucide-react";
 
 export type NavItem = {
@@ -63,6 +66,18 @@ export const primaryNav: NavItem[] = [
     ],
   },
   { title: "Reports", href: "/dashboard/reports/sales", icon: BarChart3 },
+  {
+    title: "Import/Export",
+    href: "/dashboard/import-export",
+    icon: Download,
+    children: [
+      { title: "Master Import", href: "/dashboard/import-export/master-import", icon: Upload },
+      { title: "Customers", href: "/dashboard/import-export/customers", icon: Users },
+      { title: "Vendors", href: "/dashboard/import-export/vendors", icon: Building2 },
+      { title: "Items", href: "/dashboard/import-export/items", icon: Package },
+      { title: "Sales Invoice", href: "/dashboard/import-export/sales-invoices", icon: ShoppingBag },
+    ],
+  },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
   { title: "Audit Logs", href: "/dashboard/audit-logs", icon: FileText },
 ];
