@@ -134,7 +134,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
           </nav>
         </div>
 
-        <div className="mt-auto mb-8 flex h-30 items-center justify-center border-t border-[#eeeeee] shrink-0">
+        <div className="mt-auto mb-8 flex h-30 items-center justify-center border-t border-[#eeeeee] dark:border-[#2e2e2e] shrink-0">
           <div className="relative h-14.5 w-29.5">
             <Image src="/brand/lOGO.ai.svg" alt="Encova Solution" fill sizes="118px" className="object-contain" />
           </div>
