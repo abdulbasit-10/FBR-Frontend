@@ -87,17 +87,17 @@ export default function VendorLedgerPage() {
             onRefresh={load}
         >
             {paginated.map((row, i) => (
-                <tr key={row.id} className={cn(i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30", "hover:bg-[#FAF6F0] transition-colors")}>
-                    <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{row.invoiceNo}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{row.postingDate}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{row.documentType}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{row.vendorNo}</td>
-                    <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{row.vendorName}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{row.vendorType}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(row.fed)}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{fmt(row.amtExclDiscount)}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(row.discount)}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{fmt(row.amtExclSalesTax)}</td>
+                <tr key={row.id} className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors")}>
+                    <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{row.invoiceNo}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.postingDate}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.documentType}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{row.vendorNo}</td>
+                    <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{row.vendorName}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{row.vendorType}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(row.fed)}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(row.amtExclDiscount)}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(row.discount)}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(row.amtExclSalesTax)}</td>
                     <td className="px-3 py-2.5 text-right font-mono text-[#A27B3A] font-semibold">{fmt(row.salesTax)}</td>
                 </tr>
             ))}
