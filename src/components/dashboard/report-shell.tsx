@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Download, Printer, RefreshCw, X, AlertCircle, FileBarChart2, ChevronDown } from "lucide-react";
+import { ChevronLeft, Download, Printer, RefreshCw, X, FileBarChart2, ChevronDown } from "lucide-react";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 export const SALES_ACTIONS = ["All", "Sales Invoice", "Sales Return", "Credit Note"];
 export const PURCHASE_ACTIONS = ["All", "Purchase Invoice", "Purchase Return", "Debit Note"];
@@ -64,16 +65,10 @@ export function ReportShell({
     children,
 }: ReportShellProps) {
     const router = useRouter();
-    const [errorMsg, setErrorMsg] = useState("");
-    const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    useEffect(() => () => { if (errorTimer.current) clearTimeout(errorTimer.current); }, []);
 
     const handleApply = () => {
         if (!dateFrom && !dateTo && !selectedParty && action === "All") {
-            setErrorMsg("Choose at least one filter before applying.");
-            if (errorTimer.current) clearTimeout(errorTimer.current);
-            errorTimer.current = setTimeout(() => setErrorMsg(""), 4000);
+            toast.error("Choose at least one filter before applying.");
             return;
         }
         onApplyFilters();
@@ -81,17 +76,6 @@ export function ReportShell({
 
     return (
         <div className="min-h-full space-y-4" style={{ fontFamily: "'Inter', sans-serif" }}>
-
-            {/* ── Error toast ── */}
-            {errorMsg && (
-                <div className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 px-4 py-2.5 shadow-lg text-[12px] text-red-700">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    {errorMsg}
-                    <button onClick={() => setErrorMsg("")} className="ml-2 text-red-400 hover:text-red-600">
-                        <X className="h-3.5 w-3.5" />
-                    </button>
-                </div>
-            )}
 
             {/* ── Header ── */}
             <div className="flex items-center justify-between pb-1">
@@ -141,8 +125,9 @@ export function ReportShell({
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">{partyLabel}</label>
                         <div className="relative">
-                            <button type="button" onClick={onSelectPartyClick}
-                                className="flex h-10 min-w-44 items-center justify-between gap-2 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 text-[12px] text-left transition-colors hover:border-[#C69A52]">
+                            <div role="button" tabIndex={0} onClick={onSelectPartyClick}
+                                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectPartyClick(); }}
+                                className="flex h-10 min-w-44 cursor-pointer items-center justify-between gap-2 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 text-[12px] text-left transition-colors hover:border-[#C69A52]">
                                 <span className={cn(selectedParty ? "text-[#1E293B] dark:text-white font-medium" : "text-[#9CA3AF]")}>
                                     {selectedParty || partyPlaceholder}
                                 </span>
@@ -154,7 +139,7 @@ export function ReportShell({
                                 ) : (
                                     <ChevronDown className="h-3.5 w-3.5 text-[#9CA3AF]" />
                                 )}
-                            </button>
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 pb-0.5">
