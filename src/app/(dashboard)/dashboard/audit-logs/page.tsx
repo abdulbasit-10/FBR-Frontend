@@ -103,7 +103,7 @@ export default function AuditLogsPage() {
             {/* ── Header ── */}
             <div className="flex items-center justify-between pb-1">
                 <button onClick={() => router.push("/dashboard")}
-                    className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] hover:opacity-75 transition-opacity">
+                    className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity">
                     <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
                     Audit logs
                 </button>
@@ -115,7 +115,7 @@ export default function AuditLogsPage() {
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
                     </button>
                     <button type="button" onClick={() => setShowFilters((v) => !v)}
-                        className={cn(`h-9 ${btnOutline}`, showFilters && "border-[#C69A52] bg-[#FAF6F0] text-[#A27B3A]")}>
+                        className={cn(`h-9 ${btnOutline}`, showFilters && "border-[#C69A52] bg-[#FAF6F0] dark:bg-[#2a1e0a] text-[#A27B3A]")}>
                         <SlidersHorizontal className="h-3.5 w-3.5 text-[#A27B3A]" />
                         {showFilters ? "Hide filters" : "Show filters"}
                     </button>
@@ -124,36 +124,36 @@ export default function AuditLogsPage() {
 
             {/* ── FILTERS card (toggleable) ── */}
             {showFilters && (
-                <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-5 shadow-xs space-y-3">
+                <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-5 shadow-xs space-y-3">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Filters</p>
                     <div className="flex flex-wrap items-end gap-3">
                         <div className="space-y-1">
-                            <label className="text-[12px] font-medium text-[#4F5967] block">Action</label>
+                            <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Action</label>
                             <select value={pendingAction} onChange={(e) => setPendingAction(e.target.value)}
                                 className={cn(selectCls, "min-w-35")} style={selectArrow}>
                                 {ACTION_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                             </select>
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[12px] font-medium text-[#4F5967] block">Entity</label>
+                            <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Entity</label>
                             <select value={pendingEntity} onChange={(e) => setPendingEntity(e.target.value)}
                                 className={cn(selectCls, "min-w-35")} style={selectArrow}>
                                 {ENTITY_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                             </select>
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[12px] font-medium text-[#4F5967] block">Created at from</label>
+                            <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Created at from</label>
                             <input type="date" value={pendingFrom} onChange={(e) => setPendingFrom(e.target.value)}
-                                className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
+                                className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] scheme-light dark:scheme-dark" />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[12px] font-medium text-[#4F5967] block">Created at to</label>
+                            <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Created at to</label>
                             <input type="date" value={pendingTo} onChange={(e) => setPendingTo(e.target.value)}
-                                className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
+                                className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] scheme-light dark:scheme-dark" />
                         </div>
                         <div className="flex items-center gap-2 pb-0.5">
                             <button type="button" onClick={applyFilters}
-                                className="h-10 rounded-[6px] bg-[#1E293B] px-5 text-[12px] font-semibold text-white hover:bg-[#0f172a] transition-colors">
+                                className="h-10 rounded-[6px] bg-[#1E293B] dark:bg-[#2d2d2d] px-5 text-[12px] font-semibold text-white hover:bg-[#0f172a] dark:hover:bg-[#3a3a3a] transition-colors">
                                 Apply filters
                             </button>
                             <button type="button" onClick={resetFilters}
@@ -166,7 +166,7 @@ export default function AuditLogsPage() {
             )}
 
             {/* ── ACTIVITY card ── */}
-            <div className="rounded-[11px] border border-[#E5E7EB] bg-white shadow-xs">
+            <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] shadow-xs">
                 <div className="p-5 space-y-3">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Activity</p>
 
@@ -177,7 +177,7 @@ export default function AuditLogsPage() {
                             <Input type="text" value={search}
                                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                                 placeholder="Search within this page (company, user, email, description)..."
-                                className="h-10 rounded-[6px] border border-[#D1D5DB] bg-white! pl-9 text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none" />
+                                className="h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! pl-9 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none" />
                         </div>
                         <button type="button" onClick={() => setPage(1)}
                             className="h-10 rounded-[6px] bg-[#C69A52] px-5 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors">
@@ -195,7 +195,7 @@ export default function AuditLogsPage() {
                     </div>
 
                     {/* Table */}
-                    <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+                    <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                         <table className="w-full text-[12px] border-collapse">
                             <thead>
                                 <tr className="bg-[#C69A52] text-white">
@@ -204,36 +204,36 @@ export default function AuditLogsPage() {
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#F3F4F6]">
+                            <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan={TABLE_COLS.length} className="py-12 text-center bg-white">
+                                        <td colSpan={TABLE_COLS.length} className="py-12 text-center bg-white dark:bg-[#242424]">
                                             <LogoSpinner label="Loading..." className="mx-auto" />
                                         </td>
                                     </tr>
                                 ) : paginated.length === 0 ? (
                                     <tr>
-                                        <td colSpan={TABLE_COLS.length} className="py-10 text-center text-[12px] text-[#9CA3AF] italic bg-white">
+                                        <td colSpan={TABLE_COLS.length} className="py-10 text-center text-[12px] text-[#9CA3AF] italic bg-white dark:bg-[#242424]">
                                             No logs for these filters.
                                         </td>
                                     </tr>
                                 ) : paginated.map((log, i) => (
-                                    <tr key={log.id} className={cn(i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30", "hover:bg-[#FAF6F0] transition-colors")}>
-                                        <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{log.company}</td>
-                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{log.user}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967]">{log.email}</td>
+                                    <tr key={log.id} className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#1e1e1e]/50", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors")}>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{log.company}</td>
+                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{log.user}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{log.email}</td>
                                         <td className="px-3 py-2.5">
                                             <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold", {
-                                                "bg-green-50 text-green-700 border border-green-200": log.action === "Created" || log.action === "Posted",
-                                                "bg-yellow-50 text-yellow-700 border border-yellow-200": log.action === "Updated" || log.action === "Unposted",
-                                                "bg-red-50 text-red-600 border border-red-200": log.action === "Deleted",
-                                                "bg-blue-50 text-blue-600 border border-blue-200": log.action === "Login" || log.action === "Logout",
+                                                "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800": log.action === "Created" || log.action === "Posted",
+                                                "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800": log.action === "Updated" || log.action === "Unposted",
+                                                "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800": log.action === "Deleted",
+                                                "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800": log.action === "Login" || log.action === "Logout",
                                             })}>
                                                 {log.action}
                                             </span>
                                         </td>
-                                        <td className="px-3 py-2.5 text-[#4F5967]">{log.entity}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] max-w-xs truncate">{log.description}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{log.entity}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] max-w-xs truncate">{log.description}</td>
                                         <td className="px-3 py-2.5 text-[#9CA3AF] whitespace-nowrap">{log.createdAt}</td>
                                     </tr>
                                 ))}
@@ -243,21 +243,21 @@ export default function AuditLogsPage() {
                 </div>
 
                 {/* ── Footer ── */}
-                <div className="flex items-center justify-between border-t border-[#F3F4F6] px-5 py-3">
+                <div className="flex items-center justify-between border-t border-[#F3F4F6] dark:border-[#2e2e2e] px-5 py-3">
                     <span className="text-[12px] text-[#9CA3AF]">
                         {isLoading ? "—" : filtered.length} logs total
                     </span>
                     <div className="flex items-center gap-2">
                         <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[#4F5967] hover:bg-[#FAF6F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                             <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
-                        <span className="text-[12px] text-[#4F5967]">
-                            Page <span className="font-semibold text-[#1E293B]">{page}</span> of{" "}
-                            <span className="font-semibold text-[#1E293B]">{totalPages}</span>
+                        <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">
+                            Page <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{page}</span> of{" "}
+                            <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{totalPages}</span>
                         </span>
                         <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[#4F5967] hover:bg-[#FAF6F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                             <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                     </div>
