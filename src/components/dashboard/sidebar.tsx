@@ -91,6 +91,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
 
   return (
     <aside
+      style={{ fontFamily: "var(--font-inter), 'Inter', sans-serif" }}
       className={cn(
         "sidebar flex h-full flex-col bg-white dark:bg-[#1e1e1e] border-r border-[#E5E7EB] dark:border-[#2e2e2e] shadow-[0_1px_3px_rgba(0,0,0,0.02)]",
         collapsed ? "w-[72px]" : "w-[220px]",
