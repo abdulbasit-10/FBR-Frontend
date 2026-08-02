@@ -22,12 +22,17 @@ function NavItemComponent({
 }) {
   const hasChildren = !!item.children?.length;
 
-  const containsActive = (node: NavItem): boolean =>
-    pathname === node.href || !!node.children?.some(containsActive);
+  // For non-root leaf nodes, also match sub-paths (e.g. /inventory-adjustment/create)
+  const nodeMatches = (node: NavItem, d: number): boolean =>
+    pathname === node.href ||
+    (d > 0 && !node.children?.length && pathname.startsWith(node.href + "/"));
 
-  const [isExpanded, setIsExpanded] = useState(() => containsActive(item));
-  const isActiveLeaf = !hasChildren && pathname === item.href;
-  const isActiveParent = hasChildren && containsActive(item);
+  const containsActive = (node: NavItem, d = 0): boolean =>
+    nodeMatches(node, d) || !!node.children?.some((c) => containsActive(c, d + 1));
+
+  const [isExpanded, setIsExpanded] = useState(() => containsActive(item, depth));
+  const isActiveLeaf = !hasChildren && nodeMatches(item, depth);
+  const isActiveParent = hasChildren && containsActive(item, depth);
   const isActive = isActiveLeaf || isActiveParent;
   const Icon = item.icon;
 
