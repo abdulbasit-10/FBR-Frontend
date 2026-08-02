@@ -32,8 +32,8 @@ export default function PurchaseSummaryReportPage() {
                 onSelectPartyClick={() => setShowModal(true)}
                 onClearParty={() => setSelectedParty(null)}
                 actionOptions={PURCHASE_ACTIONS}
-                dateFromLabel="Posting date from"
-                dateToLabel="Posting date to"
+                dateFromLabel="Document date from"
+                dateToLabel="Document date to"
                 actionLabel="Document type"
                 dateTo={dateTo} onDateToChange={setDateTo}
                 action={action} onActionChange={setAction}
