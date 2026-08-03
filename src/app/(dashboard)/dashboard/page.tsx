@@ -101,7 +101,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Sidebar Column */}
-        <aside className="w-[307px] space-y-3">
+        <aside className="w-[307px] space-y-4 gap-2">
           <SideStat title="Customers" value="209" label="Total registered customers" href="/dashboard/customers" />
           <SideStat title="Items in Inventory" value="237" label="Products: 9  ·  Services: 228" href="/dashboard/items" />
           <Workload />
