@@ -129,7 +129,12 @@ export default function SalesReturnPage() {
 
                 {/* ── Header ── */}
                 <div className="flex items-center justify-between">
-                    <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]" style={{ fontFamily: "'Inter', sans-serif" }}>{status === "All" ? "All" : status} Sales Returns</h1>
+                    <div className="flex items-center gap-1.5">
+                        <button type="button" onClick={() => router.back()} className="cursor-pointer text-[#A27B3A] hover:opacity-75 transition-opacity">
+                            <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]" style={{ fontFamily: "'Inter', sans-serif" }}>{status === "All" ? "All" : status} Sales Returns</h1>
+                    </div>
                     <div className="flex items-center gap-2">
                         <button type="button" onClick={() => load()} className="flex h-8 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                             <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh

@@ -102,15 +102,15 @@ export function TransactionListShell({
 
             {/* ── Header ── */}
             <div className="flex items-center justify-between pb-1">
-                {backHref ? (
-                    <button onClick={() => router.push(backHref)}
-                        className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity">
-                        <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
-                        {title}
-                    </button>
-                ) : (
+                <div className="flex items-center gap-1.5">
+                    {backHref && (
+                        <button type="button" onClick={() => router.back()}
+                            className="cursor-pointer text-[#A27B3A] hover:opacity-75 transition-opacity">
+                            <ChevronLeft className="h-5 w-5" />
+                        </button>
+                    )}
                     <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">{title}</h1>
-                )}
+                </div>
                 <div className="flex items-center gap-2">{headerActions}</div>
             </div>
 

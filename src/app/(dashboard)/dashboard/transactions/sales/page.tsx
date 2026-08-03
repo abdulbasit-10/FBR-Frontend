@@ -140,7 +140,12 @@ export default function SalesInvoicesPage() {
 
             {/* ── Page Level Header Bar ── */}
             <div className="flex items-center justify-between pb-1">
-                <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]" style={{ fontFamily: "'Inter', sans-serif" }}>{status === "All" ? "All" : status} Sales Invoices</h1>
+                <div className="flex items-center gap-1.5">
+                    <button type="button" onClick={() => router.back()} className="cursor-pointer text-[#A27B3A] hover:opacity-75 transition-opacity">
+                        <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]" style={{ fontFamily: "'Inter', sans-serif" }}>{status === "All" ? "All" : status} Sales Invoices</h1>
+                </div>
                 <div className="flex items-center gap-2">
                     <button
                         type="button"

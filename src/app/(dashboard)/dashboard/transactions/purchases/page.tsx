@@ -91,6 +91,7 @@ export default function PurchaseInvoicePage() {
     return (
         <TransactionListShell
             title={`${status === "All" ? "All" : status} Purchase Invoices`}
+            backHref="/dashboard"
             headerActions={<>
                 <button type="button" onClick={load} className={`h-8 ${btnOutline}`}>
                     <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
