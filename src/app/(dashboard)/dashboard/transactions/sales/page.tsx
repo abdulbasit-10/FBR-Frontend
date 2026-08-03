@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     RefreshCw,
     Plus,
@@ -68,16 +68,22 @@ const selectArrow = {
 
 export default function SalesInvoicesPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
-    const [status, setStatus] = useState("All");
+    const [status, setStatus] = useState(() => searchParams.get("status") ?? "All");
     const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [invoices, setInvoices] = useState<SalesInvoice[]>([]);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
+
+    useEffect(() => {
+        setStatus(searchParams.get("status") ?? "All");
+        setPage(1);
+    }, [searchParams]);
 
     const load = useCallback(() => {
         setIsLoading(true);
@@ -134,7 +140,7 @@ export default function SalesInvoicesPage() {
 
             {/* ── Page Level Header Bar ── */}
             <div className="flex items-center justify-between pb-1">
-                <h1 className="text-[18px] font-bold text-[#1E293B]">All Sales Invoices</h1>
+                <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]" style={{ fontFamily: "'Inter', sans-serif" }}>{status === "All" ? "All" : status} Sales Invoices</h1>
                 <div className="flex items-center gap-2">
                     <button
                         type="button"

@@ -48,22 +48,22 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <DashboardSection title="Sales">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Sales Invoices" count="11" />
-              <SummaryCard title="Sales Returns" count="0" returnCard />
+              <SummaryCard title="Sales Invoices" count="11" postedHref="/dashboard/transactions/sales?status=Posted" unpostedHref="/dashboard/transactions/sales?status=UnPosted" />
+              <SummaryCard title="Sales Returns" count="0" returnCard postedHref="/dashboard/transactions/sales/returns?status=Posted" unpostedHref="/dashboard/transactions/sales/returns?status=UnPosted" />
             </div>
           </DashboardSection>
 
           <DashboardSection title="Purchases">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Sales Invoices" count="11" />
-              <SummaryCard title="Purchase Returns" count="0" returnCard />
+              <SummaryCard title="Sales Invoices" count="11" postedHref="/dashboard/transactions/purchases?status=Posted" unpostedHref="/dashboard/transactions/purchases?status=UnPosted" />
+              <SummaryCard title="Purchase Returns" count="0" returnCard postedHref="/dashboard/transactions/purchases/returns?status=Posted" unpostedHref="/dashboard/transactions/purchases/returns?status=UnPosted" />
             </div>
           </DashboardSection>
 
           <DashboardSection title="Inventory">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Posted Adjustments" count="11" inventory />
-              <SummaryCard title="Unposted Adjustments" count="11" inventory />
+              <SummaryCard title="Posted Adjustments" count="11" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
+              <SummaryCard title="Unposted Adjustments" count="11" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
             </div>
           </DashboardSection>
 
@@ -123,7 +123,7 @@ function DashboardSection({ title, children }: { title: string; children: React.
   );
 }
 
-function SummaryCard({ title, count, returnCard, inventory }: { title: string; count: string; returnCard?: boolean; inventory?: boolean }) {
+function SummaryCard({ title, count, returnCard, inventory, postedHref, unpostedHref }: { title: string; count: string; returnCard?: boolean; inventory?: boolean; postedHref?: string; unpostedHref?: string }) {
   return (
     <div className="flex w-full flex-col gap-[10px] rounded-[14px] border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] pb-[22px] pl-[14px] pr-[14px] pt-[22px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
       <div className="flex items-center justify-between">
@@ -136,16 +136,16 @@ function SummaryCard({ title, count, returnCard, inventory }: { title: string; c
         <b className="text-sm dark:text-[#f0f0f0]">{count}</b>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Status title="Posted" value={returnCard ? "11" : "11"} active />
-        <Status title="Unposted" value="0" />
+        <Status title="Posted" value={returnCard ? "11" : "11"} active href={postedHref} />
+        <Status title="Unposted" value="0" href={unpostedHref} />
       </div>
     </div>
   );
 }
 
-function Status({ title, value, active }: { title: string; value: string; active?: boolean }) {
-  return (
-    <div className="flex w-full flex-col justify-between rounded-[10px] bg-[#cb9d58] p-3 text-xs">
+function Status({ title, value, active, href }: { title: string; value: string; active?: boolean; href?: string }) {
+  const inner = (
+    <div className={`flex w-full flex-col justify-between rounded-[10px] bg-[#cb9d58] p-3 text-xs${href ? " cursor-pointer hover:brightness-110 transition-[filter]" : ""}`}>
       <div className="flex items-center justify-between text-white font-medium">
         <span>{title}</span>
         <b className="font-bold">{value}</b>
@@ -163,6 +163,7 @@ function Status({ title, value, active }: { title: string; value: string; active
       </div>
     </div>
   );
+  return href ? <Link href={href}>{inner}</Link> : inner;
 }
 
 /* ── PROFILE ROW COMPONENT ── */
