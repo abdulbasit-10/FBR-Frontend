@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     SelectInvoiceModal,
     type SaleInvoiceForReturn,
@@ -64,10 +64,11 @@ const selectCls = "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a
 
 export default function SalesReturnPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
-    const [status, setStatus] = useState("All");
+    const [status, setStatus] = useState(() => searchParams.get("status") ?? "All");
     const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [returns, setReturns] = useState<SalesReturn[]>([]);
@@ -75,6 +76,11 @@ export default function SalesReturnPage() {
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+    useEffect(() => {
+        setStatus(searchParams.get("status") ?? "All");
+        setPage(1);
+    }, [searchParams]);
 
     const load = useCallback(() => {
         setIsLoading(true); setReturns([]);
@@ -123,7 +129,7 @@ export default function SalesReturnPage() {
 
                 {/* ── Header ── */}
                 <div className="flex items-center justify-between">
-                    <h1 className="text-[18px] font-bold text-[#1E293B]">Sales Return</h1>
+                    <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]" style={{ fontFamily: "'Inter', sans-serif" }}>{status === "All" ? "All" : status} Sales Returns</h1>
                     <div className="flex items-center gap-2">
                         <button type="button" onClick={() => load()} className="flex h-8 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                             <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
