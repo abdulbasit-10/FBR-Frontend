@@ -102,8 +102,8 @@ export default function DashboardPage() {
 
         {/* Right Sidebar Column */}
         <aside className="w-[307px] space-y-3">
-          <SideStat title="Customers" value="209" label="Total registered customers" />
-          <SideStat title="Items in Inventory" value="237" label="Products: 9  ·  Services: 228" />
+          <SideStat title="Customers" value="209" label="Total registered customers" href="/dashboard/customers" />
+          <SideStat title="Items in Inventory" value="237" label="Products: 9  ·  Services: 228" href="/dashboard/items" />
           <Workload />
           <Activity />
           <MasterData />
@@ -200,9 +200,9 @@ function ProfileRow({ left, right }: { left: ItemProps; right: ItemProps }) {
 }
 
 /* ── SIDEBAR STAT CARD ── */
-function SideStat({ title, value, label }: { title: string; value: string; label: string }) {
-  return (
-    <div className="rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+function SideStat({ title, value, label, href }: { title: string; value: string; label: string; href?: string }) {
+  const inner = (
+    <div className={`rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]${href ? " cursor-pointer hover:shadow-md hover:border-[#d4b88a] dark:hover:border-[#5a3e1a] transition-shadow" : ""}`}>
       <div className="flex justify-between text-[13px] font-medium text-[#4B5563] dark:text-[#9ca3af]">
         <span>{title}</span>
         <ArrowUpRight className="h-4 w-4 text-[#9CA3AF]" />
@@ -211,6 +211,7 @@ function SideStat({ title, value, label }: { title: string; value: string; label
       <p className="mt-2 text-[11px] text-[#9CA3AF]">{label}</p>
     </div>
   );
+  return href ? <Link href={href}>{inner}</Link> : inner;
 }
 
 /* ── WORKLOAD SPLIT CARD ── */
