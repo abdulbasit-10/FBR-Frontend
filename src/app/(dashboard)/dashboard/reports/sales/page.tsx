@@ -20,7 +20,7 @@ const DOCUMENT_TYPES = [
 
 // Clean input class forcing explicit white bg and clear borders
 const inputStyleClass =
-    "h-[40px] rounded-[6px] border border-[#D1D5DB] !bg-white text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] px-[12px] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none [color-scheme:light]";
+    "h-[40px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-[12px] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none [color-scheme:light] dark:[color-scheme:dark]";
 
 export default function SalesDetailReportPage() {
     const router = useRouter();
@@ -45,13 +45,13 @@ export default function SalesDetailReportPage() {
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
             {/* ── Main Outer Container ── */}
-            <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-5 shadow-xs space-y-5">
+            <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-5 shadow-xs space-y-5">
 
                 {/* Page Title + Action Controls Bar */}
                 <div className="flex items-center justify-between pb-1">
                     <button
                         onClick={() => router.back()}
-                        className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] hover:opacity-75 transition-opacity"
+                        className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity"
                     >
                         <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
                         Sales Detail Report
@@ -59,7 +59,7 @@ export default function SalesDetailReportPage() {
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
-                            className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                            className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
                         >
                             <Download className="h-3.5 w-3.5 text-[#A27B3A]" />
                             Export
@@ -73,7 +73,7 @@ export default function SalesDetailReportPage() {
                         </button>
                         <button
                             type="button"
-                            className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                            className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
                         >
                             <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" />
                             Refresh
@@ -82,7 +82,7 @@ export default function SalesDetailReportPage() {
                 </div>
 
                 {/* Filters Section */}
-                <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4 space-y-3">
+                <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] p-4 space-y-3">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">
                         Filters
                     </p>
@@ -90,7 +90,7 @@ export default function SalesDetailReportPage() {
                     <div className="flex flex-wrap items-end gap-3">
                         {/* Posting date from (White BG) */}
                         <div className="flex-1 min-w-40 space-y-1.5">
-                            <Label className="text-[12px] font-medium text-[#4F5967]">
+                            <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                                 Posting date from
                             </Label>
                             <Input
@@ -103,7 +103,7 @@ export default function SalesDetailReportPage() {
 
                         {/* Posting date to (White BG) */}
                         <div className="flex-1 min-w-40 space-y-1.5">
-                            <Label className="text-[12px] font-medium text-[#4F5967]">
+                            <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                                 Posting date to
                             </Label>
                             <Input
@@ -116,13 +116,13 @@ export default function SalesDetailReportPage() {
 
                         {/* Document type */}
                         <div className="flex-1 min-w-37.5 space-y-1.5">
-                            <Label className="text-[12px] font-medium text-[#4F5967]">
+                            <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                                 Document type
                             </Label>
                             <select
                                 value={documentType}
                                 onChange={(e) => setDocumentType(e.target.value)}
-                                className="h-10 w-full rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] text-[#1E293B] px-3 focus:outline-none focus:border-[#C69A52] focus-visible:border-[#C69A52] appearance-none cursor-pointer"
+                                className="h-10 w-full rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] focus-visible:border-[#C69A52] appearance-none cursor-pointer"
                                 style={{
                                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
                                     backgroundRepeat: "no-repeat",
@@ -140,15 +140,15 @@ export default function SalesDetailReportPage() {
 
                         {/* Customers — opens SelectCustomerModal */}
                         <div className="flex-1 min-w-42.5 space-y-1.5">
-                            <Label className="text-[12px] font-medium text-[#4F5967]">
+                            <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                                 Customers
                             </Label>
                             <button
                                 type="button"
                                 onClick={() => setShowCustomerModal(true)}
-                                className="h-10 w-full rounded-[6px] border border-[#D1D5DB] bg-white text-[12px] px-3 flex items-center justify-between hover:border-[#C69A52] transition-colors focus:outline-none focus:border-[#C69A52]"
+                                className="h-10 w-full rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] px-3 flex items-center justify-between hover:border-[#C69A52] transition-colors focus:outline-none focus:border-[#C69A52]"
                             >
-                                <span className={selectedCustomer ? "text-[#1E293B]" : "text-[#9CA3AF]"}>
+                                <span className={selectedCustomer ? "text-[#1E293B] dark:text-[#f0f0f0]" : "text-[#9CA3AF]"}>
                                     {selectedCustomer ? selectedCustomer.name : "All Customers"}
                                 </span>
                                 {selectedCustomer ? (
@@ -174,7 +174,7 @@ export default function SalesDetailReportPage() {
                             <button
                                 type="button"
                                 onClick={handleReset}
-                                className="h-10 rounded-[6px] border border-[#E3D2BA] bg-white px-4 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors whitespace-nowrap"
+                                className="h-10 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors whitespace-nowrap"
                             >
                                 Reset filters
                             </button>
@@ -189,12 +189,12 @@ export default function SalesDetailReportPage() {
 
                 {/* ── Content Area / Empty State Container (Clear 2px Dashed Border) ── */}
                 {!hasApplied ? (
-                    <div className="w-full h-40.25 rounded-[10px] border-2 border-dashed border-[#CBD5E1] bg-white flex flex-col items-center justify-center gap-2 p-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6EE]">
+                    <div className="w-full h-40.25 rounded-[10px] border-2 border-dashed border-[#CBD5E1] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] flex flex-col items-center justify-center gap-2 p-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6EE] dark:bg-[#2a2a2a]">
                             <FileSearch className="h-5 w-5 text-[#C69A52]" />
                         </div>
                         <div className="text-center space-y-0.5">
-                            <p className="text-[14px] font-bold text-[#1E293B]">
+                            <p className="text-[14px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">
                                 No report data yet
                             </p>
                             <p className="text-[11px] text-[#9CA3AF]">
@@ -206,8 +206,8 @@ export default function SalesDetailReportPage() {
                     </div>
                 ) : (
                     /* Results State */
-                    <div className="w-full h-40.25 rounded-[10px] border-2 border-dashed border-[#CBD5E1] bg-white flex items-center justify-center">
-                        <p className="text-[12px] text-[#6B7280]">
+                    <div className="w-full h-40.25 rounded-[10px] border-2 border-dashed border-[#CBD5E1] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] flex items-center justify-center">
+                        <p className="text-[12px] text-[#6B7280] dark:text-[#9ca3af]">
                             No records match the selected filters.
                         </p>
                     </div>

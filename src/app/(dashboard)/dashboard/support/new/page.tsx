@@ -9,10 +9,10 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 const inputCls =
-    "h-10 rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none";
+    "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none";
 
 const textareaCls =
-    "min-h-[160px] rounded-[6px] border border-[#D1D5DB] bg-white! text-[12px] text-[#1E293B] placeholder:text-[#9CA3AF] resize-none focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none";
+    "min-h-[160px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] resize-none focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none";
 
 export default function NewSupportRequestPage() {
     const router = useRouter();
@@ -41,13 +41,13 @@ export default function NewSupportRequestPage() {
             {/* ── Header ── */}
             <div className="flex items-center justify-between pb-1">
                 <button onClick={() => router.back()}
-                    className="flex items-center gap-1.5 text-[20px] font-bold text-[#1E293B] hover:opacity-75 transition-opacity">
+                    className="flex items-center gap-1.5 text-[20px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity">
                     <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
                     New support request
                 </button>
                 <div className="flex items-center gap-2.5">
                     <button type="button" onClick={() => router.back()}
-                        className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] bg-white px-5 text-[13px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors">
+                        className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-5 text-[13px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         Cancel
                     </button>
                     <button type="button" disabled={!canSubmit}
@@ -58,11 +58,11 @@ export default function NewSupportRequestPage() {
             </div>
 
             {/* ── DETAIL card ── */}
-            <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-5 shadow-xs space-y-5">
+            <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-5 shadow-xs space-y-5">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Detail</p>
 
                 <div className="space-y-1.5">
-                    <Label className="text-[12px] font-medium text-[#4F5967]">
+                    <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                         Title <span className="text-[#A27B3A]">*</span>
                     </Label>
                     <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
@@ -71,7 +71,7 @@ export default function NewSupportRequestPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                    <Label className="text-[12px] font-medium text-[#4F5967]">
+                    <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                         Description <span className="text-[#A27B3A]">*</span>
                     </Label>
                     <Textarea value={description} onChange={(e) => setDescription(e.target.value)}
@@ -81,7 +81,7 @@ export default function NewSupportRequestPage() {
             </div>
 
             {/* ── ATTACHMENT card ── */}
-            <div className="rounded-[11px] border border-[#E5E7EB] bg-white p-5 shadow-xs space-y-3">
+            <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-5 shadow-xs space-y-3">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">
                     Attachment <span className="normal-case font-normal text-[#9CA3AF]">(optional)</span>
                 </p>
@@ -96,14 +96,14 @@ export default function NewSupportRequestPage() {
                     className={cn(
                         "flex flex-col items-center justify-center gap-2 rounded-[8px] border-2 border-dashed cursor-pointer py-12 transition-colors",
                         isDragging
-                            ? "border-[#C69A52] bg-[#FAF6F0]"
-                            : "border-[#D1D5DB] bg-[#FAFAFA] hover:border-[#C69A52] hover:bg-[#FAF6F0]"
+                            ? "border-[#C69A52] bg-[#FAF6F0] dark:bg-[#2a1e0a]"
+                            : "border-[#D1D5DB] dark:border-[#3a3a3a] bg-[#FAFAFA] dark:bg-[#1e1e1e] hover:border-[#C69A52] hover:bg-[#FAF6F0] dark:hover:bg-[#2a1e0a]"
                     )}>
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FAF6EE] border border-[#E3D2BA]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FAF6EE] dark:bg-[#2a2a2a] border border-[#E3D2BA] dark:border-[#4a3a20]">
                         <Upload className="h-5 w-5 text-[#A27B3A]" />
                     </div>
                     {file ? (
-                        <p className="text-[12px] font-medium text-[#1E293B]">{file.name}</p>
+                        <p className="text-[12px] font-medium text-[#1E293B] dark:text-[#f0f0f0]">{file.name}</p>
                     ) : (
                         <p className="text-[12px] text-[#9CA3AF]">Upload File</p>
                     )}

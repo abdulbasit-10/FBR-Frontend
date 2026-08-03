@@ -95,19 +95,19 @@ export default function ItemLedgerPage() {
             onRefresh={load}
         >
             {paginated.map((row, i) => (
-                <tr key={row.id} className={cn(i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30", "hover:bg-[#FAF6F0] transition-colors")}>
-                    <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{row.documentNo}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{row.documentDate}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{row.postingDate}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{row.documentType}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{row.itemNo}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{row.hsCode}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{row.itemMapping}</td>
-                    <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{row.itemName}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{row.itemType}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{row.quantity.toLocaleString()}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] text-center">{row.uom}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967]">{fmt(row.unitCost)}</td>
+                <tr key={row.id} className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors")}>
+                    <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{row.documentNo}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.documentDate}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.postingDate}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.documentType}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{row.itemNo}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{row.hsCode}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{row.itemMapping}</td>
+                    <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{row.itemName}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{row.itemType}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{row.quantity.toLocaleString()}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] text-center">{row.uom}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(row.unitCost)}</td>
                     <td className="px-3 py-2.5 text-right font-mono text-[#A27B3A] font-semibold">{fmt(row.unitPrice)}</td>
                 </tr>
             ))}

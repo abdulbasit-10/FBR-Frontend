@@ -13,11 +13,13 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 export function TopNav() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     setAuthUser(auth.getUser());
   }, []);
 
@@ -51,9 +53,10 @@ export function TopNav() {
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-2 sm:px-3 text-[11px] text-[#424b56] dark:text-[#9ca3af] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
             <span className="grid h-5 w-5 place-items-center rounded-full bg-[#fff4df] dark:bg-[#2a2a2a] text-[#c39445]">
-              {theme === "dark" ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
+              {/* render Moon as default to match SSR; swap to Sun only after mount */}
+              {mounted && theme === "dark" ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
             </span>
-            <span className="hidden sm:inline">{theme === "dark" ? "Light" : "Dark"}</span>
+            <span className="hidden sm:inline">{mounted && theme === "dark" ? "Light" : "Dark"}</span>
           </button>
           <button type="button" onClick={() => setShowConfirm(true)} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-2 sm:px-3 text-[11px] text-[#424b56] dark:text-[#9ca3af] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
             <span className="grid h-5 w-5 place-items-center rounded-full bg-[#fff4df] dark:bg-[#2a2a2a] text-[#c39445]"><LogOut className="h-3 w-3" /></span>

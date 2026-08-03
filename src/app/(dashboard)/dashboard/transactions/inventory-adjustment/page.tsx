@@ -109,22 +109,22 @@ export default function InventoryAdjustmentPage() {
         >
             {paginated.map((a, i) => (
                 <tr key={a.id}
-                    className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0]", selected.has(a.id) ? "bg-[#FDF3E3]" : i % 2 === 0 ? "bg-white" : "bg-[#FAF6F0]/30")}
+                    className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]", selected.has(a.id) ? "bg-[#FDF3E3] dark:bg-[#3a2a10]" : i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]")}
                     onClick={() => toggleSelect(a.id)}>
                     <td className="px-3 py-2.5 text-center">
                         <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggleSelect(a.id)}
                             onClick={(e) => e.stopPropagation()} className="h-3.5 w-3.5 accent-[#C69A52] cursor-pointer" />
                     </td>
-                    <td className="px-3 py-2.5 font-medium text-[#1E293B] whitespace-nowrap">{a.adjustmentNo}</td>
+                    <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{a.adjustmentNo}</td>
                     <td className="px-3 py-2.5">{statusBadge(a.status)}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{a.source}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967]">{a.user}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{a.docDate}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] whitespace-nowrap">{a.postingDate}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B]">{a.lines}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{a.source}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{a.user}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{a.docDate}</td>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{a.postingDate}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{a.lines}</td>
                     <td className="px-3 py-2.5 text-right font-mono text-[#A27B3A] font-semibold">{fmt(a.lineTotal)}</td>
                     <td className="px-3 py-2.5 text-center" onClick={(e) => e.stopPropagation()}>
-                        <button className="flex items-center gap-1 rounded-[5px] border border-[#E3D2BA] bg-white px-2.5 py-1 text-[11px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] transition-colors">
+                        <button className="flex items-center gap-1 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 py-1 text-[11px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                             <Eye className="h-3 w-3" /> View
                         </button>
                     </td>

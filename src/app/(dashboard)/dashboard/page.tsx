@@ -69,14 +69,14 @@ export default function DashboardPage() {
 
           {/* ── COMPANY PROFILE SECTION ── */}
           <DashboardSection title="Company Profile">
-            <div className="rounded-[16px] border border-[#e8e9eb] bg-white p-6 shadow-sm">
+            <div className="rounded-[16px] border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-6 shadow-sm">
               {/* Header */}
               <div className="mb-5 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#a37934] text-xs font-bold text-white">
                   ES
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#1f2937]">BIO Encova Solution</h3>
+                  <h3 className="text-sm font-bold text-[#1f2937] dark:text-[#f0f0f0]">BIO Encova Solution</h3>
                   <p className="text-[11px] text-[#9ca3af]">Enterprise Resource Planning Account</p>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export default function DashboardPage() {
 function DashboardSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <p className="mb-2 text-sm font-semibold text-[#3f4854]">{title}</p>
+      <p className="mb-2 text-sm font-semibold text-[#3f4854] dark:text-white">{title}</p>
       {children}
     </section>
   );
@@ -125,15 +125,15 @@ function DashboardSection({ title, children }: { title: string; children: React.
 
 function SummaryCard({ title, count, returnCard, inventory }: { title: string; count: string; returnCard?: boolean; inventory?: boolean }) {
   return (
-    <div className="flex w-full flex-col gap-[10px] rounded-[14px] border border-[#e8e9eb] bg-white pb-[22px] pl-[14px] pr-[14px] pt-[22px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="flex w-full flex-col gap-[10px] rounded-[14px] border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] pb-[22px] pl-[14px] pr-[14px] pt-[22px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-2 text-sm font-medium">
-          <span className="grid h-6 w-6 place-items-center rounded-full bg-[#f5ead7] text-[#b88735]">
+        <span className="flex items-center gap-2 text-sm font-medium dark:text-[#f0f0f0]">
+          <span className="grid h-6 w-6 place-items-center rounded-full bg-[#f5ead7] dark:bg-[#2a2a2a] text-[#b88735]">
             {inventory ? <Box className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
           </span>
           {title}
         </span>
-        <b className="text-sm">{count}</b>
+        <b className="text-sm dark:text-[#f0f0f0]">{count}</b>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <Status title="Posted" value={returnCard ? "11" : "11"} active />
@@ -156,8 +156,7 @@ function Status({ title, value, active }: { title: string; value: string; active
             Active
           </span>
         ) : (
-          <span className="inline-block rounded-full bg-[#F4EEE457] px-3 py-1 text-[10px] font-semibold text-[#70490B];
-        ]">
+          <span className="inline-block rounded-full bg-[#F4EEE457] dark:bg-[#2a2a2a] px-3 py-1 text-[10px] font-semibold text-[#70490B] dark:text-[#c99d54]">
             Pending
           </span>
         )}
@@ -175,14 +174,14 @@ interface ItemProps {
 
 function ProfileRow({ left, right }: { left: ItemProps; right: ItemProps }) {
   return (
-    <div className="grid grid-cols-2 items-center rounded-[8px] bg-[#FBF7F0] px-4 py-3.5">
+    <div className="grid grid-cols-2 items-center rounded-[8px] bg-[#FBF7F0] dark:bg-[#2a2a2a] px-4 py-3.5">
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#A37934] text-white">
           <left.icon className="h-4 w-4 stroke-[2]" />
         </div>
         <div>
-          <p className="text-[13px] font-medium leading-none text-[#6B7280]">{left.label}</p>
-          <p className="mt-1 text-[13px] font-semibold leading-none text-[#B88735]">{left.value}</p>
+          <p className="text-[13px] font-medium leading-none text-[#6B7280] dark:text-[#9ca3af]">{left.label}</p>
+          <p className="mt-1 text-[13px] font-semibold leading-none text-[#B88735] dark:text-[#c99d54]">{left.value}</p>
         </div>
       </div>
 
@@ -191,8 +190,8 @@ function ProfileRow({ left, right }: { left: ItemProps; right: ItemProps }) {
           <right.icon className="h-4 w-4 stroke-[2]" />
         </div>
         <div>
-          <p className="text-[13px] font-medium leading-none text-[#6B7280]">{right.label}</p>
-          <p className="mt-1 text-[13px] font-semibold leading-none text-[#B88735]">{right.value}</p>
+          <p className="text-[13px] font-medium leading-none text-[#6B7280] dark:text-[#9ca3af]">{right.label}</p>
+          <p className="mt-1 text-[13px] font-semibold leading-none text-[#B88735] dark:text-[#c99d54]">{right.value}</p>
         </div>
       </div>
     </div>
@@ -202,12 +201,12 @@ function ProfileRow({ left, right }: { left: ItemProps; right: ItemProps }) {
 /* ── SIDEBAR STAT CARD ── */
 function SideStat({ title, value, label }: { title: string; value: string; label: string }) {
   return (
-    <div className="rounded-2xl border border-[#e8e9eb] bg-white p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      <div className="flex justify-between text-[13px] font-medium text-[#4B5563]">
+    <div className="rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      <div className="flex justify-between text-[13px] font-medium text-[#4B5563] dark:text-[#9ca3af]">
         <span>{title}</span>
         <ArrowUpRight className="h-4 w-4 text-[#9CA3AF]" />
       </div>
-      <b className="mt-2 block text-[32px] font-bold leading-none text-[#111827]">{value}</b>
+      <b className="mt-2 block text-[32px] font-bold leading-none text-[#111827] dark:text-[#f0f0f0]">{value}</b>
       <p className="mt-2 text-[11px] text-[#9CA3AF]">{label}</p>
     </div>
   );
@@ -216,27 +215,27 @@ function SideStat({ title, value, label }: { title: string; value: string; label
 /* ── WORKLOAD SPLIT CARD ── */
 function Workload() {
   return (
-    <div className="rounded-2xl border border-[#e8e9eb] bg-white p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      <p className="text-sm font-bold text-[#1F2937]">Workload Split</p>
+    <div className="rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      <p className="text-sm font-bold text-[#1F2937] dark:text-[#f0f0f0]">Workload Split</p>
       <div className="mt-4 flex items-center justify-between">
-        <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-[7px] border-[#C69856] bg-white text-xs font-bold text-[#1F2937]">
+        <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-[7px] border-[#C69856] bg-white dark:bg-[#242424] text-xs font-bold text-[#1F2937] dark:text-[#f0f0f0]">
           859
         </div>
 
-        <div className="flex-1 space-y-3 pl-4 text-xs font-medium text-[#4B5563]">
+        <div className="flex-1 space-y-3 pl-4 text-xs font-medium text-[#4B5563] dark:text-[#9ca3af]">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-[#C69856]" />
               Posted docs
             </span>
-            <b className="font-semibold text-[#1F2937]">812</b>
+            <b className="font-semibold text-[#1F2937] dark:text-[#f0f0f0]">812</b>
           </div>
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB] dark:bg-[#555]" />
               Unposted docs
             </span>
-            <b className="font-semibold text-[#1F2937]">47</b>
+            <b className="font-semibold text-[#1F2937] dark:text-[#f0f0f0]">47</b>
           </div>
         </div>
       </div>
@@ -247,8 +246,8 @@ function Workload() {
 /* ── ACTIVITY TREND CARD ── */
 function Activity() {
   return (
-    <div className="rounded-2xl border border-[#e8e9eb] bg-white p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      <p className="text-sm font-bold text-[#1F2937]">Activity Trend</p>
+    <div className="rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      <p className="text-sm font-bold text-[#1F2937] dark:text-[#f0f0f0]">Activity Trend</p>
 
       <div className="relative mt-4 h-32 w-full">
         <div className="absolute left-0 top-0 flex h-24 flex-col justify-between text-[10px] font-medium text-[#9CA3AF]">
@@ -302,8 +301,8 @@ function Activity() {
 /* ── MASTER DATA CARD ── */
 function MasterData() {
   return (
-    <div className="rounded-2xl border border-[#e8e9eb] bg-white p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      <p className="text-sm font-bold text-[#1F2937]">Master Data</p>
+    <div className="rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      <p className="text-sm font-bold text-[#1F2937] dark:text-[#f0f0f0]">Master Data</p>
       <div className="mt-4 space-y-3.5">
         {[
           ["Customer", "45%"],
@@ -311,11 +310,11 @@ function MasterData() {
           ["Items", "56%"],
         ].map(([name, val]) => (
           <div key={name} className="text-xs font-medium">
-            <div className="flex justify-between text-[#4B5563]">
+            <div className="flex justify-between text-[#4B5563] dark:text-[#9ca3af]">
               <span>{name}</span>
-              <b className="font-bold text-[#1F2937]">{val}</b>
+              <b className="font-bold text-[#1F2937] dark:text-[#f0f0f0]">{val}</b>
             </div>
-            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#F3F4F6]">
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#F3F4F6] dark:bg-[#333]">
               <div
                 className="h-full rounded-full bg-[#C69856] transition-all duration-300"
                 style={{ width: val }}
@@ -331,11 +330,11 @@ function MasterData() {
 /* ── QUICK TIPS CARD ── */
 function Tips() {
   return (
-    <div className="rounded-2xl border border-[#e8e9eb] bg-white p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      <p className="flex items-center gap-2 text-sm font-bold text-[#1F2937]">
-        <CircleHelp className="h-4 w-4 text-[#4B5563]" /> Quick Tips
+    <div className="rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      <p className="flex items-center gap-2 text-sm font-bold text-[#1F2937] dark:text-[#f0f0f0]">
+        <CircleHelp className="h-4 w-4 text-[#4B5563] dark:text-[#9ca3af]" /> Quick Tips
       </p>
-      <ul className="mt-4 space-y-3 text-[11px] leading-relaxed text-[#6B7280]">
+      <ul className="mt-4 space-y-3 text-[11px] leading-relaxed text-[#6B7280] dark:text-[#9ca3af]">
         <li>Use bulk Actions list pages to post or delete multiple documents.</li>
         <li>Run detail and summary reports from the Reports section.</li>
         <li>Keep your company ERP data updated under Company Profile.</li>
