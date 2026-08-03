@@ -55,7 +55,7 @@ export default function DashboardPage() {
 
           <DashboardSection title="Purchases">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Sales Invoices" count="11" postedHref="/dashboard/transactions/purchases?status=Posted" unpostedHref="/dashboard/transactions/purchases?status=UnPosted" />
+              <SummaryCard title="Purchase Invoices" count="11" postedHref="/dashboard/transactions/purchases?status=Posted" unpostedHref="/dashboard/transactions/purchases?status=UnPosted" />
               <SummaryCard title="Purchase Returns" count="0" returnCard postedHref="/dashboard/transactions/purchases/returns?status=Posted" unpostedHref="/dashboard/transactions/purchases/returns?status=UnPosted" />
             </div>
           </DashboardSection>
