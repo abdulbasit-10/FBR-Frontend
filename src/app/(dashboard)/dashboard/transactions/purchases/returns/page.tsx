@@ -4,6 +4,7 @@ import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 import {
     TransactionListShell,
     fmt,
@@ -66,9 +67,9 @@ function PurchaseReturnContent() {
         setPage(1);
     }, [searchParams]);
 
-    const load = useCallback(() => {
+    const load = useCallback((showToast = false) => {
         setIsLoading(true); setReturns([]);
-        const t = setTimeout(() => { setReturns(MOCK_RETURNS); setIsLoading(false); }, 1000);
+        const t = setTimeout(() => { setReturns(MOCK_RETURNS); setIsLoading(false); if (showToast) toast.success("Purchase returns refreshed."); }, 1000);
         return () => clearTimeout(t);
     }, []);
 
@@ -108,7 +109,7 @@ function PurchaseReturnContent() {
                 title={`${status === "All" ? "All" : status} Purchase Returns`}
                 backHref="/dashboard"
                 headerActions={<>
-                    <button type="button" onClick={load} className={`h-9 ${btnOutline}`}>
+                    <button type="button" onClick={() => load(true)} className={`h-9 ${btnOutline}`}>
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
                     </button>
                     <button type="button" onClick={() => setShowModal(true)}

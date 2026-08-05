@@ -4,6 +4,7 @@ import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, Plus, CheckSquare, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 import {
     TransactionListShell,
     fmt,
@@ -61,9 +62,9 @@ function PurchaseInvoiceContent() {
         setPage(1);
     }, [searchParams]);
 
-    const load = useCallback(() => {
+    const load = useCallback((showToast = false) => {
         setIsLoading(true); setInvoices([]);
-        const t = setTimeout(() => { setInvoices(MOCK_PURCHASES); setIsLoading(false); }, 1000);
+        const t = setTimeout(() => { setInvoices(MOCK_PURCHASES); setIsLoading(false); if (showToast) toast.success("Purchase invoices refreshed."); }, 1000);
         return () => clearTimeout(t);
     }, []);
 
@@ -93,7 +94,7 @@ function PurchaseInvoiceContent() {
             title={`${status === "All" ? "All" : status} Purchase Invoices`}
             backHref="/dashboard"
             headerActions={<>
-                <button type="button" onClick={load} className={`h-8 ${btnOutline}`}>
+                <button type="button" onClick={() => load(true)} className={`h-8 ${btnOutline}`}>
                     <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
                 </button>
                 <button type="button" onClick={() => router.push("/dashboard/transactions/purchases/create")}

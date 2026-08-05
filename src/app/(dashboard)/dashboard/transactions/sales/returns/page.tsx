@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     SelectInvoiceModal,
@@ -82,9 +83,9 @@ function SalesReturnContent() {
         setPage(1);
     }, [searchParams]);
 
-    const load = useCallback(() => {
+    const load = useCallback((showToast = false) => {
         setIsLoading(true); setReturns([]);
-        const t = setTimeout(() => { setReturns(MOCK_RETURNS); setIsLoading(false); }, 1000);
+        const t = setTimeout(() => { setReturns(MOCK_RETURNS); setIsLoading(false); if (showToast) toast.success("Sales returns refreshed."); }, 1000);
         return () => clearTimeout(t);
     }, []);
 
@@ -136,7 +137,7 @@ function SalesReturnContent() {
                         <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]" style={{ fontFamily: "'Inter', sans-serif" }}>{status === "All" ? "All" : status} Sales Returns</h1>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => load()} className="flex h-8 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
+                        <button type="button" onClick={() => load(true)} className="flex h-8 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                             <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
                         </button>
                         <button type="button" onClick={toggleAll} className="flex h-8 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
