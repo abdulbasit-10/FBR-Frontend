@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     RefreshCw,
@@ -66,7 +66,7 @@ const selectArrow = {
     paddingRight: "28px",
 };
 
-export default function SalesInvoicesPage() {
+function SalesInvoicesContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
@@ -384,4 +384,8 @@ export default function SalesInvoicesPage() {
             </div>
         </div>
     );
+}
+
+export default function SalesInvoicesPage() {
+    return <Suspense fallback={null}><SalesInvoicesContent /></Suspense>;
 }

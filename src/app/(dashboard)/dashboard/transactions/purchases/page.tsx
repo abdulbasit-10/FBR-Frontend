@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, Plus, CheckSquare, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,7 +42,7 @@ const COLUMNS = [
 
 const DATE_HINT = "Date range includes invoices where document date or posting date falls between the selected days (inclusive). Leave dates empty to load all periods.";
 
-export default function PurchaseInvoicePage() {
+function PurchaseInvoiceContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
@@ -152,4 +152,8 @@ export default function PurchaseInvoicePage() {
             ))}
         </TransactionListShell>
     );
+}
+
+export default function PurchaseInvoicePage() {
+    return <Suspense fallback={null}><PurchaseInvoiceContent /></Suspense>;
 }

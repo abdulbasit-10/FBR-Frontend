@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, Plus, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -36,7 +36,7 @@ const COLUMNS = [
 
 const DATE_HINT = "Date range includes adjustments where document date or posting date falls between the selected days (inclusive). Leave dates empty to load all periods. Provide both from and to, or neither.";
 
-export default function InventoryAdjustmentPage() {
+function InventoryAdjustmentContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
@@ -138,4 +138,8 @@ export default function InventoryAdjustmentPage() {
             ))}
         </TransactionListShell>
     );
+}
+
+export default function InventoryAdjustmentPage() {
+    return <Suspense fallback={null}><InventoryAdjustmentContent /></Suspense>;
 }
