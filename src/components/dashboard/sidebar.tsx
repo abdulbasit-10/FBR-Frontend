@@ -15,6 +15,16 @@ export type SidebarProps = {
   onCollapsedChange?: (collapsed: boolean) => void;
 };
 
+function collectLeafHrefs(items: NavItem[], out = new Set<string>()): Set<string> {
+  for (const item of items) {
+    if (!item.children?.length) out.add(item.href);
+    else collectLeafHrefs(item.children, out);
+  }
+  return out;
+}
+
+const ALL_LEAF_HREFS = collectLeafHrefs(primaryNav);
+
 function NavItemComponent({
   item, collapsed, pathname, depth = 0,
 }: {
@@ -22,10 +32,10 @@ function NavItemComponent({
 }) {
   const hasChildren = !!item.children?.length;
 
-  // For non-root leaf nodes, also match sub-paths (e.g. /inventory-adjustment/create)
+  // startsWith only fires for sub-paths not explicitly listed in the nav (e.g. /create, /edit)
   const nodeMatches = (node: NavItem, d: number): boolean =>
     pathname === node.href ||
-    (d > 0 && !node.children?.length && pathname.startsWith(node.href + "/")) ||
+    (d > 0 && !node.children?.length && pathname.startsWith(node.href + "/") && !ALL_LEAF_HREFS.has(pathname)) ||
     !!node.matchPaths?.includes(pathname);
 
   const containsActive = (node: NavItem, d = 0): boolean =>
