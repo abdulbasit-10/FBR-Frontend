@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, Plus, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -38,16 +38,22 @@ const DATE_HINT = "Date range includes adjustments where document date or postin
 
 export default function InventoryAdjustmentPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
-    const [status, setStatus] = useState("All");
+    const [status, setStatus] = useState(() => searchParams.get("status") ?? "All");
     const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [adjustments, setAdjustments] = useState<InventoryAdjustment[]>([]);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
+
+    useEffect(() => {
+        setStatus(searchParams.get("status") ?? "All");
+        setPage(1);
+    }, [searchParams]);
 
     const load = useCallback(() => {
         setIsLoading(true); setAdjustments([]);
@@ -78,7 +84,7 @@ export default function InventoryAdjustmentPage() {
 
     return (
         <TransactionListShell
-            title="All Inventory Adjustments"
+            title={`${status === "All" ? "All" : status} Inventory Adjustments`}
             backHref="/dashboard"
             searchPlaceholder="Adjustment Number"
             headerActions={<>

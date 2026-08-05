@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -48,10 +48,11 @@ const DATE_HINT = "Date range includes returns where document date or posting da
 
 export default function PurchaseReturnPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
-    const [status, setStatus] = useState("All");
+    const [status, setStatus] = useState(() => searchParams.get("status") ?? "All");
     const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [returns, setReturns] = useState<PurchaseReturn[]>([]);
@@ -59,6 +60,11 @@ export default function PurchaseReturnPage() {
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
     const [showModal, setShowModal] = useState(false);
+
+    useEffect(() => {
+        setStatus(searchParams.get("status") ?? "All");
+        setPage(1);
+    }, [searchParams]);
 
     const load = useCallback(() => {
         setIsLoading(true); setReturns([]);
@@ -99,7 +105,8 @@ export default function PurchaseReturnPage() {
     return (
         <>
             <TransactionListShell
-                title="Purchase Return"
+                title={`${status === "All" ? "All" : status} Purchase Returns`}
+                backHref="/dashboard"
                 headerActions={<>
                     <button type="button" onClick={load} className={`h-9 ${btnOutline}`}>
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh

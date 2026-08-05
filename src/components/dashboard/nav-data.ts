@@ -21,6 +21,7 @@ import {
   TrendingDown,
   Boxes,
   BarChart2,
+  Archive,
 } from "lucide-react";
 
 export type NavItem = {
@@ -93,6 +94,7 @@ export const primaryNav: NavItem[] = [
       { title: "Sales Invoice", href: "/dashboard/import-export/sales-invoices", icon: ShoppingBag },
     ],
   },
+  { title: "Items", href: "/dashboard/items", icon: Archive },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
   { title: "Audit Logs", href: "/dashboard/audit-logs", icon: FileText },
 ];

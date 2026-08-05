@@ -48,22 +48,22 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <DashboardSection title="Sales">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Sales Invoices" count="11" />
-              <SummaryCard title="Sales Returns" count="0" returnCard />
+              <SummaryCard title="Sales Invoices" count="11" postedHref="/dashboard/transactions/sales?status=Posted" unpostedHref="/dashboard/transactions/sales?status=UnPosted" />
+              <SummaryCard title="Sales Returns" count="0" returnCard postedHref="/dashboard/transactions/sales/returns?status=Posted" unpostedHref="/dashboard/transactions/sales/returns?status=UnPosted" />
             </div>
           </DashboardSection>
 
           <DashboardSection title="Purchases">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Sales Invoices" count="11" />
-              <SummaryCard title="Purchase Returns" count="0" returnCard />
+              <SummaryCard title="Purchase Invoices" count="11" postedHref="/dashboard/transactions/purchases?status=Posted" unpostedHref="/dashboard/transactions/purchases?status=UnPosted" />
+              <SummaryCard title="Purchase Returns" count="0" returnCard postedHref="/dashboard/transactions/purchases/returns?status=Posted" unpostedHref="/dashboard/transactions/purchases/returns?status=UnPosted" />
             </div>
           </DashboardSection>
 
           <DashboardSection title="Inventory">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Posted Adjustments" count="11" inventory />
-              <SummaryCard title="Unposted Adjustments" count="11" inventory />
+              <SummaryCard title="Posted Adjustments" count="11" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
+              <SummaryCard title="Unposted Adjustments" count="11" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
             </div>
           </DashboardSection>
 
@@ -101,9 +101,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Sidebar Column */}
-        <aside className="w-[307px] space-y-3">
-          <SideStat title="Customers" value="209" label="Total registered customers" />
-          <SideStat title="Items in Inventory" value="237" label="Products: 9  ·  Services: 228" />
+        <aside className="w-[307px] space-y-4 gap-2">
+          <SideStat title="Customers" value="209" label="Total registered customers" href="/dashboard/customers" />
+          <SideStat title="Items in Inventory" value="237" label="Products: 9  ·  Services: 228" href="/dashboard/items" />
           <Workload />
           <Activity />
           <MasterData />
@@ -123,7 +123,7 @@ function DashboardSection({ title, children }: { title: string; children: React.
   );
 }
 
-function SummaryCard({ title, count, returnCard, inventory }: { title: string; count: string; returnCard?: boolean; inventory?: boolean }) {
+function SummaryCard({ title, count, returnCard, inventory, postedHref, unpostedHref }: { title: string; count: string; returnCard?: boolean; inventory?: boolean; postedHref?: string; unpostedHref?: string }) {
   return (
     <div className="flex w-full flex-col gap-[10px] rounded-[14px] border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] pb-[22px] pl-[14px] pr-[14px] pt-[22px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
       <div className="flex items-center justify-between">
@@ -136,16 +136,16 @@ function SummaryCard({ title, count, returnCard, inventory }: { title: string; c
         <b className="text-sm dark:text-[#f0f0f0]">{count}</b>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Status title="Posted" value={returnCard ? "11" : "11"} active />
-        <Status title="Unposted" value="0" />
+        <Status title="Posted" value={returnCard ? "11" : "11"} active href={postedHref} />
+        <Status title="Unposted" value="0" href={unpostedHref} />
       </div>
     </div>
   );
 }
 
-function Status({ title, value, active }: { title: string; value: string; active?: boolean }) {
-  return (
-    <div className="flex w-full flex-col justify-between rounded-[10px] bg-[#cb9d58] p-3 text-xs">
+function Status({ title, value, active, href }: { title: string; value: string; active?: boolean; href?: string }) {
+  const inner = (
+    <div className={`flex w-full flex-col justify-between rounded-[10px] bg-[#cb9d58] p-3 text-xs${href ? " cursor-pointer hover:brightness-110 transition-[filter]" : ""}`}>
       <div className="flex items-center justify-between text-white font-medium">
         <span>{title}</span>
         <b className="font-bold">{value}</b>
@@ -163,6 +163,7 @@ function Status({ title, value, active }: { title: string; value: string; active
       </div>
     </div>
   );
+  return href ? <Link href={href}>{inner}</Link> : inner;
 }
 
 /* ── PROFILE ROW COMPONENT ── */
@@ -199,9 +200,9 @@ function ProfileRow({ left, right }: { left: ItemProps; right: ItemProps }) {
 }
 
 /* ── SIDEBAR STAT CARD ── */
-function SideStat({ title, value, label }: { title: string; value: string; label: string }) {
-  return (
-    <div className="rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+function SideStat({ title, value, label, href }: { title: string; value: string; label: string; href?: string }) {
+  const inner = (
+    <div className={`rounded-2xl border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[16.5px] shadow-[0_1px_3px_rgba(0,0,0,.04)]${href ? " cursor-pointer hover:shadow-md hover:border-[#d4b88a] dark:hover:border-[#5a3e1a] transition-shadow" : ""}`}>
       <div className="flex justify-between text-[13px] font-medium text-[#4B5563] dark:text-[#9ca3af]">
         <span>{title}</span>
         <ArrowUpRight className="h-4 w-4 text-[#9CA3AF]" />
@@ -210,6 +211,7 @@ function SideStat({ title, value, label }: { title: string; value: string; label
       <p className="mt-2 text-[11px] text-[#9CA3AF]">{label}</p>
     </div>
   );
+  return href ? <Link href={href}>{inner}</Link> : inner;
 }
 
 /* ── WORKLOAD SPLIT CARD ── */

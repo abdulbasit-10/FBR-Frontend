@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, Plus, CheckSquare, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -44,16 +44,22 @@ const DATE_HINT = "Date range includes invoices where document date or posting d
 
 export default function PurchaseInvoicePage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
-    const [status, setStatus] = useState("All");
+    const [status, setStatus] = useState(() => searchParams.get("status") ?? "All");
     const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [invoices, setInvoices] = useState<PurchaseInvoice[]>([]);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
+
+    useEffect(() => {
+        setStatus(searchParams.get("status") ?? "All");
+        setPage(1);
+    }, [searchParams]);
 
     const load = useCallback(() => {
         setIsLoading(true); setInvoices([]);
@@ -84,7 +90,8 @@ export default function PurchaseInvoicePage() {
 
     return (
         <TransactionListShell
-            title="Purchase Invoice"
+            title={`${status === "All" ? "All" : status} Purchase Invoices`}
+            backHref="/dashboard"
             headerActions={<>
                 <button type="button" onClick={load} className={`h-8 ${btnOutline}`}>
                     <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
