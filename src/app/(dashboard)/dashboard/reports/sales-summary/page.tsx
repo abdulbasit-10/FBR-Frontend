@@ -35,6 +35,7 @@ export default function SalesSummaryReportPage() {
                 dateFromLabel="Posting date from"
                 dateToLabel="Posting date to"
                 actionLabel="Document type"
+                dateFrom={dateFrom} onDateFromChange={setDateFrom}
                 dateTo={dateTo} onDateToChange={setDateTo}
                 action={action} onActionChange={setAction}
                 onApplyFilters={handleApply}

@@ -35,6 +35,7 @@ export default function PurchaseSummaryReportPage() {
                 dateFromLabel="Document date from"
                 dateToLabel="Document date to"
                 actionLabel="Document type"
+                dateFrom={dateFrom} onDateFromChange={setDateFrom}
                 dateTo={dateTo} onDateToChange={setDateTo}
                 action={action} onActionChange={setAction}
                 onApplyFilters={handleApply}
