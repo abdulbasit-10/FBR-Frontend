@@ -6,6 +6,7 @@ import { Download, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 export const STATUS_OPTIONS = ["All", "Posted", "UnPosted", "Cancelled"];
 export const SOURCE_OPTIONS = ["All", "Manual", "API", "Import"];
@@ -165,7 +166,7 @@ export function TransactionListShell({
             {/* ── Table card ── */}
             <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
-                    <button type="button"
+                    <button type="button" onClick={() => toast.success("Exported successfully.")}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>

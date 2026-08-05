@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { selectArrow, selectCls, btnOutline } from "@/components/dashboard/transaction-list-shell";
+import { toast } from "react-toastify";
 
 interface AuditLog {
     id: number;
@@ -60,9 +61,9 @@ export default function AuditLogsPage() {
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [page, setPage] = useState(1);
 
-    const load = useCallback(() => {
+    const load = useCallback((showToast = false) => {
         setIsLoading(true); setLogs([]);
-        const t = setTimeout(() => { setLogs(MOCK_LOGS); setIsLoading(false); }, 1000);
+        const t = setTimeout(() => { setLogs(MOCK_LOGS); setIsLoading(false); if (showToast) toast.success("Audit logs refreshed."); }, 1000);
         return () => clearTimeout(t);
     }, []);
 
@@ -72,6 +73,7 @@ export default function AuditLogsPage() {
         setAppliedAction(pendingAction); setAppliedEntity(pendingEntity);
         setAppliedFrom(pendingFrom); setAppliedTo(pendingTo);
         setPage(1);
+        toast.success("Filters applied.");
     };
 
     const resetFilters = () => {
@@ -80,6 +82,7 @@ export default function AuditLogsPage() {
         setAppliedAction("All"); setAppliedEntity("All");
         setAppliedFrom(""); setAppliedTo("");
         setPage(1);
+        toast.info("Filters cleared.");
     };
 
     const filtered = logs.filter((log) => {
@@ -108,10 +111,10 @@ export default function AuditLogsPage() {
                     Audit logs
                 </button>
                 <div className="flex items-center gap-2">
-                    <button type="button" className={`h-9 ${btnOutline}`}>
+                    <button type="button" onClick={() => toast.success("Exported successfully.")} className={`h-9 ${btnOutline}`}>
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>
-                    <button type="button" onClick={load} className={`h-9 ${btnOutline}`}>
+                    <button type="button" onClick={() => load(true)} className={`h-9 ${btnOutline}`}>
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
                     </button>
                     <button type="button" onClick={() => setShowFilters((v) => !v)}

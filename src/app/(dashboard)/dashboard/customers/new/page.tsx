@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,6 +79,7 @@ export default function NewCustomerPage() {
         setSelectedSlab(null); setCity(""); setPostcode(""); setAddress("");
         setContactPerson(""); setPhoneNumber(""); setWhatsapp(""); setEmail(""); setWebsite("");
         setShowResetConfirm(false);
+        toast.info("Form reset.");
     };
 
     return (
@@ -97,6 +99,11 @@ export default function NewCustomerPage() {
                         <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
                     </button>
                     <button type="button"
+                        onClick={() => {
+                            const missing = requiredChecks.filter((r) => !r.done);
+                            if (missing.length > 0) toast.error(`Fill required fields: ${missing.map((r) => r.label).join(", ")}.`);
+                            else toast.success("Customer saved successfully.");
+                        }}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
                         <Save className="h-3.5 w-3.5" /> Save
                     </button>

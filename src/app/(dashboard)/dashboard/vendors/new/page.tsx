@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 const PROVINCES = ["Select", "Khyber Pakhtunkhwa", "Punjab", "Sindh", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir", "Islamabad"];
 const VENDOR_TYPES = ["Select", "Individual", "Company", "AOP"];
@@ -65,6 +66,7 @@ export default function NewVendorPage() {
         setCity(""); setPostcode(""); setAddress("");
         setContactPerson(""); setPhoneNumber(""); setWhatsapp(""); setEmail(""); setWebsite("");
         setShowResetConfirm(false);
+        toast.info("Form reset.");
     };
 
     return (
@@ -84,6 +86,11 @@ export default function NewVendorPage() {
                         <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
                     </button>
                     <button type="button"
+                        onClick={() => {
+                            const missing = requiredChecks.filter((r) => !r.done);
+                            if (missing.length > 0) toast.error(`Fill required fields: ${missing.map((r) => r.label).join(", ")}.`);
+                            else toast.success("Vendor saved successfully.");
+                        }}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
                         <Save className="h-3.5 w-3.5" /> Save
                     </button>

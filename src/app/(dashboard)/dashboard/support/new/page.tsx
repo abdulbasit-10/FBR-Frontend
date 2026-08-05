@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 const inputCls =
     "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none";
@@ -51,6 +52,7 @@ export default function NewSupportRequestPage() {
                         Cancel
                     </button>
                     <button type="button" disabled={!canSubmit}
+                        onClick={() => { toast.success("Support request submitted."); router.back(); }}
                         className="flex h-9 items-center gap-1.5 rounded-[5px] bg-[#C69A52] px-6 text-[13px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
                         Submit
                     </button>
