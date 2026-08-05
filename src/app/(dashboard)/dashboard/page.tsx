@@ -307,11 +307,11 @@ function MasterData() {
       <p className="text-sm font-bold text-[#1F2937] dark:text-[#f0f0f0]">Master Data</p>
       <div className="mt-4 space-y-3.5">
         {[
-          ["Customer", "45%"],
-          ["Vendors", "82%"],
-          ["Items", "56%"],
-        ].map(([name, val]) => (
-          <div key={name} className="text-xs font-medium">
+          ["Customer", "45%", "/dashboard/customers"],
+          ["Vendors", "82%", "/dashboard/vendors"],
+          ["Items", "56%", "/dashboard/items"],
+        ].map(([name, val, href]) => (
+          <Link key={name} href={href} className="block text-xs font-medium rounded-lg px-1 py-0.5 -mx-1 hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors">
             <div className="flex justify-between text-[#4B5563] dark:text-[#9ca3af]">
               <span>{name}</span>
               <b className="font-bold text-[#1F2937] dark:text-[#f0f0f0]">{val}</b>
@@ -322,7 +322,7 @@ function MasterData() {
                 style={{ width: val }}
               />
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

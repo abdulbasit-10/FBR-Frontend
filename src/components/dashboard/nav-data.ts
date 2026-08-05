@@ -33,7 +33,7 @@ export type NavItem = {
 };
 
 export const primaryNav: NavItem[] = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, matchPaths: ["/dashboard/customers", "/dashboard/items", "/dashboard/vendors"] },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, matchPaths: ["/dashboard/customers", "/dashboard/customers/new", "/dashboard/items", "/dashboard/items/new", "/dashboard/vendors", "/dashboard/vendors/new"] },
   {
     title: "Transactions",
     href: "/dashboard/transactions",
