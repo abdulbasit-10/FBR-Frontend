@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -46,7 +46,7 @@ const COLUMNS = [
 
 const DATE_HINT = "Date range includes returns where document date or posting date falls between the selected days (inclusive). Leave dates empty to include all periods.";
 
-export default function PurchaseReturnPage() {
+function PurchaseReturnContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
@@ -164,4 +164,8 @@ export default function PurchaseReturnPage() {
             <SelectPurchaseInvoiceModal isOpen={showModal} onClose={() => setShowModal(false)} onSelect={handleInvoiceSelect} />
         </>
     );
+}
+
+export default function PurchaseReturnPage() {
+    return <Suspense fallback={null}><PurchaseReturnContent /></Suspense>;
 }

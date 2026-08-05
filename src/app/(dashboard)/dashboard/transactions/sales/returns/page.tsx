@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import {
     RefreshCw,
     Plus,
@@ -62,7 +62,7 @@ const selectArrow = {
 };
 const selectCls = "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer";
 
-export default function SalesReturnPage() {
+function SalesReturnContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [search, setSearch] = useState("");
@@ -246,4 +246,8 @@ export default function SalesReturnPage() {
             <SelectInvoiceModal isOpen={showInvoiceModal} onClose={() => setShowInvoiceModal(false)} onSelect={handleInvoiceSelect} />
         </div>
     );
+}
+
+export default function SalesReturnPage() {
+    return <Suspense fallback={null}><SalesReturnContent /></Suspense>;
 }
