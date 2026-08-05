@@ -25,7 +25,8 @@ function NavItemComponent({
   // For non-root leaf nodes, also match sub-paths (e.g. /inventory-adjustment/create)
   const nodeMatches = (node: NavItem, d: number): boolean =>
     pathname === node.href ||
-    (d > 0 && !node.children?.length && pathname.startsWith(node.href + "/"));
+    (d > 0 && !node.children?.length && pathname.startsWith(node.href + "/")) ||
+    !!node.matchPaths?.includes(pathname);
 
   const containsActive = (node: NavItem, d = 0): boolean =>
     nodeMatches(node, d) || !!node.children?.some((c) => containsActive(c, d + 1));
