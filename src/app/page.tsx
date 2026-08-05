@@ -203,7 +203,7 @@ export default function Home() {
 
                   <button
                     type="submit"
-                    className="flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-[#C69A52] text-[14px] sm:text-[15px] font-semibold text-white hover:bg-[#b58b44] active:scale-[0.99] transition-all"
+                    className="flex h-11 sm:h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#C69A52] text-[14px] sm:text-[15px] font-semibold text-white hover:bg-[#b58b44] active:scale-[0.99] transition-all"
                   >
                     <span>Sign In</span>
                     <span>&rarr;</span>

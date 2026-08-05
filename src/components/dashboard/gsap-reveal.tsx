@@ -15,28 +15,9 @@ export function GsapReveal({
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        ".sidebar",
-        { x: -12, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" },
-      );
-
-      gsap.fromTo(
         ".navbar",
         { y: -10, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
-      );
-
-      gsap.fromTo(
-        ".nav a",
-        { x: -6, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          duration: 0.45,
-          ease: "power2.out",
-          stagger: 0.03,
-          delay: 0.05,
-        },
       );
 
       gsap.fromTo(
