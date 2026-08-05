@@ -9,6 +9,7 @@ import { auth, type AuthUser } from "@/lib/auth";
 import { MobileSidebar } from "@/components/dashboard/mobile-sidebar";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "react-toastify";
 
 export function TopNav() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export function TopNav() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     await auth.logout();
+    toast.success("Logged out successfully.");
     router.push("/");
   };
 

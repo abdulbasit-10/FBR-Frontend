@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -14,10 +16,21 @@ import {
   RefreshCw,
   Shield,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 const gold = "#c99d54";
 
 export default function DashboardPage() {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast.success("Dashboard refreshed.");
+    }, 1200);
+  };
   return (
     <div
       className="mx-auto max-w-[1440px] font-sans text-[#4f5967]"
@@ -36,8 +49,8 @@ export default function DashboardPage() {
           <Link href="/dashboard/reports/sales" className="flex h-[33px] items-center rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
             View Reports
           </Link>
-          <button className="flex h-[33px] items-center gap-1 rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
-            <RefreshCw className="inline h-3 w-3" /> Refresh data
+          <button onClick={handleRefresh} disabled={isRefreshing} className="flex h-[33px] items-center gap-1 rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750] disabled:opacity-70">
+            <RefreshCw className={`inline h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} /> {isRefreshing ? "Refreshing..." : "Refresh data"}
           </button>
         </div>
       </section>

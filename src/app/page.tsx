@@ -64,11 +64,11 @@ export default function Home() {
 
   return (
     <main
-      className="min-h-dvh w-full flex overflow-x-hidden text-[#4F5967]"
+      className="min-h-dvh w-full flex overflow-x-hidden text-[#4F5967] dark:text-[#9ca3af] dark:bg-[#0f1117]"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       {/* ── Left: Form Panel ── */}
-      <section className="w-full lg:flex-1 flex flex-col bg-white min-h-dvh lg:min-h-0 overflow-y-auto">
+      <section className="w-full lg:flex-1 flex flex-col bg-white dark:bg-[#0f1117] min-h-dvh lg:min-h-0 overflow-y-auto">
         <div className="flex-1 flex flex-col justify-center px-4 sm:px-8 lg:px-12 py-6 sm:py-10">
           <div className="w-full max-w-[500px] mx-auto">
             {/* Logo */}
@@ -83,7 +83,7 @@ export default function Home() {
             </div>
 
             {/* Form Card */}
-            <div className="border border-[#E5E7EB] rounded-[16px] overflow-hidden">
+            <div className="border border-[#E5E7EB] dark:border-[#2e2e2e] rounded-[16px] overflow-hidden">
               <div className="bg-gradient-to-r from-[#C69A52] to-[#A27B3A] px-4 sm:px-6 py-4 sm:py-5 text-white space-y-1.5 sm:space-y-2">
                 <h1 className="text-[18px] sm:text-[22px] font-bold tracking-tight">Welcome Back!</h1>
                 <p className="text-[11.5px] sm:text-[12.5px] leading-relaxed text-white/90">
@@ -91,7 +91,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="px-4 sm:px-7 pt-4 sm:pt-5 pb-5 sm:pb-7 space-y-3 sm:space-y-4">
+              <div className="px-4 sm:px-7 pt-4 sm:pt-5 pb-5 sm:pb-7 space-y-3 sm:space-y-4 bg-white dark:bg-[#161a21]">
                 <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                   {/* Email */}
                   <div className="space-y-1.5">
@@ -105,7 +105,7 @@ export default function Home() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="You@company.com"
-                        className="h-10 sm:h-11 w-full rounded-[8px] border border-[#D1D5DB] bg-white pl-10 pr-4 text-[13px] sm:text-[13.5px] text-[#1E293B] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
+                        className="h-10 sm:h-11 w-full rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] pl-10 pr-4 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none dark:focus:border-[#C69A52]"
                       />
                     </div>
                   </div>
@@ -122,7 +122,7 @@ export default function Home() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Enter Your Password"
-                        className="h-10 sm:h-11 w-full rounded-[8px] border border-[#D1D5DB] bg-white pl-10 pr-10 text-[13px] sm:text-[13.5px] text-[#1E293B] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
+                        className="h-10 sm:h-11 w-full rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] pl-10 pr-10 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
                       />
                       <button
                         type="button"
@@ -137,7 +137,7 @@ export default function Home() {
 
                   {/* Remember me & Forgot Password */}
                   <div className="flex items-center justify-between text-[12.5px]">
-                    <label className="flex cursor-pointer select-none items-center gap-2 text-[#4F5967]">
+                    <label className="flex cursor-pointer select-none items-center gap-2 text-[#4F5967] dark:text-[#9ca3af]">
                       <input
                         type="checkbox"
                         className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52]"
@@ -154,7 +154,7 @@ export default function Home() {
                   </div>
 
                   {forgotSent && (
-                    <div className="flex items-center justify-between rounded-[8px] border border-[#E3D2BA] bg-[#FAF6F0] px-3 py-2 text-[12px] text-[#A27B3A]">
+                    <div className="flex items-center justify-between rounded-[8px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-[#FAF6F0] dark:bg-[#2a1a08] px-3 py-2 text-[12px] text-[#A27B3A]">
                       <span>Contact your administrator to reset your password.</span>
                       <button
                         type="button"
@@ -171,13 +171,13 @@ export default function Home() {
                   <div className="space-y-1.5">
                     <FieldLabel htmlFor="captcha">CAPTCHA <Req /></FieldLabel>
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-10 sm:h-11 min-w-[90px] sm:min-w-[110px] select-none items-center justify-center rounded-[8px] border border-dashed border-[#C69A52] bg-[#FAF6F0] font-mono text-[15px] sm:text-[17px] font-bold tracking-[4px] sm:tracking-[6px] text-[#C69A52] px-2 sm:px-3">
+                      <div className="flex h-10 sm:h-11 min-w-[90px] sm:min-w-[110px] select-none items-center justify-center rounded-[8px] border border-dashed border-[#C69A52] bg-[#FAF6F0] dark:bg-[#2a1a08] font-mono text-[15px] sm:text-[17px] font-bold tracking-[4px] sm:tracking-[6px] text-[#C69A52] px-2 sm:px-3">
                         {captchaCode}
                       </div>
                       <button
                         type="button"
                         onClick={refreshCaptcha}
-                        className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-[8px] border border-[#D1D5DB] bg-white text-[#C69A52] hover:bg-[#FAF6F0] transition-colors"
+                        className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] text-[#C69A52] hover:bg-[#FAF6F0] dark:hover:bg-[#2a1a08] transition-colors"
                         aria-label="Refresh captcha"
                       >
                         <RefreshCw className="h-4 w-4" />
@@ -190,13 +190,13 @@ export default function Home() {
                         value={captchaInput}
                         onChange={(e) => setCaptchaInput(e.target.value)}
                         placeholder="Enter code"
-                        className="h-10 sm:h-11 min-w-0 flex-1 rounded-[8px] border border-[#D1D5DB] bg-white px-3 sm:px-3.5 text-[13px] sm:text-[13.5px] text-[#1E293B] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
+                        className="h-10 sm:h-11 min-w-0 flex-1 rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-3 sm:px-3.5 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
                       />
                     </div>
                   </div>
 
                   {error && (
-                    <div className="flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 p-2.5 text-[12px] text-red-600">
+                    <div className="flex items-center gap-2 rounded-[8px] border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-2.5 text-[12px] text-red-600 dark:text-red-400">
                       <span>⚠</span> {error}
                     </div>
                   )}
@@ -288,7 +288,7 @@ export default function Home() {
       {/* Loading Overlay */}
       {isSigningIn && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div className="rounded-2xl border border-[#E3D2BA] bg-white px-12 py-10 shadow-2xl">
+          <div className="rounded-2xl border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] px-12 py-10 shadow-2xl">
             <LogoSpinner label="Signing in..." className="mx-auto" />
           </div>
         </div>
@@ -299,14 +299,14 @@ export default function Home() {
 
 function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
-    <label htmlFor={htmlFor} className="block text-[13px] font-medium text-[#4F5967]">
+    <label htmlFor={htmlFor} className="block text-[13px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
       {children}
     </label>
   );
 }
 
 function Req() {
-  return <span className="text-red-500">*</span>;
+  return <span className="text-[#C69A52]">*</span>;
 }
 
 function Pill({ children }: { children: React.ReactNode }) {
