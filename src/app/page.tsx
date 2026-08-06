@@ -68,11 +68,11 @@ export default function Home() {
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       {/* ── Left: Form Panel ── */}
-      <section className="w-full lg:flex-1 flex flex-col bg-white dark:bg-[#0f1117] min-h-dvh lg:min-h-0 overflow-y-auto">
-        <div className="flex-1 flex flex-col justify-center px-4 sm:px-8 lg:px-12 py-6 sm:py-10 [@media(max-height:800px)]:py-5">
+      <section className="lp-section w-full lg:flex-1 flex flex-col bg-white dark:bg-[#0f1117] min-h-dvh lg:min-h-0 overflow-y-auto">
+        <div className="lp-wrap flex-1 flex flex-col justify-center px-4 sm:px-8 lg:px-12 py-6 sm:py-10">
           <div className="w-full max-w-[500px] mx-auto">
             {/* Logo */}
-            <div className="relative h-8 sm:h-9 w-24 sm:w-28 mb-5 sm:mb-7 [@media(max-height:800px)]:mb-3 shrink-0">
+            <div className="lp-logo relative h-8 sm:h-9 w-24 sm:w-28 mb-5 sm:mb-7 shrink-0">
               <Image
                 src="/brand/lOGO.ai.svg"
                 alt="Encova Solution"
@@ -84,15 +84,15 @@ export default function Home() {
 
             {/* Form Card */}
             <div className="border border-[#E5E7EB] dark:border-[#2e2e2e] rounded-[16px] overflow-hidden">
-              <div className="bg-gradient-to-r from-[#C69A52] to-[#A27B3A] px-4 sm:px-6 py-4 sm:py-5 [@media(max-height:800px)]:py-2.5 text-white space-y-1.5 sm:space-y-2 [@media(max-height:800px)]:space-y-1">
+              <div className="lp-card-hd bg-gradient-to-r from-[#C69A52] to-[#A27B3A] px-4 sm:px-6 py-4 sm:py-5 text-white space-y-1.5 sm:space-y-2">
                 <h1 className="text-[18px] sm:text-[22px] font-bold tracking-tight">Welcome Back!</h1>
                 <p className="text-[11.5px] sm:text-[12.5px] leading-relaxed text-white/90">
                   Sign in with your email and password. If your email exists in multiple companies, you&apos;ll pick the company after verification.
                 </p>
               </div>
 
-              <div className="px-4 sm:px-7 pt-4 sm:pt-5 pb-5 sm:pb-7 [@media(max-height:800px)]:pt-3 [@media(max-height:800px)]:pb-3 space-y-3 sm:space-y-4 bg-white dark:bg-[#161a21]">
-                <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 [@media(max-height:800px)]:space-y-3">
+              <div className="lp-card-bd px-4 sm:px-7 pt-4 sm:pt-5 pb-5 sm:pb-7 space-y-3 sm:space-y-4 bg-white dark:bg-[#161a21]">
+                <form onSubmit={handleSubmit} className="lp-form space-y-3 sm:space-y-4">
                   {/* Email */}
                   <div className="space-y-1.5">
                     <FieldLabel htmlFor="email">Email Address <Req /></FieldLabel>
@@ -203,7 +203,7 @@ export default function Home() {
 
                   <button
                     type="submit"
-                    className="flex h-11 sm:h-12 [@media(max-height:800px)]:h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#C69A52] text-[14px] sm:text-[15px] font-semibold text-white hover:bg-[#b58b44] active:scale-[0.99] transition-all"
+                    className="lp-btn flex h-11 sm:h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#C69A52] text-[14px] sm:text-[15px] font-semibold text-white hover:bg-[#b58b44] active:scale-[0.99] transition-all"
                   >
                     <span>Sign In</span>
                     <span>&rarr;</span>
