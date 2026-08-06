@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,10 +72,10 @@ export default function FbrDeletedInvoicesPage() {
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
 
-    const load = useCallback(() => {
+    const load = useCallback((showToast = false) => {
         setIsLoading(true);
         setInvoices([]);
-        const t = setTimeout(() => { setInvoices(MOCK_DATA); setIsLoading(false); }, 1000);
+        const t = setTimeout(() => { setInvoices(MOCK_DATA); setIsLoading(false); if (showToast) toast.success("FBR deleted invoices refreshed."); }, 1000);
         return () => clearTimeout(t);
     }, []);
 
@@ -122,7 +123,7 @@ export default function FbrDeletedInvoicesPage() {
                     <h1 className="text-[18px] font-bold dark:text-white text-[#1E293B]">FBR Deleted Sales Invoices</h1>
                     <button
                         type="button"
-                        onClick={() => load()}
+                        onClick={() => load(true)}
                         className="flex h-8 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] bg-white px-3 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
                     >
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh

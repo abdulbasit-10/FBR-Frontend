@@ -6,6 +6,7 @@ import { RefreshCw, Download, ChevronLeft, ChevronRight, BookOpen } from "lucide
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 export const DOC_TYPE_OPTIONS = ["All", "Sales Invoice", "Sales Return", "Purchase Invoice", "Purchase Return", "Credit Note", "Debit Note"];
 export const ROW_OPTIONS = [50, 100, 200];
@@ -93,13 +94,14 @@ export function LedgerShell({
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={onRefresh}
+                        onClick={() => { onRefresh(); toast.success("Ledger refreshed."); }}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
                     >
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
                     </button>
                     <button
                         type="button"
+                        onClick={() => toast.success("Exported successfully.")}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs"
                     >
                         <Download className="h-3.5 w-3.5" /> Export
@@ -161,7 +163,7 @@ export function LedgerShell({
             {/* ── Table container ── */}
             <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
-                    <button type="button"
+                    <button type="button" onClick={() => toast.success("Exported successfully.")}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>

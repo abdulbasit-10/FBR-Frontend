@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 interface Item {
     id: number;
@@ -61,9 +62,9 @@ export default function ItemsPage() {
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
 
-    const load = useCallback(() => {
+    const load = useCallback((showToast = false) => {
         setIsLoading(true); setItems([]);
-        const t = setTimeout(() => { setItems(MOCK_ITEMS); setIsLoading(false); }, 1000);
+        const t = setTimeout(() => { setItems(MOCK_ITEMS); setIsLoading(false); if (showToast) toast.success("Items refreshed."); }, 1000);
         return () => clearTimeout(t);
     }, []);
 
@@ -100,7 +101,7 @@ export default function ItemsPage() {
                     <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">Items</h1>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button type="button" onClick={load}
+                    <button type="button" onClick={() => load(true)}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
                     </button>
@@ -157,7 +158,7 @@ export default function ItemsPage() {
             {/* Table card */}
             <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
-                    <button type="button"
+                    <button type="button" onClick={() => toast.success("Exported successfully.")}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>

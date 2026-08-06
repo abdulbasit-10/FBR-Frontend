@@ -138,7 +138,7 @@ export function SelectVendorModal({ isOpen, onClose, onSelect }: SelectVendorMod
                             { label: "Registration", value: registrationFilter, set: setRegistrationFilter, opts: REGISTRATION_OPTIONS },
                         ].map(({ label, value, set, opts }) => (
                             <div key={label} className="flex items-center gap-2">
-                                <span className="text-[12px] text-[#4F5967] font-medium">{label}</span>
+                                <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af] font-medium">{label}</span>
                                 <select value={value} onChange={(e) => { set(e.target.value); setPage(1); }}
                                     className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 pr-8 text-[12px] text-[#1E293B] dark:text-white focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
                                     style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}>
@@ -162,11 +162,11 @@ export function SelectVendorModal({ isOpen, onClose, onSelect }: SelectVendorMod
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#F3F4F6]">
+                        <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
-                                <tr><td colSpan={8} className="py-14 text-center"><LogoSpinner label="Loading Vendors..." className="mx-auto" /></td></tr>
+                                <tr><td colSpan={8} className="py-14 text-center bg-white dark:bg-[#1a1a1a]"><LogoSpinner label="Loading Vendors..." className="mx-auto" /></td></tr>
                             ) : paginated.length === 0 ? (
-                                <tr><td colSpan={8} className="py-12 text-center text-[12px] text-[#9CA3AF] italic">No vendors match the current search or filters.</td></tr>
+                                <tr><td colSpan={8} className="py-12 text-center text-[12px] text-[#9CA3AF] italic bg-white dark:bg-[#1a1a1a]">No vendors match the current search or filters.</td></tr>
                             ) : (
                                 paginated.map((v, i) => (
                                     <tr key={v.id} className={cn("transition-colors cursor-pointer", i % 2 === 0 ? "bg-white dark:bg-[#1a1a1a]" : "bg-[#FAF6F0]/30 dark:bg-[#1e1e1e]", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]")} onClick={() => { onSelect(v); onClose(); }}>
@@ -178,7 +178,7 @@ export function SelectVendorModal({ isOpen, onClose, onSelect }: SelectVendorMod
                                         <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{v.province}</td>
                                         <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{v.type}</td>
                                         <td className="px-4 py-2.5">
-                                            <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold", v.registration === "Registered" ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#F3F4F6] text-[#6B7280] border border-[#E5E7EB]")}>{v.registration}</span>
+                                            <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold", v.registration === "Registered" ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900/50" : "bg-[#F3F4F6] text-[#6B7280] border border-[#E5E7EB] dark:bg-[#2a2a2a] dark:text-[#9ca3af] dark:border-[#3a3a3a]")}>{v.registration}</span>
                                         </td>
                                         <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af] font-mono">{v.ntn}</td>
                                         <td className="px-4 py-2.5 text-[#4F5967] dark:text-[#9ca3af] font-mono">{v.strn}</td>

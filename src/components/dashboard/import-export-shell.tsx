@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Download, Upload, FileSpreadsheet } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 interface ImportExportShellProps {
     title: string;
@@ -32,7 +33,7 @@ export function ImportExportShell({
     const handleImport = () => fileInputRef.current?.click();
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0];
-        if (f) onFileChange?.(f);
+        if (f) { onFileChange?.(f); toast.success(`File loaded: ${f.name}`); }
         e.target.value = "";
     };
 
@@ -47,7 +48,7 @@ export function ImportExportShell({
                     {title}
                 </button>
                 <div className="flex items-center gap-2">
-                    <button type="button" onClick={onSave}
+                    <button type="button" onClick={() => { onSave?.(); toast.success("Exported successfully."); }}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white dark:bg-[#1e1e1e] dark:border-[#3a3a3a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> {saveLabel}
                     </button>
@@ -55,7 +56,7 @@ export function ImportExportShell({
                         className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
                         <FileSpreadsheet className="h-3.5 w-3.5" /> Import Excel
                     </button>
-                    <button type="button"
+                    <button type="button" onClick={() => toast.success("Template downloaded.")}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white dark:bg-[#1e1e1e] dark:border-[#3a3a3a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors">
                         <Upload className="h-3.5 w-3.5 text-[#A27B3A]" /> Export Template
                     </button>

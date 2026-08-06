@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -85,10 +86,10 @@ function SalesInvoicesContent() {
         setPage(1);
     }, [searchParams]);
 
-    const load = useCallback(() => {
+    const load = useCallback((showToast = false) => {
         setIsLoading(true);
         setInvoices([]);
-        const t = setTimeout(() => { setInvoices(MOCK_INVOICES); setIsLoading(false); }, 1000);
+        const t = setTimeout(() => { setInvoices(MOCK_INVOICES); setIsLoading(false); if (showToast) toast.success("Sales invoices refreshed."); }, 1000);
         return () => clearTimeout(t);
     }, []);
 
@@ -149,7 +150,7 @@ function SalesInvoicesContent() {
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={() => load()}
+                        onClick={() => load(true)}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
                     >
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh

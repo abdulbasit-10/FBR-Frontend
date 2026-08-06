@@ -21,7 +21,6 @@ import {
   TrendingDown,
   Boxes,
   BarChart2,
-  Archive,
 } from "lucide-react";
 
 export type NavItem = {
@@ -29,10 +28,12 @@ export type NavItem = {
   href: string;
   icon: LucideIcon;
   children?: NavItem[];
+  /** Extra paths that should make this item appear active (without adding them to the sidebar) */
+  matchPaths?: string[];
 };
 
 export const primaryNav: NavItem[] = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, matchPaths: ["/dashboard/customers", "/dashboard/customers/new", "/dashboard/items", "/dashboard/items/new", "/dashboard/vendors", "/dashboard/vendors/new"] },
   {
     title: "Transactions",
     href: "/dashboard/transactions",
@@ -94,7 +95,6 @@ export const primaryNav: NavItem[] = [
       { title: "Sales Invoice", href: "/dashboard/import-export/sales-invoices", icon: ShoppingBag },
     ],
   },
-  { title: "Items", href: "/dashboard/items", icon: Archive },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
   { title: "Audit Logs", href: "/dashboard/audit-logs", icon: FileText },
 ];
