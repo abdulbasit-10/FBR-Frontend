@@ -218,3 +218,34 @@
     animation: ring-pulse 2.6s ease-out infinite;
   }
 }
+
+/* Login page — compress vertical spacing on short-viewport laptops.
+   Unlayered CSS always overrides Tailwind's @layer utilities. */
+@media (max-height: 750px) {
+  .lp-wrap    { padding-top: 1.75rem;  padding-bottom: 1.75rem; }
+  .lp-logo    { margin-bottom: 1rem; }
+  .lp-card-hd { padding-top: 1rem;    padding-bottom: 1rem; }
+  .lp-card-bd { padding-top: 1rem;    padding-bottom: 1.25rem; }
+  .lp-form > * + * { margin-top: 0.75rem; }
+}
+
+@media (max-height: 700px) {
+  .lp-wrap    { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+  .lp-logo    { margin-bottom: 0.125rem; }
+  .lp-card-hd { padding-top: 0.5rem;   padding-bottom: 0.5rem; }
+  .lp-card-bd { padding-top: 0.5rem;   padding-bottom: 0.5rem; }
+  .lp-form > * + * { margin-top: 0.375rem; }
+  .lp-btn     { height: 2.5rem; }
+}
+
+@media (max-height: 545px) {
+  .lp-section { overflow-y: hidden; }
+  .lp-wrap    { padding-top: 0; padding-bottom: 0; }
+  .lp-logo    { margin-bottom: 0; height: 1.75rem; }
+  .lp-card-hd { padding-top: 0; padding-bottom: 0; }
+  .lp-card-hd > * + * { margin-top: 0; }
+  .lp-card-bd { padding-top: 0; padding-bottom: 0; }
+  .lp-card-bd > * + * { margin-top: 0.125rem; }
+  .lp-form > * + * { margin-top: 0.125rem; }
+  .lp-btn     { height: 2rem; }
+}

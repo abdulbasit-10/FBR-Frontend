@@ -128,10 +128,10 @@ export default function CreateSalesInvoicePage() {
 
   const handleSave = () => {
     if (!documentDate || !postingDate || !selectedCustomer || items.length === 0) {
-      alert("Please fill all required fields and add at least one item.");
+      toast.error("Please fill all required fields and add at least one item.");
       return;
     }
-    alert("Invoice saved successfully!");
+    toast.success("Invoice saved successfully!");
   };
 
   // Common Input Style variable to ensure perfect 1:1 match across all inputs
