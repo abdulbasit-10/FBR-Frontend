@@ -64,15 +64,15 @@ export default function Home() {
 
   return (
     <main
-      className="min-h-dvh w-full flex overflow-x-hidden text-[#4F5967] dark:text-[#9ca3af] dark:bg-[#0f1117]"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      className="h-screen w-full flex overflow-hidden text-[#4F5967] dark:text-[#9ca3af] dark:bg-[#0f1117]"
+      style={{ height: '100dvh', fontFamily: "'Inter', sans-serif" }}
     >
       {/* ── Left: Form Panel ── */}
-      <section className="lp-section w-full lg:flex-1 flex flex-col bg-white dark:bg-[#0f1117] min-h-dvh lg:min-h-0 overflow-y-auto">
-        <div className="lp-wrap flex-1 flex flex-col justify-center px-4 sm:px-8 lg:px-12 py-6 sm:py-10">
+      <section className="lp-section w-full lg:flex-1 flex flex-col bg-white dark:bg-[#0f1117] overflow-y-auto">
+        <div className="lp-wrap min-h-full flex flex-col justify-center px-4 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-6">
           <div className="w-full max-w-[500px] mx-auto">
             {/* Logo */}
-            <div className="lp-logo relative h-8 sm:h-9 w-24 sm:w-28 mb-5 sm:mb-7 shrink-0">
+            <div className="lp-logo relative h-7 sm:h-8 w-20 sm:w-24 mb-2.5 sm:mb-3.5 shrink-0">
               <Image
                 src="/brand/lOGO.ai.svg"
                 alt="Encova Solution"
@@ -84,15 +84,15 @@ export default function Home() {
 
             {/* Form Card */}
             <div className="border border-[#E5E7EB] dark:border-[#2e2e2e] rounded-[16px] overflow-hidden">
-              <div className="lp-card-hd bg-gradient-to-r from-[#C69A52] to-[#A27B3A] px-4 sm:px-6 py-4 sm:py-5 text-white space-y-1.5 sm:space-y-2">
-                <h1 className="text-[18px] sm:text-[22px] font-bold tracking-tight">Welcome Back!</h1>
-                <p className="text-[11.5px] sm:text-[12.5px] leading-relaxed text-white/90">
+              <div className="lp-card-hd bg-gradient-to-r from-[#C69A52] to-[#A27B3A] px-4 sm:px-6 py-2.5 sm:py-3.5 text-white space-y-1">
+                <h1 className="text-[17px] sm:text-[20px] font-bold tracking-tight">Welcome Back!</h1>
+                <p className="text-[11px] sm:text-[12px] leading-snug text-white/90">
                   Sign in with your email and password. If your email exists in multiple companies, you&apos;ll pick the company after verification.
                 </p>
               </div>
 
-              <div className="lp-card-bd px-4 sm:px-7 pt-4 sm:pt-5 pb-5 sm:pb-7 space-y-3 sm:space-y-4 bg-white dark:bg-[#161a21]">
-                <form onSubmit={handleSubmit} className="lp-form space-y-3 sm:space-y-4">
+              <div className="lp-card-bd px-4 sm:px-7 pt-2.5 sm:pt-3.5 pb-3 sm:pb-5 space-y-2 sm:space-y-3 bg-white dark:bg-[#161a21]">
+                <form onSubmit={handleSubmit} className="lp-form space-y-2 sm:space-y-3">
                   {/* Email */}
                   <div className="space-y-1.5">
                     <FieldLabel htmlFor="email">Email Address <Req /></FieldLabel>
@@ -105,7 +105,7 @@ export default function Home() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="You@company.com"
-                        className="h-10 sm:h-11 w-full rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] pl-10 pr-4 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none dark:focus:border-[#C69A52]"
+                        className="h-9 sm:h-10 w-full rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] pl-10 pr-4 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none dark:focus:border-[#C69A52]"
                       />
                     </div>
                   </div>
@@ -122,7 +122,7 @@ export default function Home() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Enter Your Password"
-                        className="h-10 sm:h-11 w-full rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] pl-10 pr-10 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
+                        className="h-9 sm:h-10 w-full rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] pl-10 pr-10 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
                       />
                       <button
                         type="button"
@@ -171,13 +171,13 @@ export default function Home() {
                   <div className="space-y-1.5">
                     <FieldLabel htmlFor="captcha">CAPTCHA <Req /></FieldLabel>
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-10 sm:h-11 min-w-[90px] sm:min-w-[110px] select-none items-center justify-center rounded-[8px] border border-dashed border-[#C69A52] bg-[#FAF6F0] dark:bg-[#2a1a08] font-mono text-[15px] sm:text-[17px] font-bold tracking-[4px] sm:tracking-[6px] text-[#C69A52] px-2 sm:px-3">
+                      <div className="flex h-9 sm:h-10 min-w-[84px] sm:min-w-[100px] select-none items-center justify-center rounded-[8px] border border-dashed border-[#C69A52] bg-[#FAF6F0] dark:bg-[#2a1a08] font-mono text-[14px] sm:text-[16px] font-bold tracking-[4px] sm:tracking-[5px] text-[#C69A52] px-2 sm:px-3">
                         {captchaCode}
                       </div>
                       <button
                         type="button"
                         onClick={refreshCaptcha}
-                        className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] text-[#C69A52] hover:bg-[#FAF6F0] dark:hover:bg-[#2a1a08] transition-colors"
+                        className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] text-[#C69A52] hover:bg-[#FAF6F0] dark:hover:bg-[#2a1a08] transition-colors"
                         aria-label="Refresh captcha"
                       >
                         <RefreshCw className="h-4 w-4" />
@@ -190,7 +190,7 @@ export default function Home() {
                         value={captchaInput}
                         onChange={(e) => setCaptchaInput(e.target.value)}
                         placeholder="Enter code"
-                        className="h-10 sm:h-11 min-w-0 flex-1 rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-3 sm:px-3.5 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
+                        className="h-9 sm:h-10 min-w-0 flex-1 rounded-[8px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-3 sm:px-3.5 text-[13px] sm:text-[13.5px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:border-[#C69A52] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -203,7 +203,7 @@ export default function Home() {
 
                   <button
                     type="submit"
-                    className="lp-btn flex h-11 sm:h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#C69A52] text-[14px] sm:text-[15px] font-semibold text-white hover:bg-[#b58b44] active:scale-[0.99] transition-all"
+                    className="lp-btn flex h-10 sm:h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#C69A52] text-[13.5px] sm:text-[14px] font-semibold text-white hover:bg-[#b58b44] active:scale-[0.99] transition-all"
                   >
                     <span>Sign In</span>
                     <span>&rarr;</span>
@@ -221,7 +221,7 @@ export default function Home() {
       </section>
 
       {/* ── Right: Illustration Panel ── */}
-      <section className="hidden lg:flex flex-1 flex-col items-center justify-between bg-[linear-gradient(135deg,#c79a4b_0%,#a77a2b_50%,#8e641b_100%)] px-8 pt-4 pb-8 xl:px-12 xl:pt-6 xl:pb-10 text-white text-center overflow-hidden relative select-none">
+      <section className="hidden lg:flex flex-1 flex-col items-center justify-between bg-[linear-gradient(135deg,#c79a4b_0%,#a77a2b_50%,#8e641b_100%)] px-8 pt-3 pb-5 xl:px-12 xl:pt-5 xl:pb-8 text-white text-center overflow-hidden relative select-none">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 top-0 h-1/2 z-0"
@@ -234,31 +234,31 @@ export default function Home() {
         />
 
         {/* 1. Top Illustration (Enlarged and Shifted Up) */}
-        <div className="relative z-10 w-full max-w-[620px] xl:max-w-[680px] flex items-center justify-center -mt-4">
+        <div className="relative z-10 w-full max-w-[520px] xl:max-w-[600px] flex items-center justify-center">
           <Image
             src="/brand/Invoice.svg"
             alt="Invoice illustration"
             width={740}
             height={520}
             priority
-            className="object-contain max-h-[340px] xl:max-h-[380px]"
+            className="object-contain max-h-[220px] xl:max-h-[280px]"
           />
         </div>
 
         {/* 2. Middle Content Group (Shifted Upwards) */}
-        <div className="relative z-10 flex flex-col items-center w-full max-w-[540px] my-auto -mt-14 mb-4">
+        <div className="relative z-10 flex flex-col items-center w-full max-w-[540px] my-auto -mt-3 mb-2">
           <h2
-            className="text-[38px] xl:text-[44px] font-bold leading-[1.12] tracking-[-0.02em] text-white"
+            className="text-[28px] xl:text-[36px] font-bold leading-[1.12] tracking-[-0.02em] text-white"
             style={{ fontFamily: "'Clash Display', sans-serif" }}
           >
             Digital Invoicing<br />System
           </h2>
 
-          <p className="mt-2 text-[12.5px] xl:text-[13px] text-white/95 font-normal leading-normal">
+          <p className="mt-1 text-[11.5px] xl:text-[12.5px] text-white/95 font-normal leading-normal">
             FBR compliant real-time e-invoicing for modern businesses
           </p>
 
-          <div className="flex flex-wrap justify-center  gap-3 mt-5 text-[12px] font-medium">
+          <div className="flex flex-wrap justify-center gap-2 mt-3 text-[11.5px] font-medium">
             <Pill >Real-time e-invoicing</Pill>
             <Pill>FBR compliant</Pill>
             <Pill>Secure &amp; encrypted</Pill>
@@ -266,8 +266,8 @@ export default function Home() {
         </div>
 
         {/* 3. Separate Standalone Digital Invoicing Logo Badge */}
-        <div className="relative z-10 flex justify-center -mt-4 mb-2">
-          <div className="h-[70px] w-[210px] rounded-[14px] bg-white border-2 border-[#C69A52] overflow-hidden flex items-center justify-center px-4">
+        <div className="relative z-10 flex justify-center mb-0.5">
+          <div className="h-[50px] w-[160px] rounded-[10px] bg-white border-2 border-[#C69A52] overflow-hidden flex items-center justify-center px-3">
             <Image
               src="/brand/Digital.svg"
               alt="Digital Invoicing"
