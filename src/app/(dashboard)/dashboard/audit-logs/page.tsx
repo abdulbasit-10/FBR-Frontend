@@ -11,7 +11,9 @@ import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { selectArrow, selectCls, btnOutline } from "@/components/dashboard/transaction-list-shell";
 import { toast } from "react-toastify";
+import { apiLogsService, type ApiLog } from "@/lib/services";
 
+// Shape the backend ApiLog into the row layout this page renders.
 interface AuditLog {
     id: number;
     company: string;
@@ -23,22 +25,34 @@ interface AuditLog {
     createdAt: string;
 }
 
-const MOCK_LOGS: AuditLog[] = [
-    { id: 1, company: "Bio World Traders", user: "Super Admin", email: "admin@bioworld.com", action: "Created", entity: "Invoice", description: "Created sales invoice SI-0001 for ABC Corporation", createdAt: "2026-07-01 09:14:22" },
-    { id: 2, company: "Bio World Traders", user: "Super Admin", email: "admin@bioworld.com", action: "Posted", entity: "Invoice", description: "Posted invoice SI-0001", createdAt: "2026-07-01 09:15:05" },
-    { id: 3, company: "Bio World Traders", user: "Super Admin", email: "admin@bioworld.com", action: "Created", entity: "Purchase", description: "Created purchase invoice PI-0001 from Alpha Suppliers", createdAt: "2026-07-02 10:22:10" },
-    { id: 4, company: "Bio World Traders", user: "Kainat Tajamul", email: "kainat@bioworld.com", action: "Updated", entity: "Customer", description: "Updated customer C-0002 XYZ Ltd contact details", createdAt: "2026-07-03 14:38:47" },
-    { id: 5, company: "Bio World Traders", user: "Super Admin", email: "admin@bioworld.com", action: "Login", entity: "User", description: "User logged in from 192.168.1.10", createdAt: "2026-07-05 08:01:33" },
-    { id: 6, company: "Bio World Traders", user: "Kainat Tajamul", email: "kainat@bioworld.com", action: "Deleted", entity: "Invoice", description: "Deleted draft invoice SI-0007", createdAt: "2026-07-06 11:55:00" },
-    { id: 7, company: "Bio World Traders", user: "Super Admin", email: "admin@bioworld.com", action: "Created", entity: "Vendor", description: "Created vendor V-0003 Gamma Imports", createdAt: "2026-07-08 16:04:18" },
-    { id: 8, company: "Bio World Traders", user: "Super Admin", email: "admin@bioworld.com", action: "Logout", entity: "User", description: "User session ended", createdAt: "2026-07-08 17:30:00" },
-];
+const toRow = (l: ApiLog): AuditLog => {
+    // Entity is the first path segment (e.g. "/invoices/abc-uuid" → "Invoice").
+    const first = (l.endpoint.split("/").filter(Boolean)[0] ?? "").toLowerCase();
+    const entity = first
+        ? first.charAt(0).toUpperCase() + first.slice(1).replace(/s$/, "")
+        : l.direction === "outbound"
+          ? "FBR"
+          : "System";
+    const status = l.responseStatus ?? "—";
+    return {
+        id: l.id,
+        company: l.companyId ? `Company #${l.companyId}` : "—",
+        user: l.userId ? `User #${l.userId}` : "System",
+        email: "—",
+        action: l.method,
+        entity,
+        description: `${l.direction === "outbound" ? "→ FBR " : ""}${l.method} ${l.endpoint} · ${status}${
+            l.errorMessage ? ` · ${l.errorMessage}` : ""
+        }`,
+        createdAt: l.createdAt.replace("T", " ").replace(/\.\d+Z?$/, ""),
+    };
+};
 
-const ACTION_OPTIONS = ["All", "Created", "Updated", "Deleted", "Posted", "Unposted", "Login", "Logout"];
-const ENTITY_OPTIONS = ["All", "Invoice", "Purchase", "Customer", "Vendor", "Item", "User", "Settings"];
+const ACTION_OPTIONS = ["All", "GET", "POST", "PUT", "DELETE"];
+const ENTITY_OPTIONS = ["All", "Invoice", "Customer", "Product", "User", "Setting", "FBR"];
 const PAGE_SIZE = 50;
 
-const TABLE_COLS = ["Company", "User", "Email", "Action", "Entity", "Description", "Created at"];
+const TABLE_COLS = ["Company", "User", "Method", "Entity", "Description", "Created at"];
 
 export default function AuditLogsPage() {
     const router = useRouter();
@@ -59,13 +73,33 @@ export default function AuditLogsPage() {
     const [search, setSearch] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [logs, setLogs] = useState<AuditLog[]>([]);
+    const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
 
-    const load = useCallback((showToast = false) => {
-        setIsLoading(true); setLogs([]);
-        const t = setTimeout(() => { setLogs(MOCK_LOGS); setIsLoading(false); if (showToast) toast.success("Audit logs refreshed."); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+    const load = useCallback(
+        (showToast = false) => {
+            setIsLoading(true);
+            setLogs([]);
+            apiLogsService
+                .list({
+                    page,
+                    limit: PAGE_SIZE,
+                    search: search.trim() || undefined,
+                    from: appliedFrom || undefined,
+                    to: appliedTo || undefined,
+                })
+                .then((res) => {
+                    setLogs(res.data.rows.map(toRow));
+                    setTotal(res.data.meta.total);
+                    if (showToast) toast.success("Audit logs refreshed.");
+                })
+                .catch((err) =>
+                    toast.error(err instanceof Error ? err.message : "Failed to load audit logs."),
+                )
+                .finally(() => setIsLoading(false));
+        },
+        [page, search, appliedFrom, appliedTo],
+    );
 
     useEffect(() => load(), [load]);
 
@@ -86,19 +120,15 @@ export default function AuditLogsPage() {
     };
 
     const filtered = logs.filter((log) => {
-        const q = search.toLowerCase();
+        // Server handles search/date; apply action/entity client-side for the current page.
         return (
-            (!q || log.company.toLowerCase().includes(q) || log.user.toLowerCase().includes(q) ||
-                log.email.toLowerCase().includes(q) || log.description.toLowerCase().includes(q)) &&
             (appliedAction === "All" || log.action === appliedAction) &&
-            (appliedEntity === "All" || log.entity === appliedEntity) &&
-            (!appliedFrom || log.createdAt >= appliedFrom) &&
-            (!appliedTo || log.createdAt <= appliedTo)
+            (appliedEntity === "All" || log.entity === appliedEntity)
         );
     });
 
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const paginated = filtered;
 
     return (
         <div className="min-h-full space-y-4 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -192,7 +222,7 @@ export default function AuditLogsPage() {
                         </button>
                         {!isLoading && (
                             <span className="text-[12px] text-[#9CA3AF] whitespace-nowrap">
-                                {filtered.length} row(s) shown
+                                {filtered.length} row(s) on this page ({total} total)
                             </span>
                         )}
                     </div>
@@ -224,19 +254,18 @@ export default function AuditLogsPage() {
                                     <tr key={log.id} className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#1e1e1e]/50", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors")}>
                                         <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{log.company}</td>
                                         <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{log.user}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{log.email}</td>
                                         <td className="px-3 py-2.5">
-                                            <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold", {
-                                                "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800": log.action === "Created" || log.action === "Posted",
-                                                "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800": log.action === "Updated" || log.action === "Unposted",
-                                                "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800": log.action === "Deleted",
-                                                "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800": log.action === "Login" || log.action === "Logout",
+                                            <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-mono font-semibold", {
+                                                "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800": log.action === "GET",
+                                                "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800": log.action === "POST",
+                                                "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800": log.action === "PUT",
+                                                "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800": log.action === "DELETE",
                                             })}>
                                                 {log.action}
                                             </span>
                                         </td>
                                         <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{log.entity}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] max-w-xs truncate">{log.description}</td>
+                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] max-w-xs truncate" title={log.description}>{log.description}</td>
                                         <td className="px-3 py-2.5 text-[#9CA3AF] whitespace-nowrap">{log.createdAt}</td>
                                     </tr>
                                 ))}
@@ -248,7 +277,7 @@ export default function AuditLogsPage() {
                 {/* ── Footer ── */}
                 <div className="flex items-center justify-between border-t border-[#F3F4F6] dark:border-[#2e2e2e] px-5 py-3">
                     <span className="text-[12px] text-[#9CA3AF]">
-                        {isLoading ? "—" : filtered.length} logs total
+                        {isLoading ? "—" : total} logs total
                     </span>
                     <div className="flex items-center gap-2">
                         <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}

@@ -24,11 +24,7 @@ interface InventoryAdjustment {
     lineTotal: number;
 }
 
-const MOCK_ADJUSTMENTS: InventoryAdjustment[] = [
-    { id: 1, adjustmentNo: "IA-0001", status: "Posted", source: "Manual", user: "Admin", docDate: "2026-07-05", postingDate: "2026-07-05", lines: 3, lineTotal: 45000 },
-    { id: 2, adjustmentNo: "IA-0002", status: "UnPosted", source: "Manual", user: "Admin", docDate: "2026-07-12", postingDate: "2026-07-12", lines: 1, lineTotal: 8500 },
-    { id: 3, adjustmentNo: "IA-0003", status: "Posted", source: "Import", user: "Admin", docDate: "2026-07-18", postingDate: "2026-07-18", lines: 5, lineTotal: 120000 },
-];
+const MOCK_ADJUSTMENTS: InventoryAdjustment[] = [];
 
 const COLUMNS = [
     "Adjustment No", "Status", "Source", "User",
@@ -58,8 +54,8 @@ function InventoryAdjustmentContent() {
 
     const load = useCallback((showToast = false) => {
         setIsLoading(true); setAdjustments([]);
-        const t = setTimeout(() => { setAdjustments(MOCK_ADJUSTMENTS); setIsLoading(false); if (showToast) toast.success("Inventory adjustments refreshed."); }, 1000);
-        return () => clearTimeout(t);
+        setIsLoading(false);
+        if (showToast) toast.info("Inventory adjustments: backend module not yet available.");
     }, []);
 
     useEffect(() => load(), [load]);

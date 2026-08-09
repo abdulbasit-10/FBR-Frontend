@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     ChevronLeft, ChevronRight, RotateCcw, Save,
@@ -14,13 +14,14 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
+import { productsService, lookupService, type ProductCreateInput } from "@/lib/services";
 
 // ─── Static Options ────────────────────────────────────────────────────────────
 const ITEMS_TYPE_OPTIONS = ["Select", "Goods", "Service", "Digital", "Raw Material", "Finished Goods"];
 const FBR_ITEMS_TYPE_OPTIONS = ["Select", "Local Supply", "Export", "Import", "In-House Use", "Sample"];
 const COSTING_METHOD = "FIFO";
 
-// ─── Mock Lookup Data ──────────────────────────────────────────────────────────
+// ─── Lookup types (match backend models) ──────────────────────────────────────
 interface Category { code: string; name: string; }
 interface HsCode { code: string; description: string; }
 interface SaleType { id: string; saleType: string; }
@@ -28,57 +29,14 @@ interface TaxRate { id: string; name: string; rate: string; }
 interface SroSchedule { id: string; name: string; }
 interface Uom { code: string; name: string; }
 
-const MOCK_CATEGORIES: Category[] = [
+// Categories have no dedicated backend endpoint — keep static.
+const STATIC_CATEGORIES: Category[] = [
     { code: "CAT-001", name: "Pharmaceuticals" },
     { code: "CAT-002", name: "Surgical Supplies" },
     { code: "CAT-003", name: "Diabetics" },
     { code: "CAT-004", name: "OTC Medicines" },
     { code: "CAT-005", name: "Supplements" },
     { code: "CAT-006", name: "Lab Reagents" },
-];
-
-const MOCK_HS_CODES: HsCode[] = [
-    { code: "3004.2010", description: "Antibiotics — penicillin / streptomycin group" },
-    { code: "3004.2030", description: "Antibiotics — amoxicillin / ampicillin group" },
-    { code: "3004.2090", description: "Antibiotics — other" },
-    { code: "3004.3010", description: "Insulin-based medicaments" },
-    { code: "3004.9010", description: "Analgesics — paracetamol / aspirin group" },
-    { code: "3004.9020", description: "Antacids / PPI group" },
-    { code: "3004.9090", description: "Other medicaments — mixed" },
-    { code: "2936.2100", description: "Vitamins — ascorbic acid (Vitamin C)" },
-    { code: "4015.1100", description: "Surgical gloves — latex" },
-];
-
-const MOCK_SALE_TYPES: SaleType[] = [
-    { id: "ST-001", saleType: "Exempt" },
-    { id: "ST-002", saleType: "Standard Rate (17%)" },
-    { id: "ST-003", saleType: "Reduced Rate (5%)" },
-    { id: "ST-004", saleType: "Zero Rated" },
-    { id: "ST-005", saleType: "Further Tax (3%)" },
-];
-
-const MOCK_TAX_RATES: TaxRate[] = [
-    { id: "TR-001", name: "Zero Rate", rate: "0%" },
-    { id: "TR-002", name: "Standard Rate", rate: "17%" },
-    { id: "TR-003", name: "Reduced Rate", rate: "5%" },
-    { id: "TR-004", name: "Further Tax", rate: "3%" },
-];
-
-const MOCK_SRO_SCHEDULES: SroSchedule[] = [
-    { id: "SRO-001", name: "SRO 678(I)/2004 — Medicines" },
-    { id: "SRO-002", name: "SRO 550(I)/2006 — Stationery" },
-    { id: "SRO-003", name: "SRO 1125(I)/2011 — Textiles" },
-    { id: "SRO-004", name: "N/A — Not Applicable" },
-];
-
-const MOCK_UOM: Uom[] = [
-    { code: "PCS", name: "Pieces" },
-    { code: "KG", name: "Kilograms" },
-    { code: "LTR", name: "Litres" },
-    { code: "BOX", name: "Box" },
-    { code: "TAB", name: "Tablets" },
-    { code: "CAP", name: "Capsules" },
-    { code: "ML", name: "Millilitres" },
 ];
 
 // ─── Shared Styles ─────────────────────────────────────────────────────────────
@@ -335,6 +293,41 @@ export default function NewItemPage() {
     const [showSroModal, setShowSroModal] = useState(false);
     const [showItemSerialModal, setShowItemSerialModal] = useState(false);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // ── Live lookup data from /lookup/* ───────────────────────────────────────
+    const [hsCodes, setHsCodes] = useState<HsCode[]>([]);
+    const [uoms, setUoms] = useState<Uom[]>([]);
+    const [sros, setSros] = useState<SroSchedule[]>([]);
+    const [rates, setRates] = useState<TaxRate[]>([]);
+    const [lookupLoading, setLookupLoading] = useState(false);
+
+    useEffect(() => {
+        setLookupLoading(true);
+        Promise.all([
+            lookupService.hsCodes(),
+            lookupService.uoms(),
+            lookupService.sros(),
+            lookupService.rates(),
+        ])
+            .then(([hs, uomRes, sroRes, rateRes]) => {
+                setHsCodes(hs.data.map((h) => ({ code: h.hsCode, description: h.description })));
+                setUoms(uomRes.data.map((u) => ({ code: String(u.uomId), name: u.description })));
+                setSros(sroRes.data.map((s) => ({ id: String(s.sroId), name: s.sroDesc })));
+                setRates(rateRes.data.map((r) => ({
+                    id: String(r.rateId),
+                    name: r.rateDesc,
+                    rate: `${r.rateValue}%`,
+                })));
+            })
+            .catch(() => toast.error("Some lookup data failed to load."))
+            .finally(() => setLookupLoading(false));
+    }, []);
+
+    // Derive SaleTypes from rates (unique rate descriptions as sale types)
+    const saleTypes = useMemo<SaleType[]>(() =>
+        rates.map((r) => ({ id: r.id, saleType: `${r.name} (${r.rate})` }))
+    , [rates]);
 
     // ── Required field checks ──────────────────────────────────────────────────
     const requiredChecks = useMemo(() => [
@@ -362,6 +355,41 @@ export default function NewItemPage() {
         toast.info("Form reset.");
     }, []);
 
+    const handleSave = async () => {
+        const missing = requiredChecks.filter((r) => !r.done);
+        if (missing.length > 0) {
+            toast.error(`Fill required fields: ${missing.map((r) => r.label).join(", ")}.`);
+            return;
+        }
+        // Backend Product schema (see FBR-Backend/src/models/Product.ts)
+        const rateText = taxRate?.rate ?? "0%";
+        const rateValue = parseFloat(rateText.replace("%", "")) || 0;
+        const payload: ProductCreateInput = {
+            name: itemName.trim() || category!.name,
+            description: category?.name ?? null,
+            hsCode: hsCode!.code,
+            uom: fbrUom!.name,
+            saleType: saleType!.saleType,
+            rate: rateText,
+            rateValue,
+            sroScheduleNo: sroSchedule?.name ?? null,
+            sroItemSerialNo: itemSerial?.name ?? null,
+            unitPrice: parseFloat(unitPrice) || 0,
+            fixedNotifiedValueOrRetailPrice: parseFloat(retailPrice) || 0,
+            isActive: true,
+        };
+        setIsSaving(true);
+        try {
+            const res = await productsService.create(payload);
+            toast.success(`Item ${res.data.name} created.`);
+            router.push("/dashboard/items");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to save item.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="min-h-full text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
@@ -380,13 +408,10 @@ export default function NewItemPage() {
                         <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
                     </button>
                     <button type="button"
-                        onClick={() => {
-                            const missing = requiredChecks.filter((r) => !r.done);
-                            if (missing.length > 0) toast.error(`Fill required fields: ${missing.map((r) => r.label).join(", ")}.`);
-                            else toast.success("Item saved successfully.");
-                        }}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
-                        <Save className="h-3.5 w-3.5" /> Save
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs disabled:opacity-60">
+                        <Save className="h-3.5 w-3.5" /> {isSaving ? "Saving…" : "Save"}
                     </button>
                 </div>
             </div>
@@ -703,7 +728,7 @@ export default function NewItemPage() {
                     { key: "code", label: "Code" },
                     { key: "name", label: "Name" },
                 ]}
-                rows={MOCK_CATEGORIES}
+                rows={STATIC_CATEGORIES}
                 filterFn={(r, q) => r.code.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)}
                 onSelect={(r) => setCategory(r)}
                 onClose={() => setShowCategoryModal(false)}
@@ -718,7 +743,7 @@ export default function NewItemPage() {
                     { key: "code", label: "HS Code" },
                     { key: "description", label: "Description" },
                 ]}
-                rows={MOCK_HS_CODES}
+                rows={hsCodes}
                 filterFn={(r, q) => r.code.toLowerCase().includes(q) || r.description.toLowerCase().includes(q)}
                 onSelect={(r) => { setHsCode(r); setFbrUom(null); }}
                 onClose={() => setShowHsCodeModal(false)}
@@ -733,7 +758,7 @@ export default function NewItemPage() {
                     { key: "code", label: "Code" },
                     { key: "name", label: "Unit Name" },
                 ]}
-                rows={MOCK_UOM}
+                rows={uoms}
                 filterFn={(r, q) => r.code.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)}
                 onSelect={(r) => setFbrUom(r)}
                 onClose={() => setShowUomModal(false)}
@@ -748,7 +773,7 @@ export default function NewItemPage() {
                     { key: "id", label: "ID" },
                     { key: "saleType", label: "Sale type" },
                 ]}
-                rows={MOCK_SALE_TYPES}
+                rows={saleTypes}
                 filterFn={(r, q) => r.id.toLowerCase().includes(q) || r.saleType.toLowerCase().includes(q)}
                 onSelect={(r) => { setSaleType(r); setTaxRate(null); setSroSchedule(null); setItemSerial(null); }}
                 onClose={() => setShowSaleTypeModal(false)}
@@ -764,7 +789,7 @@ export default function NewItemPage() {
                     { key: "name", label: "Rate Name" },
                     { key: "rate", label: "Rate" },
                 ]}
-                rows={MOCK_TAX_RATES}
+                rows={rates}
                 filterFn={(r, q) => r.id.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) || r.rate.toLowerCase().includes(q)}
                 onSelect={(r) => { setTaxRate(r); setSroSchedule(null); setItemSerial(null); }}
                 onClose={() => setShowTaxRateModal(false)}
@@ -779,7 +804,7 @@ export default function NewItemPage() {
                     { key: "id", label: "ID" },
                     { key: "name", label: "Schedule Name" },
                 ]}
-                rows={MOCK_SRO_SCHEDULES}
+                rows={sros}
                 filterFn={(r, q) => r.id.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)}
                 onSelect={(r) => setSroSchedule(r)}
                 onClose={() => setShowSroModal(false)}
@@ -794,7 +819,7 @@ export default function NewItemPage() {
                     { key: "id", label: "ID" },
                     { key: "name", label: "Serial Name" },
                 ]}
-                rows={MOCK_SRO_SCHEDULES}
+                rows={sros}
                 filterFn={(r, q) => r.id.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)}
                 onSelect={(r) => setItemSerial(r)}
                 onClose={() => setShowItemSerialModal(false)}

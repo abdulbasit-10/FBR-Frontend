@@ -34,10 +34,7 @@ interface PurchaseReturn {
     advanceTax: number;
 }
 
-const MOCK_RETURNS: PurchaseReturn[] = [
-    { id: 1, returnNo: "PR-0001", originalPI: "PI-0001", vendorNo: "V-0001", vendorName: "Alpha Suppliers", status: "Posted", source: "Manual", user: "Admin", docDate: "2026-07-05", postingDate: "2026-07-05", assessedValue: 20000, discount: 0, salesTax: 3400, furtherTax: 0, advanceTax: 400 },
-    { id: 2, returnNo: "PR-0002", originalPI: "PI-0002", vendorNo: "V-0002", vendorName: "Beta Distributors", status: "UnPosted", source: "Manual", user: "Admin", docDate: "2026-07-09", postingDate: "2026-07-09", assessedValue: 9000, discount: 900, salesTax: 1229, furtherTax: 0, advanceTax: 180 },
-];
+const MOCK_RETURNS: PurchaseReturn[] = [];
 
 const COLUMNS = [
     "Return No", "Original PI", "Vendor No", "Vendor Name",
@@ -69,8 +66,10 @@ function PurchaseReturnContent() {
 
     const load = useCallback((showToast = false) => {
         setIsLoading(true); setReturns([]);
-        const t = setTimeout(() => { setReturns(MOCK_RETURNS); setIsLoading(false); if (showToast) toast.success("Purchase returns refreshed."); }, 1000);
-        return () => clearTimeout(t);
+        setIsLoading(true);
+        setReturns([]);
+        setIsLoading(false);
+        if (showToast) toast.info("Purchase returns: backend module not yet available.");
     }, []);
 
     useEffect(() => load(), [load]);

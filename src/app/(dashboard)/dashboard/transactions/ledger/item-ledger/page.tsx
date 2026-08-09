@@ -21,13 +21,7 @@ interface ItemLedgerRow {
     unitPrice: number;
 }
 
-const MOCK_ROWS: ItemLedgerRow[] = [
-    { id: 1, documentNo: "SI-0001", documentDate: "2026-07-01", postingDate: "2026-07-01", documentType: "Sales Invoice", itemNo: "ITEM-001", hsCode: "8471.30", itemMapping: "M-001", itemName: "Laptop 15\"", itemType: "Finished Goods", quantity: 5, uom: "PCS", unitCost: 85000, unitPrice: 95000 },
-    { id: 2, documentNo: "PI-0001", documentDate: "2026-07-02", postingDate: "2026-07-02", documentType: "Purchase Invoice", itemNo: "ITEM-002", hsCode: "8517.12", itemMapping: "M-002", itemName: "Mobile Phone", itemType: "Finished Goods", quantity: 20, uom: "PCS", unitCost: 45000, unitPrice: 52000 },
-    { id: 3, documentNo: "SI-0002", documentDate: "2026-07-05", postingDate: "2026-07-05", documentType: "Sales Invoice", itemNo: "ITEM-003", hsCode: "3926.90", itemMapping: "M-003", itemName: "Plastic Casing", itemType: "Raw Material", quantity: 100, uom: "KG", unitCost: 250, unitPrice: 320 },
-    { id: 4, documentNo: "SR-0001", documentDate: "2026-07-08", postingDate: "2026-07-08", documentType: "Sales Return", itemNo: "ITEM-001", hsCode: "8471.30", itemMapping: "M-001", itemName: "Laptop 15\"", itemType: "Finished Goods", quantity: 1, uom: "PCS", unitCost: 85000, unitPrice: 95000 },
-    { id: 5, documentNo: "PI-0002", documentDate: "2026-07-10", postingDate: "2026-07-10", documentType: "Purchase Invoice", itemNo: "ITEM-004", hsCode: "7204.10", itemMapping: "M-004", itemName: "Steel Sheet", itemType: "Raw Material", quantity: 500, uom: "KG", unitCost: 180, unitPrice: 0 },
-];
+const MOCK_ROWS: ItemLedgerRow[] = [];
 
 const ITEM_TYPE_OPTIONS = ["All", "Finished Goods", "Raw Material", "Semi-Finished", "Service", "Consumable"];
 
@@ -51,24 +45,18 @@ export default function ItemLedgerPage() {
     const [page, setPage] = useState(1);
 
     const load = useCallback(() => {
-        setIsLoading(true); setRows([]);
-        const t = setTimeout(() => { setRows(MOCK_ROWS); setIsLoading(false); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+        setIsLoading(true);
+        // Item-level ledger requires a dedicated /invoice-items endpoint not yet in the backend.
+        setRows([]);
+        setIsLoading(false);
+    }, [search, dateFrom, dateTo, docType, itemType]);
 
     useEffect(() => load(), [load]);
 
-    const filtered = rows.filter((r) => {
-        const q = search.toLowerCase();
-        return (
-            (!q || r.documentNo.toLowerCase().includes(q) || r.itemNo.toLowerCase().includes(q) || r.itemName.toLowerCase().includes(q)) &&
-            (docType === "All" || r.documentType === docType) &&
-            (itemType === "All" || r.itemType === itemType) &&
-            (!dateFrom || (r.postingDate >= dateFrom && r.documentDate >= dateFrom)) &&
-            (!dateTo || (r.postingDate <= dateTo && r.documentDate <= dateTo))
-        );
-    });
-
+    const filtered = rows.filter((r) =>
+        (docType === "All" || r.documentType === docType) &&
+        (itemType === "All" || r.itemType === itemType)
+    );
     const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
     const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 

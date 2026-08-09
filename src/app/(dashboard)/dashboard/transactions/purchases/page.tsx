@@ -29,11 +29,7 @@ interface PurchaseInvoice {
     furtherTax: number;
 }
 
-const MOCK_PURCHASES: PurchaseInvoice[] = [
-    { id: 1, invoiceNo: "PI-0001", vendorNo: "V-0001", vendorName: "Alpha Suppliers", vendorInvoiceNo: "VS-1001", status: "Posted", source: "Manual", user: "Admin", docDate: "2026-07-02", postingDate: "2026-07-02", assessedValue: 80000, discount: 0, salesTax: 13600, furtherTax: 0 },
-    { id: 2, invoiceNo: "PI-0002", vendorNo: "V-0002", vendorName: "Beta Distributors", vendorInvoiceNo: "BD-2200", status: "UnPosted", source: "Manual", user: "Admin", docDate: "2026-07-06", postingDate: "2026-07-06", assessedValue: 45000, discount: 4500, salesTax: 6885, furtherTax: 0 },
-    { id: 3, invoiceNo: "PI-0003", vendorNo: "V-0001", vendorName: "Alpha Suppliers", vendorInvoiceNo: "VS-1002", status: "Posted", source: "API", user: "Admin", docDate: "2026-07-14", postingDate: "2026-07-14", assessedValue: 32000, discount: 0, salesTax: 5440, furtherTax: 0 },
-];
+const MOCK_PURCHASES: PurchaseInvoice[] = [];
 
 const COLUMNS = [
     "Invoice No", "Vendor No", "Vendor Name", "Vendor Invoice No",
@@ -63,15 +59,16 @@ function PurchaseInvoiceContent() {
     }, [searchParams]);
 
     const load = useCallback((showToast = false) => {
-        setIsLoading(true); setInvoices([]);
-        const t = setTimeout(() => { setInvoices(MOCK_PURCHASES); setIsLoading(false); if (showToast) toast.success("Purchase invoices refreshed."); }, 1000);
-        return () => clearTimeout(t);
+        setIsLoading(true);
+        // Purchase invoices require a vendor/purchase backend module not yet available.
+        setInvoices([]);
+        setIsLoading(false);
+        if (showToast) toast.info("Purchase invoices: backend module not yet available.");
     }, []);
 
     useEffect(() => load(), [load]);
 
-    const filtered = invoices.filter((inv) => {
-        const q = search.toLowerCase();
+    const filtered = invoices.filter((inv) => {        const q = search.toLowerCase();
         return (
             (!q || inv.invoiceNo.toLowerCase().includes(q) || inv.vendorNo.toLowerCase().includes(q) || inv.vendorName.toLowerCase().includes(q) || inv.vendorInvoiceNo.toLowerCase().includes(q)) &&
             (status === "All" || inv.status === status) &&

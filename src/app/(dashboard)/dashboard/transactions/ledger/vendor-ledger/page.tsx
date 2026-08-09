@@ -19,13 +19,7 @@ interface VendorLedgerRow {
     salesTax: number;
 }
 
-const MOCK_ROWS: VendorLedgerRow[] = [
-    { id: 1, invoiceNo: "PI-0001", postingDate: "2026-07-02", documentType: "Purchase Invoice", vendorNo: "V-0001", vendorName: "Alpha Suppliers", vendorType: "Registered", fed: 0, amtExclDiscount: 80000, discount: 0, amtExclSalesTax: 80000, salesTax: 13600 },
-    { id: 2, invoiceNo: "PI-0002", postingDate: "2026-07-06", documentType: "Purchase Invoice", vendorNo: "V-0002", vendorName: "Beta Distributors", vendorType: "Unregistered", fed: 900, amtExclDiscount: 45000, discount: 4500, amtExclSalesTax: 40500, salesTax: 6885 },
-    { id: 3, invoiceNo: "PR-0001", postingDate: "2026-07-08", documentType: "Purchase Return", vendorNo: "V-0001", vendorName: "Alpha Suppliers", vendorType: "Registered", fed: 0, amtExclDiscount: 15000, discount: 0, amtExclSalesTax: 15000, salesTax: 2550 },
-    { id: 4, invoiceNo: "PI-0003", postingDate: "2026-07-14", documentType: "Purchase Invoice", vendorNo: "V-0003", vendorName: "Gamma Imports", vendorType: "AOP", fed: 640, amtExclDiscount: 32000, discount: 0, amtExclSalesTax: 32000, salesTax: 5440 },
-    { id: 5, invoiceNo: "DN-0001", postingDate: "2026-07-18", documentType: "Debit Note", vendorNo: "V-0002", vendorName: "Beta Distributors", vendorType: "Unregistered", fed: 0, amtExclDiscount: 5000, discount: 500, amtExclSalesTax: 4500, salesTax: 765 },
-];
+const MOCK_ROWS: VendorLedgerRow[] = [];
 
 const VENDOR_TYPE_OPTIONS = ["All", "Registered", "Unregistered", "AOP", "Company"];
 
@@ -46,24 +40,18 @@ export default function VendorLedgerPage() {
     const [page, setPage] = useState(1);
 
     const load = useCallback(() => {
-        setIsLoading(true); setRows([]);
-        const t = setTimeout(() => { setRows(MOCK_ROWS); setIsLoading(false); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+        setIsLoading(true);
+        // Vendor ledger requires a purchase/vendor backend module not yet available.
+        setRows([]);
+        setIsLoading(false);
+    }, [search, dateFrom, dateTo, docType, vendorType]);
 
     useEffect(() => load(), [load]);
 
-    const filtered = rows.filter((r) => {
-        const q = search.toLowerCase();
-        return (
-            (!q || r.invoiceNo.toLowerCase().includes(q) || r.vendorNo.toLowerCase().includes(q) || r.vendorName.toLowerCase().includes(q)) &&
-            (docType === "All" || r.documentType === docType) &&
-            (vendorType === "All" || r.vendorType === vendorType) &&
-            (!dateFrom || r.postingDate >= dateFrom) &&
-            (!dateTo || r.postingDate <= dateTo)
-        );
-    });
-
+    const filtered = rows.filter((r) =>
+        (docType === "All" || r.documentType === docType) &&
+        (vendorType === "All" || r.vendorType === vendorType)
+    );
     const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
     const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 

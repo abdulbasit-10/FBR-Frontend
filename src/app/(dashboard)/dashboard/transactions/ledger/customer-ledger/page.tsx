@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { LedgerShell, fmt } from "@/components/dashboard/ledger-shell";
+import { invoicesService, type Invoice as ApiInvoice } from "@/lib/services";
+import { toast } from "react-toastify";
 
 interface CustomerLedgerRow {
     id: number;
@@ -18,13 +20,19 @@ interface CustomerLedgerRow {
     amtExclSalesTax: number;
 }
 
-const MOCK_ROWS: CustomerLedgerRow[] = [
-    { id: 1, invoiceNo: "SI-0001", postingDate: "2026-07-01", documentType: "Sales Invoice", customerNo: "C-0001", customerType: "Registered", assessedValue: 50000, fed: 0, amtExclDiscount: 50000, discount: 0, amtExclSalesTax: 50000 },
-    { id: 2, invoiceNo: "SI-0002", postingDate: "2026-07-03", documentType: "Sales Invoice", customerNo: "C-0002", customerType: "Unregistered", assessedValue: 25000, fed: 500, amtExclDiscount: 25000, discount: 2500, amtExclSalesTax: 22500 },
-    { id: 3, invoiceNo: "SR-0001", postingDate: "2026-07-05", documentType: "Sales Return", customerNo: "C-0001", customerType: "Registered", assessedValue: 10000, fed: 0, amtExclDiscount: 10000, discount: 0, amtExclSalesTax: 10000 },
-    { id: 4, invoiceNo: "SI-0003", postingDate: "2026-07-10", documentType: "Sales Invoice", customerNo: "C-0003", customerType: "AOP", assessedValue: 75000, fed: 1500, amtExclDiscount: 75000, discount: 0, amtExclSalesTax: 75000 },
-    { id: 5, invoiceNo: "CN-0001", postingDate: "2026-07-12", documentType: "Credit Note", customerNo: "C-0002", customerType: "Unregistered", assessedValue: 5000, fed: 0, amtExclDiscount: 5000, discount: 500, amtExclSalesTax: 4500 },
-];
+const toRow = (inv: ApiInvoice): CustomerLedgerRow => ({
+    id: inv.id,
+    invoiceNo: inv.fbrInvoiceNumber ?? `SI-${String(inv.id).padStart(4, "0")}`,
+    postingDate: (inv.postingDate ?? inv.invoiceDate ?? "").slice(0, 10),
+    documentType: inv.invoiceType === "Debit Note" ? "Debit Note" : "Sales Invoice",
+    customerNo: String(inv.customerId),
+    customerType: inv.buyerRegistrationType ?? "—",
+    assessedValue: Number(inv.totalValueExcludingST) + Number(inv.totalDiscount),
+    fed: Number(inv.totalFedPayable ?? 0),
+    amtExclDiscount: Number(inv.totalValueExcludingST) + Number(inv.totalDiscount),
+    discount: Number(inv.totalDiscount),
+    amtExclSalesTax: Number(inv.totalValueExcludingST),
+});
 
 const CUSTOMER_TYPE_OPTIONS = ["All", "Registered", "Unregistered", "AOP", "Company"];
 
@@ -41,30 +49,36 @@ export default function CustomerLedgerPage() {
     const [customerType, setCustomerType] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [rows, setRows] = useState<CustomerLedgerRow[]>([]);
+    const [total, setTotal] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
 
     const load = useCallback(() => {
-        setIsLoading(true); setRows([]);
-        const t = setTimeout(() => { setRows(MOCK_ROWS); setIsLoading(false); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+        setIsLoading(true);
+        setRows([]);
+        invoicesService.list({
+            page, limit: rowsPerPage, status: "posted",
+            search: search.trim() || undefined,
+            from: dateFrom || undefined, to: dateTo || undefined,
+            sortBy: "invoice_date", sortDir: "DESC",
+        })
+            .then((res) => {
+                setRows(res.data.rows.map(toRow));
+                setTotal(res.data.meta.total);
+            })
+            .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load."))
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, search, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 
-    const filtered = rows.filter((r) => {
-        const q = search.toLowerCase();
-        return (
-            (!q || r.invoiceNo.toLowerCase().includes(q) || r.customerNo.toLowerCase().includes(q)) &&
-            (docType === "All" || r.documentType === docType) &&
-            (customerType === "All" || r.customerType === customerType) &&
-            (!dateFrom || r.postingDate >= dateFrom) &&
-            (!dateTo || r.postingDate <= dateTo)
-        );
-    });
+    const filtered = rows.filter((r) =>
+        (docType === "All" || r.documentType === docType) &&
+        (customerType === "All" || r.customerType === customerType)
+    );
 
-    const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-    const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+    const paginated = filtered;
 
     return (
         <LedgerShell

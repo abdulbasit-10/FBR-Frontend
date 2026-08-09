@@ -18,11 +18,18 @@ import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
+import {
+    invoicesService,
+    type Invoice as ApiInvoice,
+    type InvoiceListQuery,
+    type InvoiceStatus,
+} from "@/lib/services";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SalesInvoice {
     id: number;
+    uuid: string;
     invoiceNo: string;
     customerNo: string;
     customerName: string;
@@ -37,15 +44,44 @@ interface SalesInvoice {
     amtInclST: number;
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
+/**
+ * Map the backend Invoice model (see FBR-Backend/src/models/Invoice.ts) onto
+ * the flat row shape this table renders.
+ *   posted    → Posted
+ *   draft     → UnPosted
+ *   validated → UnPosted
+ *   failed    → UnPosted
+ *   cancelled → Cancelled
+ */
+const uiStatus = (s: InvoiceStatus): SalesInvoice["status"] => {
+    if (s === "posted") return "Posted";
+    if (s === "cancelled") return "Cancelled";
+    return "UnPosted";
+};
 
-const MOCK_INVOICES: SalesInvoice[] = [
-    { id: 1, invoiceNo: "SI-0001", customerNo: "C-0001", customerName: "ABC Corporation", status: "Posted", docDate: "2026-07-01", postingDate: "2026-07-01", assessedValue: 50000, amtExclDisc: 50000, discount: 0, amtExclST: 50000, salesTax: 8500, amtInclST: 58500 },
-    { id: 2, invoiceNo: "SI-0002", customerNo: "C-0002", customerName: "XYZ Ltd", status: "Posted", docDate: "2026-07-03", postingDate: "2026-07-03", assessedValue: 25000, amtExclDisc: 25000, discount: 2500, amtExclST: 22500, salesTax: 3825, amtInclST: 26325 },
-    { id: 3, invoiceNo: "SI-0003", customerNo: "C-0003", customerName: "Global Traders", status: "UnPosted", docDate: "2026-07-05", postingDate: "2026-07-05", assessedValue: 75000, amtExclDisc: 75000, discount: 0, amtExclST: 75000, salesTax: 12750, amtInclST: 87750 },
-    { id: 4, invoiceNo: "SI-0004", customerNo: "C-0001", customerName: "ABC Corporation", status: "Posted", docDate: "2026-07-10", postingDate: "2026-07-10", assessedValue: 15000, amtExclDisc: 15000, discount: 1500, amtExclST: 13500, salesTax: 2295, amtInclST: 15795 },
-    { id: 5, invoiceNo: "SI-0005", customerNo: "C-0004", customerName: "Metro Supplies", status: "Cancelled", docDate: "2026-07-12", postingDate: "2026-07-12", assessedValue: 32000, amtExclDisc: 32000, discount: 0, amtExclST: 32000, salesTax: 5440, amtInclST: 37440 },
-];
+const apiStatus = (s: string): InvoiceStatus | undefined => {
+    if (s === "Posted") return "posted";
+    if (s === "Cancelled") return "cancelled";
+    if (s === "UnPosted") return "draft";
+    return undefined;
+};
+
+const toRow = (inv: ApiInvoice): SalesInvoice => ({
+    id: inv.id,
+    uuid: inv.uuid,
+    invoiceNo: inv.fbrInvoiceNumber ?? `SI-${String(inv.id).padStart(4, "0")}`,
+    customerNo: String(inv.customerId),
+    customerName: inv.buyerBusinessName,
+    status: uiStatus(inv.status),
+    docDate: inv.invoiceDate?.slice(0, 10) ?? "",
+    postingDate: (inv.postingDate ?? inv.invoiceDate ?? "").slice(0, 10),
+    assessedValue: Number(inv.totalValueExcludingST) + Number(inv.totalDiscount),
+    amtExclDisc: Number(inv.totalValueExcludingST) + Number(inv.totalDiscount),
+    discount: Number(inv.totalDiscount),
+    amtExclST: Number(inv.totalValueExcludingST),
+    salesTax: Number(inv.totalSalesTax),
+    amtInclST: Number(inv.totalValueIncludingST),
+});
 
 const STATUS_OPTIONS = ["All", "Posted", "UnPosted", "Cancelled"];
 const SOURCE_OPTIONS = ["All", "Manual", "API", "Import"];
@@ -77,6 +113,7 @@ function SalesInvoicesContent() {
     const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [invoices, setInvoices] = useState<SalesInvoice[]>([]);
+    const [total, setTotal] = useState(0);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
@@ -89,27 +126,34 @@ function SalesInvoicesContent() {
     const load = useCallback((showToast = false) => {
         setIsLoading(true);
         setInvoices([]);
-        const t = setTimeout(() => { setInvoices(MOCK_INVOICES); setIsLoading(false); if (showToast) toast.success("Sales invoices refreshed."); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+        const params: InvoiceListQuery = {
+            page,
+            limit: rowsPerPage,
+            search: search.trim() || undefined,
+            status: apiStatus(status),
+            from: dateFrom || undefined,
+            to: dateTo || undefined,
+            sortBy: "invoice_date",
+            sortDir: "DESC",
+        };
+        invoicesService
+            .list(params)
+            .then((res) => {
+                setInvoices(res.data.rows.map(toRow));
+                setTotal(res.data.meta.total);
+                if (showToast) toast.success("Sales invoices refreshed.");
+            })
+            .catch((err) =>
+                toast.error(err instanceof Error ? err.message : "Failed to load invoices."),
+            )
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, search, status, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 
-    const filtered = invoices.filter((inv) => {
-        const q = search.toLowerCase();
-        const matchesSearch = !q ||
-            inv.invoiceNo.toLowerCase().includes(q) ||
-            inv.customerNo.toLowerCase().includes(q) ||
-            inv.customerName.toLowerCase().includes(q);
-        const matchesStatus = status === "All" || inv.status === status;
-        const matchesSource = source === "All";
-        const matchesFrom = !dateFrom || inv.docDate >= dateFrom;
-        const matchesTo = !dateTo || inv.docDate <= dateTo;
-        return matchesSearch && matchesStatus && matchesSource && matchesFrom && matchesTo;
-    });
-
-    const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-    const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+    // Server-side filtering + pagination — the response is already scoped.
+    const paginated = invoices;
+    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
 
     const toggleSelect = (id: number) => {
         setSelected((prev) => {

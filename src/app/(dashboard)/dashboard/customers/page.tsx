@@ -7,9 +7,12 @@ import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
+import { customersService, type Customer as ApiCustomer } from "@/lib/services";
 
-interface Customer {
+// Row shape used by the table — flattens the backend Customer model.
+interface CustomerRow {
     id: number;
+    uuid: string;
     customerNo: string;
     name: string;
     province: string;
@@ -20,24 +23,23 @@ interface Customer {
     source: string;
 }
 
-const MOCK_CUSTOMERS: Customer[] = [
-    { id: 1, customerNo: "C-000209", name: "DINAR HOSPITAL D.I KHAN", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—", source: "Manual" },
-    { id: 2, customerNo: "C-000208", name: "A_one Pharmacy", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—", source: "Manual" },
-    { id: 3, customerNo: "C-000207", name: "AMIN WZIRSTAN PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "1110181965", strn: "—", source: "API" },
-    { id: 4, customerNo: "C-000206", name: "Musa Pharmacy", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—", source: "Manual" },
-    { id: 5, customerNo: "C-000205", name: "ONCOMED PHARMA", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "1521135", strn: "—", source: "Import" },
-    { id: 6, customerNo: "C-000204", name: "FARMAN MEDICINE COMPANY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "F617441", strn: "—", source: "Manual" },
-    { id: 7, customerNo: "C-000203", name: "AL HAMZA PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "8131978", strn: "—", source: "Manual" },
-    { id: 8, customerNo: "C-000202", name: "HEALTHCARE VACCINE HOUSE", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "9997735", strn: "—", source: "Manual" },
-    { id: 9, customerNo: "C-000201", name: "FAIR PRICE PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "5051406", strn: "—", source: "API" },
-    { id: 10, customerNo: "C-000200", name: "MAX HEALTH PHARMACY", province: "Punjab", type: "Individual", registration: "Unregistered", ntn: "332024545", strn: "—", source: "Import" },
-];
-
-const TYPE_OPTIONS = ["All", "Individual", "Company", "AOP"];
+const TYPE_OPTIONS = ["All", "Individual", "Company"];
 const REGISTRATION_OPTIONS = ["All", "Registered", "Unregistered"];
-const SOURCE_OPTIONS = ["All", "Manual", "API", "Import"];
 const ROW_OPTIONS = [50, 100, 200];
-const TABLE_COLS = ["Customer No", "Name", "Province", "Type", "Registration", "NTN", "STRN", "Source", "Actions"];
+const TABLE_COLS = ["Customer No", "Name", "Province", "Type", "Registration", "NTN", "STRN", "Actions"];
+
+const toRow = (c: ApiCustomer): CustomerRow => ({
+    id: c.id,
+    uuid: c.uuid,
+    customerNo: c.customerNo ?? "—",
+    name: c.businessName,
+    province: c.province,
+    type: c.customerType,
+    registration: c.registrationType,
+    ntn: c.ntnCnic ?? "—",
+    strn: c.strn ?? "—",
+    source: "Manual",
+});
 
 const selectArrow = {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
@@ -52,40 +54,64 @@ export default function CustomersPage() {
     const [search, setSearch] = useState("");
     const [type, setType] = useState("All");
     const [registration, setRegistration] = useState("All");
-    const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
-    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [customers, setCustomers] = useState<CustomerRow[]>([]);
+    const [total, setTotal] = useState(0);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
 
-    const load = useCallback((showToast = false) => {
-        setIsLoading(true); setCustomers([]);
-        const t = setTimeout(() => { setCustomers(MOCK_CUSTOMERS); setIsLoading(false); if (showToast) toast.success("Customers refreshed."); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+    const load = useCallback(
+        async (showToast = false) => {
+            setIsLoading(true);
+            setCustomers([]);
+            try {
+                const res = await customersService.list({
+                    page,
+                    limit: rowsPerPage,
+                    search: search.trim() || undefined,
+                    type: type !== "All" ? type : undefined,
+                    registrationType: registration !== "All" ? registration : undefined,
+                    sortBy: "createdAt",
+                    sortDir: "DESC",
+                });
+                setCustomers(res.data.rows.map(toRow));
+                setTotal(res.data.meta.total);
+                if (showToast) toast.success("Customers refreshed.");
+            } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Failed to load customers.");
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [page, rowsPerPage, search, type, registration],
+    );
 
-    useEffect(() => load(), [load]);
+    useEffect(() => {
+        load();
+    }, [load]);
 
-    const filtered = customers.filter((c) => {
-        const q = search.toLowerCase();
-        return (
-            (!q || c.customerNo.toLowerCase().includes(q) || c.name.toLowerCase().includes(q) || c.ntn.toLowerCase().includes(q) || c.strn.toLowerCase().includes(q)) &&
-            (type === "All" || c.type === type) &&
-            (registration === "All" || c.registration === registration) &&
-            (source === "All" || c.source === source)
-        );
-    });
+    // Server does filtering + pagination — rows come back already scoped to page.
+    const paginated = customers;
+    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
 
-    const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-    const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+    const handleDelete = async () => {
+        if (selected.size === 0) return;
+        const rowsToDelete = customers.filter((c) => selected.has(c.id));
+        const results = await Promise.allSettled(rowsToDelete.map((c) => customersService.remove(c.uuid)));
+        const failed = results.filter((r) => r.status === "rejected").length;
+        if (failed === 0) toast.success(`${rowsToDelete.length} customer(s) deleted.`);
+        else toast.error(`${failed} of ${rowsToDelete.length} deletions failed.`);
+        setSelected(new Set());
+        load();
+    };
 
     const toggleSelect = (id: number) =>
         setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
     const toggleAll = () =>
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((c) => c.id)));
 
-    const regBadge = (r: Customer["registration"]) => (
+    const regBadge = (r: CustomerRow["registration"]) => (
         <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold",
             r === "Registered"
                 ? "bg-green-50 text-green-700 border border-green-200"
@@ -114,7 +140,7 @@ export default function CustomersPage() {
                     <button type="button" onClick={toggleAll} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <CheckSquare className="h-3.5 w-3.5 text-[#A27B3A]" /> Select All
                     </button>
-                    <button type="button" disabled={selected.size === 0} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                    <button type="button" onClick={handleDelete} disabled={selected.size === 0} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                         <Trash2 className="h-3.5 w-3.5 text-[#A27B3A]" /> Delete
                     </button>
                 </div>
@@ -143,12 +169,6 @@ export default function CustomersPage() {
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Registration</label>
                         <select value={registration} onChange={(e) => { setRegistration(e.target.value); setPage(1); }} className={cn(selectCls, "min-w-36")} style={selectArrow}>
                             {REGISTRATION_OPTIONS.map((o) => <option key={o}>{o}</option>)}
-                        </select>
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Source</label>
-                        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectCls, "min-w-32")} style={selectArrow}>
-                            {SOURCE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
                 </div>
@@ -213,9 +233,8 @@ export default function CustomersPage() {
                                         <td className="px-3 py-2.5">{regBadge(c.registration)}</td>
                                         <td className="px-3 py-2.5 font-mono text-[#4F5967] dark:text-[#9ca3af]">{c.ntn}</td>
                                         <td className="px-3 py-2.5 font-mono text-[#4F5967] dark:text-[#9ca3af]">{c.strn}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{c.source}</td>
                                         <td className="px-3 py-2.5">
-                                            <button type="button" onClick={(e) => e.stopPropagation()}
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/customers/${c.uuid}`); }}
                                                 className="rounded-[5px] border border-[#C69A52] px-2.5 py-1 text-[11px] font-semibold text-[#C69A52] hover:bg-[#C69A52] hover:text-white transition-colors">
                                                 Edit
                                             </button>

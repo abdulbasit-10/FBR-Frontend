@@ -11,12 +11,11 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
+import { customersService, lookupService, type CustomerCreateInput } from "@/lib/services";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface TaxSlab { id: number; slabName: string; rate: number; }
-
-const MOCK_SLABS: TaxSlab[] = []; // populated from API
 
 const PROVINCES = ["Select", "Khyber Pakhtunkhwa", "Punjab", "Sindh", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir", "Islamabad"];
 const CUSTOMER_TYPES = ["Select", "Individual", "Company", "AOP"];
@@ -57,6 +56,7 @@ export default function NewCustomerPage() {
     const [website, setWebsite] = useState("");
     const [showTaxSlabModal, setShowTaxSlabModal] = useState(false);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const requiredChecks = useMemo(() => [
         { label: "Customer type", done: customerType !== "Select" },
@@ -82,6 +82,42 @@ export default function NewCustomerPage() {
         toast.info("Form reset.");
     };
 
+    const handleSave = async () => {
+        const missing = requiredChecks.filter((r) => !r.done);
+        if (missing.length > 0) {
+            toast.error(`Fill required fields: ${missing.map((r) => r.label).join(", ")}.`);
+            return;
+        }
+        // Backend Customer model only tracks Individual | Company. Treat AOP as Company for now.
+        const apiCustomerType: CustomerCreateInput["customerType"] =
+            customerType === "Company" || customerType === "AOP" ? "Company" : "Individual";
+        // Backend registrationType is Registered | Unregistered only. 'Exempt' folds to Unregistered.
+        const registrationType: CustomerCreateInput["registrationType"] =
+            registrationStatus === "Registered" ? "Registered" : "Unregistered";
+        const payload: CustomerCreateInput = {
+            businessName: customerName.trim() || contactPerson.trim(),
+            ntnCnic: ntn.trim() || null,
+            strn: strn.trim() || null,
+            registrationType,
+            province: ntnProvince,
+            address: [address, city, postcode].filter(Boolean).join(", "),
+            phone: (phoneNumber || whatsapp).trim() || null,
+            email: email.trim() || null,
+            customerType: apiCustomerType,
+            isActive: true,
+        };
+        setIsSaving(true);
+        try {
+            const res = await customersService.create(payload);
+            toast.success(`Customer ${res.data.customerNo ?? res.data.businessName} created.`);
+            router.push("/dashboard/customers");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to save customer.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="min-h-full text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
@@ -99,13 +135,10 @@ export default function NewCustomerPage() {
                         <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
                     </button>
                     <button type="button"
-                        onClick={() => {
-                            const missing = requiredChecks.filter((r) => !r.done);
-                            if (missing.length > 0) toast.error(`Fill required fields: ${missing.map((r) => r.label).join(", ")}.`);
-                            else toast.success("Customer saved successfully.");
-                        }}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
-                        <Save className="h-3.5 w-3.5" /> Save
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs disabled:opacity-60">
+                        <Save className="h-3.5 w-3.5" /> {isSaving ? "Saving…" : "Save"}
                     </button>
                 </div>
             </div>
@@ -319,9 +352,17 @@ function TaxSlabModal({ onClose, onSelect }: { onClose: () => void; onSelect: (s
     const PAGE_SIZE = 10;
 
     const load = useCallback(() => {
-        setIsLoading(true); setSlabs([]);
-        const t = setTimeout(() => { setSlabs(MOCK_SLABS); setIsLoading(false); }, 800);
-        return () => clearTimeout(t);
+        setIsLoading(true);
+        lookupService.rates()
+            .then((res) => {
+                setSlabs(res.data.map((r) => ({
+                    id: r.rateId,
+                    slabName: r.rateDesc,
+                    rate: Number(r.rateValue),
+                })));
+            })
+            .catch(() => setSlabs([]))
+            .finally(() => setIsLoading(false));
     }, []);
 
     useEffect(() => { load(); }, [load]);

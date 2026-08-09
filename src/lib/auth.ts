@@ -27,7 +27,7 @@ export interface AuthTokens {
     refreshTokenExpiresIn: string;
 }
 
-/** Shape of `data` in the login API response */
+/** Shape of `data` in the login AND refresh API responses */
 export interface LoginData {
     user: AuthUser;
     tokens: AuthTokens;
@@ -40,6 +40,13 @@ const K = {
     REFRESH: "fbr_refresh_token",
     USER: "fbr_user",
 } as const;
+
+// ── In-flight refresh guard ───────────────────────────────────────────────────
+// Prevents simultaneous expired-token requests from each triggering an
+// independent refresh cycle. The second caller awaits the same promise, so
+// only one rotation happens and neither call presents a revoked token.
+
+let _refreshPromise: Promise<boolean> | null = null;
 
 // ── Auth helpers ──────────────────────────────────────────────────────────────
 
@@ -91,35 +98,56 @@ export const auth = {
 
     /**
      * Calls POST /auth/refresh with the stored refresh token.
-     * Updates stored tokens on success; clears storage on failure.
+     * - Backend returns { user, tokens } — same shape as login (LoginData).
+     * - Updates stored tokens on success; clears storage on failure.
+     * - Concurrent callers share a single in-flight promise to prevent
+     *   double-rotation (theft detection false-positive).
      * Returns true if refresh succeeded.
      */
-    async refreshTokens(): Promise<boolean> {
-        const refreshToken = auth.getRefreshToken();
-        if (!refreshToken) return false;
-        try {
-            const res = await api.post<AuthTokens>("/auth/refresh", { refreshToken });
-            localStorage.setItem(K.ACCESS, res.data.accessToken);
-            localStorage.setItem(K.REFRESH, res.data.refreshToken);
-            return true;
-        } catch {
-            auth.clear();
-            return false;
-        }
+    refreshTokens(): Promise<boolean> {
+        // Reuse the existing promise if a refresh is already in progress.
+        if (_refreshPromise) return _refreshPromise;
+
+        _refreshPromise = (async () => {
+            const refreshToken = auth.getRefreshToken();
+            if (!refreshToken) return false;
+            try {
+                // Backend refresh returns the same shape as login: { user, tokens }
+                const res = await api.post<LoginData>("/auth/refresh", { refreshToken });
+                localStorage.setItem(K.ACCESS, res.data.tokens.accessToken);
+                localStorage.setItem(K.REFRESH, res.data.tokens.refreshToken);
+                localStorage.setItem(K.USER, JSON.stringify(res.data.user));
+                return true;
+            } catch {
+                auth.clear();
+                return false;
+            }
+        })().finally(() => {
+            _refreshPromise = null;
+        });
+
+        return _refreshPromise;
     },
 
     /**
      * Calls POST /auth/logout with the stored refresh token,
      * then clears all local auth data regardless of API result.
+     * Uses direct fetch (bypasses api.ts) to avoid triggering a
+     * refresh loop when the access token has just expired.
      */
     async logout(): Promise<void> {
         const refreshToken = auth.getRefreshToken();
-        // Use direct fetch — bypass api.ts middleware to avoid refresh loops
+        const accessToken = auth.getAccessToken();
         try {
             if (refreshToken) {
                 await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        // Backend logout requires authenticate middleware — send whatever
+                        // access token we have; if it's expired the revocation is best-effort.
+                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                    },
                     body: JSON.stringify({ refreshToken }),
                 });
             }
@@ -138,7 +166,6 @@ export const auth = {
         await api.post(
             "/auth/change-password",
             { oldPassword, newPassword },
-            { headers: auth.getAuthHeader() }
         );
     },
 };

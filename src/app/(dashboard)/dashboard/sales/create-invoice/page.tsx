@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,13 +13,10 @@ import {
 } from "@/components/dashboard/select-customer-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "react-toastify";
+import { productsService, type Product } from "@/lib/services";
 
-// Mock products
-const mockProducts = [
-  { id: 1, name: "Product A", price: 100 },
-  { id: 2, name: "Product B", price: 250 },
-  { id: 3, name: "Service X", price: 75 },
-];
+// Products are loaded from the backend
+// (legacy mock removed)
 
 interface InvoiceItem {
   id: string;
@@ -42,6 +39,13 @@ export default function CreateSalesInvoicePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    productsService.list({ limit: 200, sortBy: "name", sortDir: "ASC" })
+      .then((res) => setProducts(res.data.rows))
+      .catch(() => {}); // silently — dropdown degrades to empty
+  }, []);
   const [items, setItems] = useState<InvoiceItem[]>([
     {
       id: "1",
@@ -431,14 +435,14 @@ export default function CreateSalesInvoicePage() {
                         className="w-[160px] h-[39.5px] rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2.5 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] transition-colors"
                         value={item.productId || ""}
                         onChange={(e) => {
-                          const product = mockProducts.find(
+                          const product = products.find(
                             (p) => p.id === parseInt(e.target.value)
                           );
                           if (product) {
                             updateItem(item.id, {
                               productId: product.id,
                               productName: product.name,
-                              unitPrice: product.price,
+                              unitPrice: product.unitPrice,
                             });
                           } else {
                             updateItem(item.id, { productId: null, productName: "" });
@@ -446,7 +450,7 @@ export default function CreateSalesInvoicePage() {
                         }}
                       >
                         <option value="">Select Item</option>
-                        {mockProducts.map((p) => (
+                        {products.map((p) => (
                           <option key={p.id} value={p.id}>
                             {p.name}
                           </option>

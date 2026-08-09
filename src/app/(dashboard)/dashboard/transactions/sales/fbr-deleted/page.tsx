@@ -1,22 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import {
-    RefreshCw,
-    Download,
-    ChevronLeft,
-    ChevronRight,
-    FileX,
-} from "lucide-react";
+import { RefreshCw, Download, ChevronLeft, ChevronRight, FileX } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
+import { invoicesService, type Invoice as ApiInvoice } from "@/lib/services";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface FbrDeletedInvoice {
     id: number;
+    uuid: string;
     invoiceNo: string;
     customerNo: string;
     customerName: string;
@@ -31,12 +27,22 @@ interface FbrDeletedInvoice {
     advanceTaxPct: number;
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const MOCK_DATA: FbrDeletedInvoice[] = [
-    { id: 1, invoiceNo: "SI-0007", customerNo: "C-0001", customerName: "ABC Corporation", status: "Posted", docDate: "2026-06-10", postingDate: "2026-06-10", assessedValue: 40000, discount: 0, salesTax: 6800, furtherTax: 0, advanceTax: 800, advanceTaxPct: 2 },
-    { id: 2, invoiceNo: "SI-0009", customerNo: "C-0003", customerName: "Global Traders", status: "Cancelled", docDate: "2026-06-15", postingDate: "2026-06-15", assessedValue: 18000, discount: 1800, salesTax: 2754, furtherTax: 0, advanceTax: 360, advanceTaxPct: 2 },
-];
+const toRow = (inv: ApiInvoice): FbrDeletedInvoice => ({
+    id: inv.id,
+    uuid: inv.uuid,
+    invoiceNo: inv.fbrInvoiceNumber ?? `SI-${String(inv.id).padStart(4, "0")}`,
+    customerNo: String(inv.customerId),
+    customerName: inv.buyerBusinessName,
+    status: "Cancelled",
+    docDate: inv.invoiceDate?.slice(0, 10) ?? "",
+    postingDate: (inv.postingDate ?? inv.invoiceDate ?? "").slice(0, 10),
+    assessedValue: Number(inv.totalValueExcludingST) + Number(inv.totalDiscount),
+    discount: Number(inv.totalDiscount),
+    salesTax: Number(inv.totalSalesTax),
+    furtherTax: Number(inv.totalFurtherTax),
+    advanceTax: Number(inv.advanceTax ?? 0),
+    advanceTaxPct: 0,
+});
 
 const STATUS_OPTIONS = ["All", "Posted", "UnPosted", "Cancelled"];
 const SOURCE_OPTIONS = ["All", "Manual", "API", "Import"];
@@ -68,6 +74,7 @@ export default function FbrDeletedInvoicesPage() {
     const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [invoices, setInvoices] = useState<FbrDeletedInvoice[]>([]);
+    const [total, setTotal] = useState(0);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
@@ -75,25 +82,26 @@ export default function FbrDeletedInvoicesPage() {
     const load = useCallback((showToast = false) => {
         setIsLoading(true);
         setInvoices([]);
-        const t = setTimeout(() => { setInvoices(MOCK_DATA); setIsLoading(false); if (showToast) toast.success("FBR deleted invoices refreshed."); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+        invoicesService.list({
+            page, limit: rowsPerPage, status: "cancelled",
+            search: search.trim() || undefined,
+            from: dateFrom || undefined, to: dateTo || undefined,
+            sortBy: "invoice_date", sortDir: "DESC",
+        })
+            .then((res) => {
+                setInvoices(res.data.rows.map(toRow));
+                setTotal(res.data.meta.total);
+                if (showToast) toast.success("FBR deleted invoices refreshed.");
+            })
+            .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load."))
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, search, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 
-    const filtered = invoices.filter((inv) => {
-        const q = search.toLowerCase();
-        return (
-            (!q || inv.invoiceNo.toLowerCase().includes(q) || inv.customerNo.toLowerCase().includes(q) || inv.customerName.toLowerCase().includes(q)) &&
-            (status === "All" || inv.status === status) &&
-            (source === "All") &&
-            (!dateFrom || inv.docDate >= dateFrom) &&
-            (!dateTo || inv.docDate <= dateTo)
-        );
-    });
-
-    const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-    const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+    const filtered = invoices;
+    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+    const paginated = filtered;
 
     const toggleSelect = (id: number) =>
         setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });

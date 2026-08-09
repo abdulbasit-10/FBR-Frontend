@@ -42,10 +42,7 @@ interface SalesReturn {
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
-const MOCK_RETURNS: SalesReturn[] = [
-    { id: 1, returnNo: "SR-0001", originalId: "SI-0001", customerNo: "C-0001", customerName: "ABC Corporation", status: "Posted", source: "Manual", user: "Admin", docDate: "2026-07-05", postingDate: "2026-07-05", assessedValue: 10000, discount: 0, salesTax: 1700, furtherTax: 0 },
-    { id: 2, returnNo: "SR-0002", originalId: "SI-0002", customerNo: "C-0002", customerName: "XYZ Ltd", status: "UnPosted", source: "Manual", user: "Admin", docDate: "2026-07-08", postingDate: "2026-07-08", assessedValue: 5000, discount: 500, salesTax: 765, furtherTax: 0 },
-];
+const MOCK_RETURNS: SalesReturn[] = [];
 
 const STATUS_OPTIONS = ["All", "Posted", "UnPosted", "Cancelled"];
 const SOURCE_OPTIONS = ["All", "Manual", "API", "Import"];
@@ -86,8 +83,8 @@ export default function SalesReturnPage() {
     const load = useCallback((showToast = false) => {
         setIsLoading(true);
         setReturns([]);
-        const t = setTimeout(() => { setReturns(MOCK_RETURNS); setIsLoading(false); if (showToast) toast.success("Returns refreshed."); }, 1000);
-        return () => clearTimeout(t);
+        setIsLoading(false);
+        if (showToast) toast.info("Returns: backend module not yet available.");
     }, []);
 
     useEffect(() => load(), [load]);

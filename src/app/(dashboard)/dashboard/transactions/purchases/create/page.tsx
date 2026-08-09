@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import Image from "next/image";
 import { SelectVendorModal, type Vendor } from "@/components/dashboard/select-vendor-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "react-toastify";
+import { productsService, type Product } from "@/lib/services";
 
 interface PurchaseItem {
     id: string;
@@ -23,11 +24,8 @@ interface PurchaseItem {
     tax: number;
 }
 
-const mockProducts = [
-    { id: 1, name: "Product A", price: 100 },
-    { id: 2, name: "Product B", price: 250 },
-    { id: 3, name: "Service X", price: 75 },
-];
+// Products loaded from backend
+// (legacy mock removed)
 
 const inputCls =
     "h-[48px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none [color-scheme:light]";
@@ -43,6 +41,13 @@ export default function CreatePurchaseInvoicePage() {
     const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
     const [showVendorModal, setShowVendorModal] = useState(false);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [products, setProducts] = useState<Product[]>([]);
+
+    useEffect(() => {
+        productsService.list({ limit: 200, sortBy: "name", sortDir: "ASC" })
+            .then((res) => setProducts(res.data.rows))
+            .catch(() => {});
+    }, []);
     const [items, setItems] = useState<PurchaseItem[]>([{
         id: "1", productId: null, productName: "", qty: 1,
         assessedPerUnit: 0, unitPrice: 0, retailPrice: 0, discount: 0, tax: 0,
@@ -240,13 +245,13 @@ export default function CreatePurchaseInvoicePage() {
                                                 className="w-40 h-[39.5px] rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2.5 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] transition-colors"
                                                 value={item.productId ?? ""}
                                                 onChange={(e) => {
-                                                    const p = mockProducts.find((p) => p.id === parseInt(e.target.value));
-                                                    if (p) updateItem(item.id, { productId: p.id, productName: p.name, unitPrice: p.price });
+                                                    const p = products.find((p) => p.id === parseInt(e.target.value));
+                                                    if (p) updateItem(item.id, { productId: p.id, productName: p.name, unitPrice: p.unitPrice });
                                                     else updateItem(item.id, { productId: null, productName: "" });
                                                 }}
                                             >
                                                 <option value="">Select Item</option>
-                                                {mockProducts.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                                             </select>
                                         </td>
                                         <td className="py-2 px-3 text-center">

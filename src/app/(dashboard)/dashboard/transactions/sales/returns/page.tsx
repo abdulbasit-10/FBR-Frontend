@@ -2,15 +2,8 @@
 
 import React, { Suspense, useState, useEffect, useCallback } from "react";
 import {
-    RefreshCw,
-    Plus,
-    CheckSquare,
-    Send,
-    Trash2,
-    Download,
-    ChevronLeft,
-    ChevronRight,
-    FileText,
+    RefreshCw, Plus, CheckSquare, Send, Trash2,
+    Download, ChevronLeft, ChevronRight, FileText,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
@@ -21,16 +14,21 @@ import {
     SelectInvoiceModal,
     type SaleInvoiceForReturn,
 } from "@/components/dashboard/select-invoice-modal";
+import {
+    invoicesService,
+    type Invoice as ApiInvoice,
+    type InvoiceStatus,
+    type InvoiceListQuery,
+} from "@/lib/services";
 
 interface SalesReturn {
     id: number;
+    uuid: string;
     returnNo: string;
     originalId: string;
     customerNo: string;
     customerName: string;
     status: "Posted" | "UnPosted" | "Cancelled";
-    source: string;
-    user: string;
     docDate: string;
     postingDate: string;
     assessedValue: number;
@@ -39,19 +37,42 @@ interface SalesReturn {
     furtherTax: number;
 }
 
-const MOCK_RETURNS: SalesReturn[] = [
-    { id: 1, returnNo: "SR-0001", originalId: "SI-0001", customerNo: "C-0001", customerName: "ABC Corporation", status: "Posted", source: "Manual", user: "Admin", docDate: "2026-07-05", postingDate: "2026-07-05", assessedValue: 10000, discount: 0, salesTax: 1700, furtherTax: 0 },
-    { id: 2, returnNo: "SR-0002", originalId: "SI-0002", customerNo: "C-0002", customerName: "XYZ Ltd", status: "UnPosted", source: "Manual", user: "Admin", docDate: "2026-07-08", postingDate: "2026-07-08", assessedValue: 5000, discount: 500, salesTax: 765, furtherTax: 0 },
-];
+const uiStatus = (s: InvoiceStatus): SalesReturn["status"] => {
+    if (s === "posted") return "Posted";
+    if (s === "cancelled") return "Cancelled";
+    return "UnPosted";
+};
+
+const apiStatus = (s: string): InvoiceStatus | undefined => {
+    if (s === "Posted") return "posted";
+    if (s === "Cancelled") return "cancelled";
+    if (s === "UnPosted") return "draft";
+    return undefined;
+};
+
+const toRow = (inv: ApiInvoice): SalesReturn => ({
+    id: inv.id,
+    uuid: inv.uuid,
+    returnNo: inv.fbrInvoiceNumber ?? `DN-${String(inv.id).padStart(4, "0")}`,
+    originalId: inv.invoiceRefNo ?? "—",
+    customerNo: String(inv.customerId),
+    customerName: inv.buyerBusinessName,
+    status: uiStatus(inv.status),
+    docDate: inv.invoiceDate?.slice(0, 10) ?? "",
+    postingDate: (inv.postingDate ?? inv.invoiceDate ?? "").slice(0, 10),
+    assessedValue: Number(inv.totalValueExcludingST) + Number(inv.totalDiscount),
+    discount: Number(inv.totalDiscount),
+    salesTax: Number(inv.totalSalesTax),
+    furtherTax: Number(inv.totalFurtherTax),
+});
 
 const STATUS_OPTIONS = ["All", "Posted", "UnPosted", "Cancelled"];
-const SOURCE_OPTIONS = ["All", "Manual", "API", "Import"];
 const ROW_OPTIONS = [50, 100, 200];
 const fmt = (n: number) => n.toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const TABLE_COLS = [
     "Return no", "Original Id", "Customer No", "Customer Name",
-    "Status", "Source", "User", "Doc date", "Posting date",
+    "Status", "Doc date", "Posting date",
     "Assessed value", "Discount", "Sales tax", "Further tax",
 ];
 
@@ -70,9 +91,9 @@ function SalesReturnContent() {
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [status, setStatus] = useState(() => searchParams.get("status") ?? "All");
-    const [source, setSource] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [returns, setReturns] = useState<SalesReturn[]>([]);
+    const [total, setTotal] = useState(0);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
@@ -84,26 +105,32 @@ function SalesReturnContent() {
     }, [searchParams]);
 
     const load = useCallback((showToast = false) => {
-        setIsLoading(true); setReturns([]);
-        const t = setTimeout(() => { setReturns(MOCK_RETURNS); setIsLoading(false); if (showToast) toast.success("Sales returns refreshed."); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+        setIsLoading(true);
+        setReturns([]);
+        const q: InvoiceListQuery = {
+            page, limit: rowsPerPage,
+            search: search.trim() || undefined,
+            status: apiStatus(status),
+            from: dateFrom || undefined,
+            to: dateTo || undefined,
+            sortBy: "invoice_date", sortDir: "DESC",
+        };
+        // Debit Notes = sales returns in FBR
+        invoicesService.list(q)
+            .then((res) => {
+                const debitNotes = res.data.rows.filter((inv) => inv.invoiceType === "Debit Note");
+                setReturns(debitNotes.map(toRow));
+                setTotal(debitNotes.length);
+                if (showToast) toast.success("Sales returns refreshed.");
+            })
+            .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load."))
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, search, status, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 
-    const filtered = returns.filter((r) => {
-        const q = search.toLowerCase();
-        return (
-            (!q || r.returnNo.toLowerCase().includes(q) || r.originalId.toLowerCase().includes(q) || r.customerName.toLowerCase().includes(q)) &&
-            (status === "All" || r.status === status) &&
-            (source === "All" || r.source === source) &&
-            (!dateFrom || r.docDate >= dateFrom) &&
-            (!dateTo || r.docDate <= dateTo)
-        );
-    });
-
-    const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-    const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+    const paginated = returns;
+    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
 
     const toggleSelect = (id: number) =>
         setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -172,8 +199,8 @@ function SalesReturnContent() {
                         <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light" /></div>
                     <div className="space-y-1"><label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Status</label>
                         <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectCls, "min-w-27.5")} style={selectArrow}>{STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}</select></div>
-                    <div className="space-y-1"><label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Source</label>
-                        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectCls, "min-w-27.5")} style={selectArrow}>{SOURCE_OPTIONS.map((o) => <option key={o}>{o}</option>)}</select></div>
+                    <div className="space-y-1"><label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Status</label>
+                        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectCls, "min-w-27.5")} style={selectArrow}>{STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}</select></div>
                 </div>
 
                 <p className="text-[11px] text-[#9CA3AF]">Date range includes returns where document date or posting date falls between the selected days (inclusive). Leave dates empty to include all periods. Provide both from and to, or neither.</p>
@@ -213,8 +240,7 @@ function SalesReturnContent() {
                                         <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{r.customerNo}</td>
                                         <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{r.customerName}</td>
                                         <td className="px-3 py-2.5">{statusBadge(r.status)}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{r.source}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{r.user}</td>
+
                                         <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.docDate}</td>
                                         <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.postingDate}</td>
                                         <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(r.assessedValue)}</td>

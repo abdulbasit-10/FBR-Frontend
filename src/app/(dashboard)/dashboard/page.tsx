@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -17,20 +17,72 @@ import {
   Shield,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { auth, type AuthUser } from "@/lib/auth";
+import {
+  customersService,
+  dashboardService,
+  productsService,
+  type DashboardResponse,
+} from "@/lib/services";
 
 const gold = "#c99d54";
 
+interface SideCounts {
+  customers: number | null;
+  items: number | null;
+}
+
 export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [data, setData] = useState<DashboardResponse | null>(null);
+  const [side, setSide] = useState<SideCounts>({ customers: null, items: null });
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
 
-  const handleRefresh = () => {
+  useEffect(() => {
+    setAuthUser(auth.getUser());
+  }, []);
+
+  const load = useCallback(async (showToast = false) => {
+    try {
+      const [dash, cust, prod] = await Promise.all([
+        dashboardService.get(),
+        // We only need the total count; `limit: 1` keeps the payload tiny.
+        customersService.list({ limit: 1 }),
+        productsService.list({ limit: 1 }),
+      ]);
+      setData(dash.data);
+      setSide({ customers: cust.data.meta.total, items: prod.data.meta.total });
+      if (showToast) toast.success("Dashboard refreshed.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to load dashboard.");
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleRefresh = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      toast.success("Dashboard refreshed.");
-    }, 1200);
+    await load(true);
+    setIsRefreshing(false);
   };
+
+  const cards = data?.cards;
+  const totalDocs = cards?.totalInvoices ?? 0;
+  const awaiting = cards?.pendingInvoices ?? 0;
+  const salesInvoicesCount = String(cards?.totalInvoices ?? "—");
+  const postedCount = String(cards?.acceptedInvoices ?? "0");
+  const unpostedCount = String(cards?.pendingInvoices ?? "0");
+  const rejectedCount = String(cards?.rejectedInvoices ?? "0");
+
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "short",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
   return (
     <div
       className="mx-auto max-w-[1440px] font-sans text-[#4f5967]"
@@ -39,9 +91,9 @@ export default function DashboardPage() {
       {/* Top Banner */}
       <section className="relative overflow-hidden rounded-xl bg-[linear-gradient(110deg,#c99d54,#a6782d)] px-6 py-7 text-white shadow-sm">
         <div className="absolute -right-10 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-white/15" />
-        <p className="relative text-xs">Fri, 17 July 2026</p>
-        <h1 className="relative mt-1 text-[28px] font-semibold leading-none">Welcome Back!</h1>
-        <p className="relative mt-3 text-xs">BIO WORLD TRADERS — 873 documents · 41 awaiting post</p>
+        <p className="relative text-xs">{today}</p>
+        <h1 className="relative mt-1 text-[28px] font-semibold leading-none">Welcome Back{authUser?.name ? `, ${authUser.name.split(" ")[0]}` : ""}!</h1>
+        <p className="relative mt-3 text-xs">{totalDocs} documents · {awaiting} awaiting post</p>
         <div className="relative mt-4 flex flex-wrap gap-2 md:absolute md:right-5 md:top-1/2 md:mt-0 md:-translate-y-1/2">
           <Link href="/dashboard/sales/create-invoice" className="flex h-[33px] items-center gap-1 rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
             New Sales Invoice <ArrowUpRight className="inline h-3 w-3" />
@@ -61,22 +113,22 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <DashboardSection title="Sales">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Sales Invoices" count="11" postedHref="/dashboard/transactions/sales?status=Posted" unpostedHref="/dashboard/transactions/sales?status=UnPosted" />
-              <SummaryCard title="Sales Returns" count="0" returnCard postedHref="/dashboard/transactions/sales/returns?status=Posted" unpostedHref="/dashboard/transactions/sales/returns?status=UnPosted" />
+              <SummaryCard title="Sales Invoices" count={salesInvoicesCount} postedCount={postedCount} unpostedCount={unpostedCount} postedHref="/dashboard/transactions/sales?status=Posted" unpostedHref="/dashboard/transactions/sales?status=UnPosted" />
+              <SummaryCard title="Sales Returns" count={rejectedCount} postedCount={rejectedCount} unpostedCount="0" returnCard postedHref="/dashboard/transactions/sales/returns?status=Posted" unpostedHref="/dashboard/transactions/sales/returns?status=UnPosted" />
             </div>
           </DashboardSection>
 
           <DashboardSection title="Purchases">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Purchase Invoices" count="11" postedHref="/dashboard/transactions/purchases?status=Posted" unpostedHref="/dashboard/transactions/purchases?status=UnPosted" />
-              <SummaryCard title="Purchase Returns" count="0" returnCard postedHref="/dashboard/transactions/purchases/returns?status=Posted" unpostedHref="/dashboard/transactions/purchases/returns?status=UnPosted" />
+              <SummaryCard title="Purchase Invoices" count="0" postedCount="0" unpostedCount="0" postedHref="/dashboard/transactions/purchases?status=Posted" unpostedHref="/dashboard/transactions/purchases?status=UnPosted" />
+              <SummaryCard title="Purchase Returns" count="0" postedCount="0" unpostedCount="0" returnCard postedHref="/dashboard/transactions/purchases/returns?status=Posted" unpostedHref="/dashboard/transactions/purchases/returns?status=UnPosted" />
             </div>
           </DashboardSection>
 
           <DashboardSection title="Inventory">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Posted Adjustments" count="11" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
-              <SummaryCard title="Unposted Adjustments" count="11" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
+              <SummaryCard title="Posted Adjustments" count="0" postedCount="0" unpostedCount="0" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
+              <SummaryCard title="Unposted Adjustments" count="0" postedCount="0" unpostedCount="0" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
             </div>
           </DashboardSection>
 
@@ -115,8 +167,8 @@ export default function DashboardPage() {
 
         {/* Right Sidebar Column */}
         <aside className="w-[307px] space-y-4 gap-2">
-          <SideStat title="Customers" value="209" label="Total registered customers" href="/dashboard/customers" />
-          <SideStat title="Items in Inventory" value="237" label="Products: 9  ·  Services: 228" href="/dashboard/items" />
+          <SideStat title="Customers" value={side.customers?.toString() ?? "—"} label="Total registered customers" href="/dashboard/customers" />
+          <SideStat title="Items in Inventory" value={side.items?.toString() ?? "—"} label={`Products: ${side.items ?? 0}  ·  Services: 0`} href="/dashboard/items" />
           <Workload />
           <Activity />
           <MasterData />
@@ -136,7 +188,7 @@ function DashboardSection({ title, children }: { title: string; children: React.
   );
 }
 
-function SummaryCard({ title, count, returnCard, inventory, postedHref, unpostedHref }: { title: string; count: string; returnCard?: boolean; inventory?: boolean; postedHref?: string; unpostedHref?: string }) {
+function SummaryCard({ title, count, postedCount = "0", unpostedCount = "0", returnCard, inventory, postedHref, unpostedHref }: { title: string; count: string; postedCount?: string; unpostedCount?: string; returnCard?: boolean; inventory?: boolean; postedHref?: string; unpostedHref?: string }) {
   return (
     <div className="flex w-full flex-col gap-[10px] rounded-[14px] border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] pb-[22px] pl-[14px] pr-[14px] pt-[22px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
       <div className="flex items-center justify-between">
@@ -149,8 +201,8 @@ function SummaryCard({ title, count, returnCard, inventory, postedHref, unposted
         <b className="text-sm dark:text-[#f0f0f0]">{count}</b>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Status title="Posted" value={returnCard ? "11" : "11"} active href={postedHref} />
-        <Status title="Unposted" value="0" href={unpostedHref} />
+        <Status title="Posted" value={postedCount} active={Number(postedCount) > 0} href={postedHref} />
+        <Status title="Unposted" value={unpostedCount} href={unpostedHref} />
       </div>
     </div>
   );
