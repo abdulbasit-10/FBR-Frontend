@@ -14,8 +14,13 @@ export * from "./_types";
 export { authService } from "./auth.service";
 export { companiesService } from "./companies.service";
 export { customersService } from "./customers.service";
+export { vendorsService } from "./vendors.service";
 export { productsService } from "./products.service";
 export { invoicesService } from "./invoices.service";
+export { purchasesService } from "./purchases.service";
+export { inventoryAdjustmentsService } from "./inventoryAdjustments.service";
+export { supportService } from "./support.service";
+export { ledgerService } from "./ledger.service";
 export { dashboardService } from "./dashboard.service";
 export { reportsService } from "./reports.service";
 export { lookupService } from "./lookup.service";
@@ -33,6 +38,13 @@ export type {
     CustomerRegistrationType,
 } from "./customers.service";
 export type {
+    Vendor,
+    VendorCreateInput,
+    VendorUpdateInput,
+    VendorListQuery,
+    VendorRegistrationType,
+} from "./vendors.service";
+export type {
     Product,
     ProductCreateInput,
     ProductUpdateInput,
@@ -47,6 +59,38 @@ export type {
     CreateInvoiceItemInput,
     InvoiceListQuery,
 } from "./invoices.service";
+export type {
+    Purchase,
+    PurchaseItem,
+    PurchaseStatus,
+    PurchaseType,
+    PurchaseSource,
+    CreatePurchaseInput,
+    CreatePurchaseItemInput,
+    PurchaseListQuery,
+} from "./purchases.service";
+export type {
+    InventoryAdjustment,
+    InventoryAdjustmentItem,
+    InventoryAdjustmentStatus,
+    InventoryAdjustmentSource,
+    CreateAdjustmentInput,
+    CreateAdjustmentItemInput,
+    AdjustmentListQuery,
+} from "./inventoryAdjustments.service";
+export type {
+    SupportTicket,
+    SupportStatus,
+    SupportPriority,
+    CreateTicketInput,
+    UpdateTicketInput,
+    SupportListQuery,
+} from "./support.service";
+export type {
+    ItemLedgerRow,
+    ItemLedgerQuery,
+    LedgerDocumentType,
+} from "./ledger.service";
 export type { DashboardResponse } from "./dashboard.service";
 export type { ApiLog, ApiLogListQuery } from "./apiLogs.service";
 export type { Notification, NotificationListQuery } from "./notifications.service";

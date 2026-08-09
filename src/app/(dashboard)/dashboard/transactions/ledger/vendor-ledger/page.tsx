@@ -3,6 +3,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { LedgerShell, fmt } from "@/components/dashboard/ledger-shell";
+import {
+    purchasesService,
+    type Purchase as ApiPurchase,
+} from "@/lib/services";
+import { toast } from "react-toastify";
 
 interface VendorLedgerRow {
     id: number;
@@ -19,7 +24,20 @@ interface VendorLedgerRow {
     salesTax: number;
 }
 
-const MOCK_ROWS: VendorLedgerRow[] = [];
+const toRow = (p: ApiPurchase): VendorLedgerRow => ({
+    id: p.id,
+    invoiceNo: p.purchaseNo ?? `PI-${String(p.id).padStart(4, "0")}`,
+    postingDate: (p.postingDate ?? p.docDate ?? "").slice(0, 10),
+    documentType: p.purchaseType,
+    vendorNo: p.vendor?.vendorNo ?? String(p.vendorId),
+    vendorName: p.vendorBusinessName,
+    vendorType: p.vendorRegistrationType ?? "—",
+    fed: Number(p.totalFedPayable),
+    amtExclDiscount: Number(p.assessedValue),
+    discount: Number(p.totalDiscount),
+    amtExclSalesTax: Number(p.totalValueExcludingST),
+    salesTax: Number(p.totalSalesTax),
+});
 
 const VENDOR_TYPE_OPTIONS = ["All", "Registered", "Unregistered", "AOP", "Company"];
 
@@ -41,10 +59,19 @@ export default function VendorLedgerPage() {
 
     const load = useCallback(() => {
         setIsLoading(true);
-        // Vendor ledger requires a purchase/vendor backend module not yet available.
         setRows([]);
-        setIsLoading(false);
-    }, [search, dateFrom, dateTo, docType, vendorType]);
+        purchasesService.list({
+            page,
+            limit: rowsPerPage,
+            status: "posted",
+            search: search.trim() || undefined,
+            from: dateFrom || undefined,
+            to: dateTo || undefined,
+        })
+            .then((res) => setRows(res.data.rows.map(toRow)))
+            .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load vendor ledger."))
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, search, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 

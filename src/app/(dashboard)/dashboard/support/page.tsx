@@ -7,20 +7,26 @@ import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { selectArrow, selectCls, btnOutline } from "@/components/dashboard/transaction-list-shell";
+import { supportService, type SupportTicket as ApiTicket } from "@/lib/services";
+import { toast } from "react-toastify";
 
 interface SupportRequest {
     id: number;
+    uuid: string;
     no: string;
     title: string;
     status: "Open" | "In Progress" | "Resolved" | "Closed";
     createdAt: string;
 }
 
-const MOCK_REQUESTS: SupportRequest[] = [
-    { id: 1, no: "SR-0001", title: "Unable to post sales invoice SI-0003", status: "Open", createdAt: "2026-07-10 09:22:11" },
-    { id: 2, no: "SR-0002", title: "FBR sync not working for purchase invoices", status: "In Progress", createdAt: "2026-07-15 14:05:33" },
-    { id: 3, no: "SR-0003", title: "Discount not calculating correctly on returns", status: "Resolved", createdAt: "2026-07-20 11:48:00" },
-];
+const toRow = (t: ApiTicket): SupportRequest => ({
+    id: t.id,
+    uuid: t.uuid,
+    no: t.ticketNo ?? `SR-${String(t.id).padStart(4, "0")}`,
+    title: t.title,
+    status: t.status,
+    createdAt: t.createdAt.replace("T", " ").replace(/\.\d+Z?$/, ""),
+});
 
 const STATUS_OPTIONS = ["All", "Open", "In Progress", "Resolved", "Closed"];
 const PAGE_SIZE = 50;
@@ -38,28 +44,34 @@ export default function SupportPage() {
     const [statusFilter, setStatusFilter] = useState("All");
     const [isLoading, setIsLoading] = useState(true);
     const [requests, setRequests] = useState<SupportRequest[]>([]);
+    const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
 
     const load = useCallback(() => {
-        setIsLoading(true); setRequests([]);
-        const t = setTimeout(() => { setRequests(MOCK_REQUESTS); setIsLoading(false); }, 1000);
-        return () => clearTimeout(t);
-    }, []);
+        setIsLoading(true);
+        setRequests([]);
+        supportService.list({
+            page,
+            limit: PAGE_SIZE,
+            search: search.trim() || undefined,
+            status: statusFilter !== "All" ? statusFilter : undefined,
+        })
+            .then((res) => {
+                setRequests(res.data.rows.map(toRow));
+                setTotal(res.data.meta.total);
+            })
+            .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load tickets."))
+            .finally(() => setIsLoading(false));
+    }, [page, search, statusFilter]);
 
     useEffect(() => load(), [load]);
 
     const resetFilters = () => { setSearch(""); setStatusFilter("All"); setPage(1); };
 
-    const filtered = requests.filter((r) => {
-        const q = search.toLowerCase();
-        return (
-            (!q || r.title.toLowerCase().includes(q) || r.no.toLowerCase().includes(q)) &&
-            (statusFilter === "All" || r.status === statusFilter)
-        );
-    });
-
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    // Server-side filtering + pagination — request already scoped.
+    const filtered = requests;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const paginated = filtered;
 
     return (
         <div className="min-h-full space-y-4 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>

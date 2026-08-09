@@ -3,6 +3,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { LedgerShell, fmt } from "@/components/dashboard/ledger-shell";
+import {
+    ledgerService,
+    type ItemLedgerRow as ApiItemLedgerRow,
+    type LedgerDocumentType,
+} from "@/lib/services";
+import { toast } from "react-toastify";
 
 interface ItemLedgerRow {
     id: number;
@@ -21,7 +27,22 @@ interface ItemLedgerRow {
     unitPrice: number;
 }
 
-const MOCK_ROWS: ItemLedgerRow[] = [];
+const toRow = (r: ApiItemLedgerRow, idx: number): ItemLedgerRow => ({
+    id: idx,
+    documentNo: r.documentNo,
+    documentDate: r.documentDate,
+    postingDate: r.postingDate ?? r.documentDate,
+    documentType: r.documentType,
+    itemNo: r.itemNo != null ? String(r.itemNo) : "—",
+    hsCode: r.hsCode,
+    itemMapping: "—",
+    itemName: r.itemName,
+    itemType: r.documentType.startsWith("Purchase") ? "Purchase" : "Sale",
+    quantity: r.quantity,
+    uom: r.uom,
+    unitCost: r.unitCost,
+    unitPrice: r.unitPrice,
+});
 
 const ITEM_TYPE_OPTIONS = ["All", "Finished Goods", "Raw Material", "Semi-Finished", "Service", "Consumable"];
 
@@ -46,10 +67,24 @@ export default function ItemLedgerPage() {
 
     const load = useCallback(() => {
         setIsLoading(true);
-        // Item-level ledger requires a dedicated /invoice-items endpoint not yet in the backend.
         setRows([]);
-        setIsLoading(false);
-    }, [search, dateFrom, dateTo, docType, itemType]);
+        const docTypeParam: LedgerDocumentType | undefined =
+            docType === "All" ? undefined :
+            docType === "Sales Invoice" ? "Sales Invoice" :
+            docType === "Sales Return" ? "Debit Note" :
+            docType === "Purchase Invoice" ? "Purchase Invoice" :
+            docType === "Purchase Return" ? "Purchase Return" :
+            undefined;
+        ledgerService.items({
+            from: dateFrom || undefined,
+            to: dateTo || undefined,
+            search: search.trim() || undefined,
+            docType: docTypeParam,
+        })
+            .then((res) => setRows(res.data.map(toRow)))
+            .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load ledger."))
+            .finally(() => setIsLoading(false));
+    }, [search, dateFrom, dateTo, docType]);
 
     useEffect(() => load(), [load]);
 

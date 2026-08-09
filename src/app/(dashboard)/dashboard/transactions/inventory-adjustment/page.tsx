@@ -11,9 +11,15 @@ import {
     statusBadge,
     btnOutline,
 } from "@/components/dashboard/transaction-list-shell";
+import {
+    inventoryAdjustmentsService,
+    type InventoryAdjustment as ApiAdjustment,
+    type InventoryAdjustmentStatus,
+} from "@/lib/services";
 
 interface InventoryAdjustment {
     id: number;
+    uuid: string;
     adjustmentNo: string;
     status: "Posted" | "UnPosted" | "Cancelled";
     source: string;
@@ -25,6 +31,32 @@ interface InventoryAdjustment {
 }
 
 const MOCK_ADJUSTMENTS: InventoryAdjustment[] = [];
+
+const uiStatus = (s: InventoryAdjustmentStatus): InventoryAdjustment["status"] => {
+    if (s === "posted") return "Posted";
+    if (s === "cancelled") return "Cancelled";
+    return "UnPosted";
+};
+
+const apiStatus = (s: string): InventoryAdjustmentStatus | undefined => {
+    if (s === "Posted") return "posted";
+    if (s === "Cancelled") return "cancelled";
+    if (s === "UnPosted") return "draft";
+    return undefined;
+};
+
+const toRow = (a: ApiAdjustment): InventoryAdjustment => ({
+    id: a.id,
+    uuid: a.uuid,
+    adjustmentNo: a.adjustmentNo ?? `IA-${String(a.id).padStart(4, "0")}`,
+    status: uiStatus(a.status),
+    source: a.source,
+    user: String(a.createdBy),
+    docDate: a.docDate?.slice(0, 10) ?? "",
+    postingDate: (a.postingDate ?? a.docDate ?? "").slice(0, 10),
+    lines: a.lines,
+    lineTotal: Number(a.lineTotal),
+});
 
 const COLUMNS = [
     "Adjustment No", "Status", "Source", "User",
@@ -53,10 +85,31 @@ function InventoryAdjustmentContent() {
     }, [searchParams]);
 
     const load = useCallback((showToast = false) => {
-        setIsLoading(true); setAdjustments([]);
-        setIsLoading(false);
-        if (showToast) toast.info("Inventory adjustments: backend module not yet available.");
-    }, []);
+        setIsLoading(true);
+        setAdjustments([]);
+        inventoryAdjustmentsService.list({
+            page,
+            limit: rowsPerPage,
+            search: search.trim() || undefined,
+            status: apiStatus(status),
+            from: dateFrom || undefined,
+            to: dateTo || undefined,
+        })
+            .then((res) => {
+                setAdjustments(res.data.rows.map(toRow));
+                if (showToast) toast.success("Inventory adjustments refreshed.");
+            })
+            .catch((err) => {
+                const msg = err instanceof Error ? err.message : "Failed to load adjustments.";
+                if (msg.toLowerCase().includes("permission")) {
+                    toast.info("Permissions updated — reloading…");
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    toast.error(msg);
+                }
+            })
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, status, search, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 

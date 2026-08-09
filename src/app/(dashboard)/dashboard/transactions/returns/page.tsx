@@ -20,11 +20,17 @@ import {
     SelectInvoiceModal,
     type SaleInvoiceForReturn,
 } from "@/components/dashboard/select-invoice-modal";
+import {
+    invoicesService,
+    type Invoice as ApiInvoice,
+    type InvoiceStatus,
+} from "@/lib/services";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SalesReturn {
     id: number;
+    uuid: string;
     returnNo: string;
     originalId: string;
     customerNo: string;
@@ -40,9 +46,35 @@ interface SalesReturn {
     furtherTax: number;
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const MOCK_RETURNS: SalesReturn[] = [];
+// Debit Notes = sales returns.
+const uiStatus = (s: InvoiceStatus): SalesReturn["status"] => {
+    if (s === "posted") return "Posted";
+    if (s === "cancelled") return "Cancelled";
+    return "UnPosted";
+};
+const apiStatus = (s: string): InvoiceStatus | undefined => {
+    if (s === "Posted") return "posted";
+    if (s === "Cancelled") return "cancelled";
+    if (s === "UnPosted") return "draft";
+    return undefined;
+};
+const toRow = (inv: ApiInvoice): SalesReturn => ({
+    id: inv.id,
+    uuid: inv.uuid,
+    returnNo: inv.fbrInvoiceNumber ?? `DN-${String(inv.id).padStart(4, "0")}`,
+    originalId: inv.invoiceRefNo ?? "—",
+    customerNo: String(inv.customerId),
+    customerName: inv.buyerBusinessName,
+    status: uiStatus(inv.status),
+    source: "Manual",
+    user: String(inv.createdBy),
+    docDate: inv.invoiceDate?.slice(0, 10) ?? "",
+    postingDate: (inv.postingDate ?? inv.invoiceDate ?? "").slice(0, 10),
+    assessedValue: Number(inv.totalValueExcludingST) + Number(inv.totalDiscount),
+    discount: Number(inv.totalDiscount),
+    salesTax: Number(inv.totalSalesTax),
+    furtherTax: Number(inv.totalFurtherTax),
+});
 
 const STATUS_OPTIONS = ["All", "Posted", "UnPosted", "Cancelled"];
 const SOURCE_OPTIONS = ["All", "Manual", "API", "Import"];
@@ -83,9 +115,22 @@ export default function SalesReturnPage() {
     const load = useCallback((showToast = false) => {
         setIsLoading(true);
         setReturns([]);
-        setIsLoading(false);
-        if (showToast) toast.info("Returns: backend module not yet available.");
-    }, []);
+        invoicesService.list({
+            page,
+            limit: rowsPerPage,
+            search: search.trim() || undefined,
+            status: apiStatus(status),
+            from: dateFrom || undefined,
+            to: dateTo || undefined,
+        })
+            .then((res) => {
+                const debitNotes = res.data.rows.filter((inv) => inv.invoiceType === "Debit Note");
+                setReturns(debitNotes.map(toRow));
+                if (showToast) toast.success("Returns refreshed.");
+            })
+            .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load returns."))
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, status, search, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 

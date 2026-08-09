@@ -11,9 +11,15 @@ import {
     statusBadge,
     btnOutline,
 } from "@/components/dashboard/transaction-list-shell";
+import {
+    purchasesService,
+    type Purchase as ApiPurchase,
+    type PurchaseStatus,
+} from "@/lib/services";
 
 interface PurchaseInvoice {
     id: number;
+    uuid: string;
     invoiceNo: string;
     vendorNo: string;
     vendorName: string;
@@ -30,6 +36,37 @@ interface PurchaseInvoice {
 }
 
 const MOCK_PURCHASES: PurchaseInvoice[] = [];
+
+const uiStatus = (s: PurchaseStatus): PurchaseInvoice["status"] => {
+    if (s === "posted") return "Posted";
+    if (s === "cancelled") return "Cancelled";
+    return "UnPosted";
+};
+
+const apiStatus = (s: string): PurchaseStatus | undefined => {
+    if (s === "Posted") return "posted";
+    if (s === "Cancelled") return "cancelled";
+    if (s === "UnPosted") return "draft";
+    return undefined;
+};
+
+const toRow = (p: ApiPurchase): PurchaseInvoice => ({
+    id: p.id,
+    uuid: p.uuid,
+    invoiceNo: p.purchaseNo ?? `PI-${String(p.id).padStart(4, "0")}`,
+    vendorNo: p.vendor?.vendorNo ?? String(p.vendorId),
+    vendorName: p.vendorBusinessName,
+    vendorInvoiceNo: p.vendorInvoiceNo ?? "—",
+    status: uiStatus(p.status),
+    source: p.source,
+    user: String(p.createdBy),
+    docDate: p.docDate?.slice(0, 10) ?? "",
+    postingDate: (p.postingDate ?? p.docDate ?? "").slice(0, 10),
+    assessedValue: Number(p.assessedValue),
+    discount: Number(p.totalDiscount),
+    salesTax: Number(p.totalSalesTax),
+    furtherTax: Number(p.totalFurtherTax),
+});
 
 const COLUMNS = [
     "Invoice No", "Vendor No", "Vendor Name", "Vendor Invoice No",
@@ -60,11 +97,33 @@ function PurchaseInvoiceContent() {
 
     const load = useCallback((showToast = false) => {
         setIsLoading(true);
-        // Purchase invoices require a vendor/purchase backend module not yet available.
         setInvoices([]);
-        setIsLoading(false);
-        if (showToast) toast.info("Purchase invoices: backend module not yet available.");
-    }, []);
+        purchasesService.list({
+            page,
+            limit: rowsPerPage,
+            purchaseType: "Purchase Invoice",
+            search: search.trim() || undefined,
+            status: apiStatus(status),
+            from: dateFrom || undefined,
+            to: dateTo || undefined,
+        })
+            .then((res) => {
+                setInvoices(res.data.rows.map(toRow));
+                if (showToast) toast.success("Purchase invoices refreshed.");
+            })
+            .catch((err) => {
+                const msg = err instanceof Error ? err.message : "Failed to load purchases.";
+                // A permission error after a background token refresh means the new token
+                // is now in localStorage — a page reload picks it up automatically.
+                if (msg.toLowerCase().includes("permission")) {
+                    toast.info("Permissions updated — reloading…");
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    toast.error(msg);
+                }
+            })
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, status, search, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 

@@ -14,24 +14,32 @@ export function GsapReveal({
     if (!ref.current) return;
 
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        ".navbar",
-        { y: -10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
-      );
+      // Suppress "target not found" warnings — not every page has these classes.
+      const navbar = ref.current?.querySelectorAll(".navbar");
+      const cards = ref.current?.querySelectorAll(".reveal-card");
 
-      gsap.fromTo(
-        ".reveal-card",
-        { y: 10, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.55,
-          ease: "power2.out",
-          stagger: 0.06,
-          delay: 0.1,
-        },
-      );
+      if (navbar?.length) {
+        gsap.fromTo(
+          navbar,
+          { y: -10, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+        );
+      }
+
+      if (cards?.length) {
+        gsap.fromTo(
+          cards,
+          { y: 10, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.55,
+            ease: "power2.out",
+            stagger: 0.06,
+            delay: 0.1,
+          },
+        );
+      }
     }, ref);
 
     return () => ctx.revert();

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
+import { vendorsService, type VendorCreateInput } from "@/lib/services";
 
 const PROVINCES = ["Select", "Khyber Pakhtunkhwa", "Punjab", "Sindh", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir", "Islamabad"];
 const VENDOR_TYPES = ["Select", "Individual", "Company", "AOP"];
@@ -44,6 +45,7 @@ export default function NewVendorPage() {
     const [email, setEmail] = useState("");
     const [website, setWebsite] = useState("");
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const requiredChecks = useMemo(() => [
         { label: "Vendors type", done: vendorType !== "Select" },
@@ -69,6 +71,40 @@ export default function NewVendorPage() {
         toast.info("Form reset.");
     };
 
+    const handleSave = async () => {
+        const missing = requiredChecks.filter((r) => !r.done);
+        if (missing.length > 0) {
+            toast.error(`Fill required fields: ${missing.map((r) => r.label).join(", ")}.`);
+            return;
+        }
+        const apiVendorType: VendorCreateInput["vendorType"] =
+            vendorType === "Individual" ? "Individual" : "Company";
+        const apiRegistrationType: VendorCreateInput["registrationType"] =
+            registrationStatus === "Registered" ? "Registered" : "Unregistered";
+        const payload: VendorCreateInput = {
+            businessName: vendorName.trim() || contactPerson.trim(),
+            ntnCnic: ntn.trim() || null,
+            strn: strn.trim() || null,
+            registrationType: apiRegistrationType,
+            province: ntnProvince,
+            address: [address, city, postcode].filter(Boolean).join(", "),
+            phone: (phoneNumber || whatsapp).trim() || null,
+            email: email.trim() || null,
+            vendorType: apiVendorType,
+            isActive: true,
+        };
+        setIsSaving(true);
+        try {
+            const res = await vendorsService.create(payload);
+            toast.success(`Vendor ${res.data.vendorNo ?? res.data.businessName} created.`);
+            router.push("/dashboard/vendors");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to save vendor.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="min-h-full text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
@@ -86,13 +122,10 @@ export default function NewVendorPage() {
                         <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
                     </button>
                     <button type="button"
-                        onClick={() => {
-                            const missing = requiredChecks.filter((r) => !r.done);
-                            if (missing.length > 0) toast.error(`Fill required fields: ${missing.map((r) => r.label).join(", ")}.`);
-                            else toast.success("Vendor saved successfully.");
-                        }}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
-                        <Save className="h-3.5 w-3.5" /> Save
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs disabled:opacity-60">
+                        <Save className="h-3.5 w-3.5" /> {isSaving ? "Saving…" : "Save"}
                     </button>
                 </div>
             </div>

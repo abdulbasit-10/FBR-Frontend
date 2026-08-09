@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
+import { supportService } from "@/lib/services";
 
 const inputCls =
     "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none";
@@ -35,6 +36,24 @@ export default function NewSupportRequestPage() {
     };
 
     const canSubmit = title.trim() !== "" && description.trim() !== "";
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSubmit = async () => {
+        if (!canSubmit) return;
+        setIsSaving(true);
+        try {
+            await supportService.create({
+                title: title.trim(),
+                description: description.trim(),
+            });
+            toast.success("Support request submitted.");
+            router.back();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to submit ticket.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     return (
         <div className="min-h-full space-y-4 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -51,10 +70,10 @@ export default function NewSupportRequestPage() {
                         className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-5 text-[13px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         Cancel
                     </button>
-                    <button type="button" disabled={!canSubmit}
-                        onClick={() => { toast.success("Support request submitted."); router.back(); }}
+                    <button type="button" disabled={!canSubmit || isSaving}
+                        onClick={handleSubmit}
                         className="flex h-9 items-center gap-1.5 rounded-[5px] bg-[#C69A52] px-6 text-[13px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
-                        Submit
+                        {isSaving ? "Submitting…" : "Submit"}
                     </button>
                 </div>
             </div>

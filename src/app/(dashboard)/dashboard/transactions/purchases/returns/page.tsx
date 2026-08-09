@@ -15,9 +15,15 @@ import {
     SelectPurchaseInvoiceModal,
     type PurchaseInvoiceForReturn,
 } from "@/components/dashboard/select-purchase-invoice-modal";
+import {
+    purchasesService,
+    type Purchase as ApiPurchase,
+    type PurchaseStatus,
+} from "@/lib/services";
 
 interface PurchaseReturn {
     id: number;
+    uuid: string;
     returnNo: string;
     originalPI: string;
     vendorNo: string;
@@ -35,6 +41,38 @@ interface PurchaseReturn {
 }
 
 const MOCK_RETURNS: PurchaseReturn[] = [];
+
+const uiStatus = (s: PurchaseStatus): PurchaseReturn["status"] => {
+    if (s === "posted") return "Posted";
+    if (s === "cancelled") return "Cancelled";
+    return "UnPosted";
+};
+
+const apiStatus = (s: string): PurchaseStatus | undefined => {
+    if (s === "Posted") return "posted";
+    if (s === "Cancelled") return "cancelled";
+    if (s === "UnPosted") return "draft";
+    return undefined;
+};
+
+const toRow = (p: ApiPurchase): PurchaseReturn => ({
+    id: p.id,
+    uuid: p.uuid,
+    returnNo: p.purchaseNo ?? `PR-${String(p.id).padStart(4, "0")}`,
+    originalPI: p.vendorInvoiceNo ?? "—",
+    vendorNo: p.vendor?.vendorNo ?? String(p.vendorId),
+    vendorName: p.vendorBusinessName,
+    status: uiStatus(p.status),
+    source: p.source,
+    user: String(p.createdBy),
+    docDate: p.docDate?.slice(0, 10) ?? "",
+    postingDate: (p.postingDate ?? p.docDate ?? "").slice(0, 10),
+    assessedValue: Number(p.assessedValue),
+    discount: Number(p.totalDiscount),
+    salesTax: Number(p.totalSalesTax),
+    furtherTax: Number(p.totalFurtherTax),
+    advanceTax: Number(p.advanceTax),
+});
 
 const COLUMNS = [
     "Return No", "Original PI", "Vendor No", "Vendor Name",
@@ -65,12 +103,32 @@ function PurchaseReturnContent() {
     }, [searchParams]);
 
     const load = useCallback((showToast = false) => {
-        setIsLoading(true); setReturns([]);
         setIsLoading(true);
         setReturns([]);
-        setIsLoading(false);
-        if (showToast) toast.info("Purchase returns: backend module not yet available.");
-    }, []);
+        purchasesService.list({
+            page,
+            limit: rowsPerPage,
+            purchaseType: "Purchase Return",
+            search: search.trim() || undefined,
+            status: apiStatus(status),
+            from: dateFrom || undefined,
+            to: dateTo || undefined,
+        })
+            .then((res) => {
+                setReturns(res.data.rows.map(toRow));
+                if (showToast) toast.success("Purchase returns refreshed.");
+            })
+            .catch((err) => {
+                const msg = err instanceof Error ? err.message : "Failed to load purchase returns.";
+                if (msg.toLowerCase().includes("permission")) {
+                    toast.info("Permissions updated — reloading…");
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    toast.error(msg);
+                }
+            })
+            .finally(() => setIsLoading(false));
+    }, [page, rowsPerPage, status, search, dateFrom, dateTo]);
 
     useEffect(() => load(), [load]);
 
