@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Download, Upload, FileSpreadsheet, X, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
-import * as XLSX from "xlsx";
+import * as XLSX from "@e965/xlsx";
 import { auth } from "@/lib/auth";
 
 interface ImportExportShellProps {
