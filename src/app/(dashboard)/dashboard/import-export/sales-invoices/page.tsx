@@ -1,14 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImportExportShell } from "@/components/dashboard/import-export-shell";
-import { customersService, invoicesService } from "@/lib/services";
+import { customersService, invoicesService, productsService } from "@/lib/services";
+import type { Product } from "@/lib/services/products.service";
 import { toast } from "react-toastify";
 
 const COLUMNS = [
-    "Row", "Sequence No", "Posting Date (MM/DD/YYYY)", "Document Date (MM/DD/YYYY)",
+    "Row", "Sequence No", "Posting Date", "Document Date",
     "Customer No", "Item No", "Item Name", "Qty",
+    "Unit Price", "Retail Price", "Disc %", "Sales Tax %",
+    "Further Tax %", "Advance Tax %", "Mapping ID",
 ];
 
 const NOTE =
@@ -25,11 +28,28 @@ function toIso(date: string): string {
     return date;
 }
 
+/** Look up a product by mappingId or name. Returns null if not found. */
+async function lookupProduct(itemNo: string, itemName: string): Promise<Product | null> {
+    try {
+        const term = itemNo || itemName;
+        if (!term) return null;
+        const res = await productsService.list({ search: term, limit: 5 });
+        const rows = res.data.rows;
+        const byMapping = rows.find((p) => p.mappingId?.toLowerCase() === itemNo.toLowerCase());
+        if (byMapping) return byMapping;
+        const byName = rows.find((p) => p.name?.toLowerCase() === itemName.toLowerCase());
+        return byName ?? rows[0] ?? null;
+    } catch {
+        return null;
+    }
+}
+
 export default function SalesInvoicesImportExportPage() {
     const router = useRouter();
+    const [_state] = useState(null); // keeps client component boundary
 
     const handleSave = async (rows: Record<string, string>[]) => {
-        // Group rows by "Sequence No" — each unique seq = one invoice
+        // Group rows by Sequence No — each unique seq becomes one invoice
         const groups = new Map<string, Record<string, string>[]>();
         for (const row of rows) {
             const seq = row["Sequence No"] || row["Sequence no"] || row["sequence no"] || "0";
@@ -43,10 +63,12 @@ export default function SalesInvoicesImportExportPage() {
         for (const [seq, groupRows] of groups) {
             const firstRow = groupRows[0];
             const customerNo = firstRow["Customer No"] || firstRow["Customer no"] || "";
-            const docDate = toIso(firstRow["Document Date (MM/DD/YYYY)"] || firstRow["Document Date"] || "");
-            const postingDate = toIso(firstRow["Posting Date (MM/DD/YYYY)"] || firstRow["Posting Date"] || "");
+            const docDate = toIso(firstRow["Document Date"] || firstRow["Document Date (MM/DD/YYYY)"] || "");
+            const postingDate = toIso(firstRow["Posting Date"] || firstRow["Posting Date (MM/DD/YYYY)"] || "");
+            const advanceTaxPct = parseFloat(firstRow["Advance Tax %"] || "0") || 0;
+            const mappingId = firstRow["Mapping ID"] || null;
 
-            // Look up customer by customerNo via search
+            // Look up customer
             let customerId: number | null = null;
             try {
                 const res = await customersService.list({ search: customerNo, limit: 5 });
@@ -55,9 +77,7 @@ export default function SalesInvoicesImportExportPage() {
                            c.businessName?.toLowerCase() === customerNo.toLowerCase(),
                 );
                 if (match) customerId = match.id;
-            } catch {
-                // customer lookup failed — skip this group
-            }
+            } catch { /* skip */ }
 
             if (!customerId) {
                 failed++;
@@ -65,28 +85,55 @@ export default function SalesInvoicesImportExportPage() {
                 continue;
             }
 
-            // Build line items from the group rows
-            const items = groupRows.map((r) => {
-                const qty = parseFloat(r["Qty"] || r["qty"] || "1") || 1;
-                const description = r["Item Name"] || r["Item name"] || r["item name"] || "Imported Item";
+            // Build line items
+            let totalValueExclST = 0;
+            const items = await Promise.all(groupRows.map(async (r) => {
+                const qty         = parseFloat(r["Qty"] || "1") || 1;
+                const unitPrice   = parseFloat(r["Unit Price"] || "0") || 0;
+                const retailPrice = parseFloat(r["Retail Price"] || "0") || 0;
+                const discPct     = parseFloat(r["Disc %"] || "0") || 0;
+                const stPct       = parseFloat(r["Sales Tax %"] || "0") || 0;
+                const ftPct       = parseFloat(r["Further Tax %"] || "0") || 0;
+                const itemNo      = r["Item No"] || r["Item no"] || "";
+                const itemName    = r["Item Name"] || r["Item name"] || "Imported Item";
+
+                const discount           = parseFloat((qty * unitPrice * discPct / 100).toFixed(4));
+                const valueSalesExclST   = parseFloat((qty * unitPrice - discount).toFixed(4));
+                const salesTaxApplicable = parseFloat((valueSalesExclST * stPct / 100).toFixed(4));
+                const furtherTax         = parseFloat((valueSalesExclST * ftPct / 100).toFixed(4));
+                totalValueExclST += valueSalesExclST;
+
+                const product = await lookupProduct(itemNo, itemName);
+
                 return {
-                    productDescription: description,
-                    hsCode: "0000.0000",   // placeholder — user should update before posting
-                    rate: "0%",
-                    uom: "PCS",
+                    productId: product?.id ?? null,
+                    hsCode: product?.hsCode ?? "0000.0000",
+                    productDescription: itemName,
+                    rate: product?.rate ?? `${stPct}%`,
+                    uom: product?.uom ?? "PCS",
                     quantity: qty,
-                    valueSalesExcludingST: 0, // placeholder
-                    salesTaxApplicable: 0,
-                    saleType: "Exempt",
+                    unitPrice,
+                    fixedNotifiedValueOrRetailPrice: retailPrice,
+                    discountPercent: discPct,
+                    discount,
+                    valueSalesExcludingST: valueSalesExclST,
+                    salesTaxApplicable,
+                    furtherTax,
+                    saleType: product?.saleType ?? "Exempt",
+                    sroScheduleNo: product?.sroScheduleNo ?? null,
+                    sroItemSerialNo: product?.sroItemSerialNo ?? null,
                 };
-            });
+            }));
+
+            const advanceTax = parseFloat((totalValueExclST * advanceTaxPct / 100).toFixed(4));
 
             try {
                 await invoicesService.create({
                     customerId,
                     invoiceDate: docDate,
                     postingDate,
-                    // environment not passed → inherits company's fbrEnvironment (default: sandbox)
+                    advanceTax,
+                    mappingId,
                     notes: `Imported from Excel — Sequence No: ${seq}`,
                     items,
                 });
@@ -100,7 +147,7 @@ export default function SalesInvoicesImportExportPage() {
         if (created > 0) {
             toast.success(
                 `${created} draft invoice(s) created. Go to Transactions → Sales to review and post them to FBR.`,
-                { autoClose: 8000 }
+                { autoClose: 8000 },
             );
             setTimeout(() => router.push("/dashboard/transactions/sales"), 2000);
         }
@@ -115,6 +162,7 @@ export default function SalesInvoicesImportExportPage() {
             saveLabel="Save as Draft"
             note={NOTE}
             columns={COLUMNS}
+            templateUrl="/templates/Invoices_Template.xlsx"
             onSave={handleSave}
         />
     );

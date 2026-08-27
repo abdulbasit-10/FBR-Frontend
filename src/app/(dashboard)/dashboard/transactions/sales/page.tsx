@@ -372,7 +372,18 @@ function SalesInvoicesContent() {
                                                 className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer"
                                             />
                                         </td>
-                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
+                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    router.push(`/dashboard/transactions/sales/${inv.uuid}`);
+                                                }}
+                                                className="text-[#A27B3A] hover:underline font-semibold"
+                                            >
+                                                {inv.invoiceNo}
+                                            </button>
+                                        </td>
                                         <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.customerNo}</td>
                                         <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.customerName}</td>
                                         <td className="px-3 py-2.5">{statusBadge(inv.status)}</td>

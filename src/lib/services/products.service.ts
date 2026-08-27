@@ -7,16 +7,24 @@ export interface Product {
     uuid: string;
     companyId: number;
     name: string;
+    itemType: string | null;
+    itemCategory: string | null;
     description: string | null;
     hsCode: string;
     uom: string;
     saleType: string;
     rate: string;
+    rateId: string | null;
     rateValue: number;
+    taxDescription: string | null;
     sroScheduleNo: string | null;
     sroItemSerialNo: string | null;
     unitPrice: number;
+    assessedUnitCost: number | null;
+    salesPrice: number | null;
     fixedNotifiedValueOrRetailPrice: number;
+    printUom: string | null;
+    mappingId: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -24,16 +32,24 @@ export interface Product {
 
 export interface ProductCreateInput {
     name: string;
+    itemType?: string | null;
+    itemCategory?: string | null;
     description?: string | null;
     hsCode: string;
     uom: string;
     saleType: string;
     rate: string;
+    rateId?: string | null;
     rateValue: number;
+    taxDescription?: string | null;
     sroScheduleNo?: string | null;
     sroItemSerialNo?: string | null;
     unitPrice: number;
+    assessedUnitCost?: number | null;
+    salesPrice?: number | null;
     fixedNotifiedValueOrRetailPrice?: number;
+    printUom?: string | null;
+    mappingId?: string | null;
     isActive?: boolean;
 }
 

@@ -6,8 +6,9 @@ import { customersService, type CustomerCreateInput } from "@/lib/services";
 import { toast } from "react-toastify";
 
 const COLUMNS = [
-    "Row", "Customer Name", "Customer Type", "Address", "City",
-    "Post Code", "NTN/CNIC", "STRN", "Registration Status", "Province",
+    "Row", "Customer Name", "Customer Type", "Address", "City", "Post Code",
+    "NTN/CNIC", "STRN", "Registration Status", "Province",
+    "Contact", "Contact Person", "Phone Number", "WhatsApp Number", "Email", "Website", "Mapping ID",
 ];
 
 const NOTE = "Import the Excel template, review the grid, then save. Failed rows are kept so you can fix and retry.";
@@ -48,6 +49,13 @@ export default function CustomersImportExportPage() {
                 address: address || province,
                 ntnCnic: r["NTN/CNIC"] || null,
                 strn: r["STRN"] || null,
+                contact: r["Contact"] || null,
+                contactPerson: r["Contact Person"] || null,
+                phone: r["Phone Number"] || null,
+                whatsapp: r["WhatsApp Number"] || null,
+                email: r["Email"] || null,
+                website: r["Website"] || null,
+                mappingId: r["Mapping ID"] || null,
                 isActive: true,
             };
 
@@ -75,6 +83,7 @@ export default function CustomersImportExportPage() {
             saveLabel="Save Customers"
             note={NOTE}
             columns={COLUMNS}
+            templateUrl="/templates/Customers_Template.xlsx"
             onSave={handleSave}
         />
     );

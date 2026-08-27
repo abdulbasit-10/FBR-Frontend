@@ -19,6 +19,11 @@ export interface Customer {
     customerNo: string | null;
     customerType: "Individual" | "Company";
     strn: string | null;
+    contact: string | null;
+    contactPerson: string | null;
+    whatsapp: string | null;
+    website: string | null;
+    mappingId: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -36,6 +41,11 @@ export interface CustomerCreateInput {
     address: string;
     phone?: string | null;
     email?: string | null;
+    contact?: string | null;
+    contactPerson?: string | null;
+    whatsapp?: string | null;
+    website?: string | null;
+    mappingId?: string | null;
     customerType?: "Individual" | "Company";
     strn?: string | null;
     isActive?: boolean;

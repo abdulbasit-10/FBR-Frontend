@@ -6,13 +6,15 @@ import { productsService, type ProductCreateInput } from "@/lib/services";
 import { toast } from "react-toastify";
 
 const COLUMNS = [
-    "Row", "Item Name", "Item Type", "Costing Method",
-    "Item Category", "HS Code", "FBR UOM", "Sale Type", "Tax Rate", "Province",
+    "Row", "Item Name", "Item Type", "Item Category", "HS Code", "FBR UOM",
+    "Sale Type", "Tax Rate", "Tax Description",
+    "SRO Schedule No", "SRO Item Serial No",
+    "Unit Cost", "Assessed Unit", "Sales Price", "Retail Price", "Print UOM", "Mapping ID",
 ];
 
 const NOTE =
     "HS Code and FBR UOM must match FBR reference data. " +
-    "Tax Rate should be a percentage e.g. 17 or 0. " +
+    "Tax Rate should be a numeric percentage e.g. 17 or 0. " +
     "Item category must match an existing code (e.g., Cat-01). Import the template, review the grid, then save.";
 
 export default function ItemsImportExportPage() {
@@ -39,14 +41,22 @@ export default function ItemsImportExportPage() {
 
             const payload: ProductCreateInput = {
                 name,
-                description: r["Item Category"] || null,
+                itemType: r["Item Type"] || null,
+                itemCategory: r["Item Category"] || null,
                 hsCode,
                 uom,
                 saleType,
                 rate,
                 rateValue: taxRateRaw,
-                unitPrice: 0,
-                fixedNotifiedValueOrRetailPrice: 0,
+                taxDescription: r["Tax Description"] || null,
+                sroScheduleNo: r["SRO Schedule No"] || null,
+                sroItemSerialNo: r["SRO Item Serial No"] || null,
+                unitPrice: parseFloat(r["Unit Cost"] || "0") || 0,
+                assessedUnitCost: parseFloat(r["Assessed Unit"] || "") || null,
+                salesPrice: parseFloat(r["Sales Price"] || "") || null,
+                fixedNotifiedValueOrRetailPrice: parseFloat(r["Retail Price"] || "0") || 0,
+                printUom: r["Print UOM"] || null,
+                mappingId: r["Mapping ID"] || null,
                 isActive: true,
             };
 
@@ -74,6 +84,7 @@ export default function ItemsImportExportPage() {
             saveLabel="Save Items"
             note={NOTE}
             columns={COLUMNS}
+            templateUrl="/templates/Items_Template.xlsx"
             onSave={handleSave}
         />
     );

@@ -14,6 +14,8 @@ interface ImportExportShellProps {
     note: string;
     /** Column headers expected in (and shown in) the preview grid. */
     columns: string[];
+    /** If provided, "Export Template" downloads this static file instead of generating one. */
+    templateUrl?: string;
     /** Called with parsed rows when the user clicks Save. */
     onSave?: (rows: Record<string, string>[]) => void | Promise<void>;
 }
@@ -23,6 +25,7 @@ export function ImportExportShell({
     saveLabel,
     note,
     columns,
+    templateUrl,
     onSave,
 }: ImportExportShellProps) {
     const router = useRouter();
@@ -131,7 +134,15 @@ export function ImportExportShell({
     };
 
     const handleExportTemplate = () => {
-        // Generate a blank template with the correct column headers
+        if (templateUrl) {
+            const a = document.createElement("a");
+            a.href = templateUrl;
+            a.download = templateUrl.split("/").pop() ?? "template.xlsx";
+            a.click();
+            toast.success("Template downloaded.");
+            return;
+        }
+        // Fallback: generate a blank template from the column headers
         const ws = XLSX.utils.aoa_to_sheet([dataColumns]);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Template");

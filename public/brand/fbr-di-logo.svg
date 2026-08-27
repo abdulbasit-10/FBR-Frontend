@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Placeholder for the mandatory "FBR Digital Invoicing System" logo (spec §6). -->
+<!-- Replace with the official PRAL-supplied artwork before going to production. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <rect width="200" height="80" rx="6" fill="#0F5132"/>
+  <text x="100" y="30" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">FBR</text>
+  <text x="100" y="52" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="600" fill="#FFFFFF" text-anchor="middle">DIGITAL</text>
+  <text x="100" y="68" font-family="Inter, Arial, sans-serif" font-size="9" font-weight="500" fill="#C7E7D5" text-anchor="middle">INVOICING SYSTEM</text>
+</svg>

@@ -58,6 +58,7 @@ export interface Invoice {
 
     postedAt: string | null;
     notes: string | null;
+    mappingId: string | null;
 
     createdAt: string;
     updatedAt: string;
@@ -90,6 +91,12 @@ export interface InvoiceItem {
     sroItemSerialNo: string | null;
     unitPrice: number;
     discountPercent: number;
+    // Per-item FBR response (mirrors FBR-Backend/src/models/InvoiceItem.ts)
+    fbrInvoiceNo: string | null;
+    fbrStatusCode: string | null;
+    fbrStatus: string | null;
+    fbrErrorCode: string | null;
+    fbrError: string | null;
 }
 
 export interface CreateInvoiceItemInput {
@@ -127,6 +134,7 @@ export interface CreateInvoiceInput {
     advanceTax?: number;
     environment?: InvoiceEnvironment;
     notes?: string | null;
+    mappingId?: string | null;
     items: CreateInvoiceItemInput[];
 }
 

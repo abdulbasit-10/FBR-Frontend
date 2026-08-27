@@ -18,6 +18,9 @@ export interface Vendor {
     address: string;
     phone: string | null;
     email: string | null;
+    contactPerson: string | null;
+    whatsapp: string | null;
+    website: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -36,6 +39,9 @@ export interface VendorCreateInput {
     address: string;
     phone?: string | null;
     email?: string | null;
+    contactPerson?: string | null;
+    whatsapp?: string | null;
+    website?: string | null;
     vendorType?: "Individual" | "Company";
     strn?: string | null;
     isActive?: boolean;

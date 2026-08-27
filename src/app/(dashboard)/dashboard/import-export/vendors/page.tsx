@@ -6,8 +6,9 @@ import { vendorsService, type VendorCreateInput } from "@/lib/services";
 import { toast } from "react-toastify";
 
 const COLUMNS = [
-    "Row", "Vendor Name", "Vendor Type", "Address", "City",
-    "Post Code", "NTN", "STRN", "Registration Status", "Province", "Email",
+    "Row", "Vendor Name", "Vendor Type", "Address", "City", "Post Code",
+    "NTN", "STRN", "Registration Status", "Province",
+    "Contact Person", "Phone Number", "WhatsApp", "Email", "Website",
 ];
 
 const NOTE = "Import the Excel template, review the grid, then save. Failed rows are kept so you can fix and retry.";
@@ -48,7 +49,11 @@ export default function VendorsImportExportPage() {
                 address: address || province,
                 ntnCnic: r["NTN"] || null,
                 strn: r["STRN"] || null,
+                contactPerson: r["Contact Person"] || null,
+                phone: r["Phone Number"] || null,
+                whatsapp: r["WhatsApp"] || null,
                 email: r["Email"] || null,
+                website: r["Website"] || null,
                 isActive: true,
             };
 
@@ -76,6 +81,7 @@ export default function VendorsImportExportPage() {
             saveLabel="Save Vendors"
             note={NOTE}
             columns={COLUMNS}
+            templateUrl="/templates/Vendors_Template.xlsx"
             onSave={handleSave}
         />
     );
