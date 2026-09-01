@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import {
     ChevronLeft,
     Printer,
+    Save,
     Send,
     ShieldCheck,
     RefreshCw,
@@ -39,13 +40,25 @@ export default function InvoiceDetailPage(
     const router = useRouter();
     const [invoice, setInvoice] = useState<Invoice | null>(null);
     const [loading, setLoading] = useState(true);
-    const [busy, setBusy] = useState<null | "validate" | "post" | "reload">(null);
+    const [busy, setBusy] = useState<null | "validate" | "post" | "reload" | "save">(null);
+
+    // Editable header fields — populated from the loaded invoice, persisted via Save
+    const [postingDate, setPostingDate] = useState("");
+    const [poDate, setPoDate] = useState("");
+    const [poNumber, setPoNumber] = useState("");
+    const [advanceTax, setAdvanceTax] = useState(0);
+    const [notes, setNotes] = useState("");
 
     const load = useCallback(async () => {
         setLoading(true);
         try {
             const res = await invoicesService.getOne(uuid);
             setInvoice(res.data);
+            setPostingDate(res.data.postingDate?.slice(0, 10) ?? "");
+            setPoDate(res.data.poDate?.slice(0, 10) ?? "");
+            setPoNumber(res.data.poNumber ?? "");
+            setAdvanceTax(Number(res.data.advanceTax ?? 0));
+            setNotes(res.data.notes ?? "");
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "Failed to load invoice.");
         } finally {
@@ -78,6 +91,25 @@ export default function InvoiceDetailPage(
             }
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "FBR submission failed.");
+        } finally {
+            setBusy(null);
+        }
+    };
+
+    const handleSave = async () => {
+        setBusy("save");
+        try {
+            const res = await invoicesService.update(uuid, {
+                postingDate: postingDate || null,
+                poDate: poDate || null,
+                poNumber: poNumber || null,
+                advanceTax,
+                notes: notes || null,
+            });
+            setInvoice(res.data);
+            toast.success("Invoice saved.");
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Failed to save invoice.");
         } finally {
             setBusy(null);
         }
@@ -124,6 +156,15 @@ export default function InvoiceDetailPage(
                     </Link>
                     {canSubmit && (
                         <>
+                            <button
+                                type="button"
+                                onClick={handleSave}
+                                disabled={busy !== null}
+                                className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[13px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-60"
+                            >
+                                <Save className="h-3.5 w-3.5 text-[#A27B3A]" />
+                                {busy === "save" ? "Saving…" : "Save"}
+                            </button>
                             <button
                                 type="button"
                                 onClick={() => submit("validate")}
@@ -219,23 +260,60 @@ export default function InvoiceDetailPage(
                 </section>
             </div>
 
-            {/* Dates + refs */}
+            {/* Dates + refs — editable while draft/failed */}
             <section className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-5 shadow-xs grid grid-cols-2 md:grid-cols-4 gap-4 text-[12px]">
                 <div>
                     <p className="text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">Invoice Date</p>
-                    <p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.invoiceDate}</p>
+                    <p className="mt-1 font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.invoiceDate}</p>
                 </div>
                 <div>
-                    <p className="text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">Posting Date</p>
-                    <p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.postingDate ?? "—"}</p>
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">Posting Date</p>
+                    {canSubmit ? (
+                        <input type="date" value={postingDate} onChange={(e) => setPostingDate(e.target.value)}
+                            className="h-8 w-full rounded border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52]" />
+                    ) : (
+                        <p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.postingDate ?? "—"}</p>
+                    )}
                 </div>
                 <div>
-                    <p className="text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">PO Number</p>
-                    <p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.poNumber ?? "—"}</p>
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">PO Date</p>
+                    {canSubmit ? (
+                        <input type="date" value={poDate} onChange={(e) => setPoDate(e.target.value)}
+                            className="h-8 w-full rounded border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52]" />
+                    ) : (
+                        <p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.poDate ?? "—"}</p>
+                    )}
+                </div>
+                <div>
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">PO Number</p>
+                    {canSubmit ? (
+                        <input type="text" value={poNumber} onChange={(e) => setPoNumber(e.target.value)}
+                            className="h-8 w-full rounded border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52]" />
+                    ) : (
+                        <p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.poNumber ?? "—"}</p>
+                    )}
+                </div>
+                <div>
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">Advance Tax</p>
+                    {canSubmit ? (
+                        <input type="number" value={advanceTax} onChange={(e) => setAdvanceTax(parseFloat(e.target.value) || 0)}
+                            className="h-8 w-full rounded border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52]" />
+                    ) : (
+                        <p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(invoice.advanceTax)}</p>
+                    )}
                 </div>
                 <div>
                     <p className="text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">Ref Invoice</p>
-                    <p className="font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.invoiceRefNo ?? "—"}</p>
+                    <p className="mt-1 font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.invoiceRefNo ?? "—"}</p>
+                </div>
+                <div className="col-span-2 md:col-span-4">
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">Note</p>
+                    {canSubmit ? (
+                        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add note"
+                            className="h-16 w-full resize-none rounded border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 py-1.5 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52]" />
+                    ) : (
+                        <p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{invoice.notes ?? "—"}</p>
+                    )}
                 </div>
             </section>
 

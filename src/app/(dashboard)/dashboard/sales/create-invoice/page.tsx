@@ -371,7 +371,7 @@ export default function CreateSalesInvoicePage() {
                         className="flex h-8 items-center gap-1.5 rounded border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-60"
                     >
                         <Save className="h-3.5 w-3.5 text-[#A27B3A]" />
-                        {submitting === "draft" ? "Savingâ€¦" : "Save Draft"}
+                        {submitting === "draft" ? "Saving..." : "Save Draft"}
                     </button>
                     <button
                         type="button"
@@ -380,7 +380,7 @@ export default function CreateSalesInvoicePage() {
                         className="flex h-8 items-center gap-1.5 rounded border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-60"
                     >
                         <ShieldCheck className="h-3.5 w-3.5 text-[#A27B3A]" />
-                        {submitting === "validate" ? "Validatingâ€¦" : "Validate"}
+                        {submitting === "validate" ? "Validating..." : "Validate"}
                     </button>
                     <button
                         type="button"
@@ -389,7 +389,7 @@ export default function CreateSalesInvoicePage() {
                         className="flex h-8 items-center gap-1.5 rounded bg-[#C69A52] px-5 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors  disabled:opacity-60"
                     >
                         <Send className="h-3.5 w-3.5" />
-                        {submitting === "post" ? "Postingâ€¦" : "Post to FBR"}
+                        {submitting === "post" ? "Posting..." : "Post to FBR"}
                     </button>
                 </div>
             </div>
@@ -569,7 +569,7 @@ export default function CreateSalesInvoicePage() {
                                 >
                                     {FBR_SANDBOX_SCENARIOS.map((s) => (
                                         <option key={s.id} value={s.id}>
-                                            {s.id} â€” {s.description}
+                                            {s.id} &mdash; {s.description}
                                         </option>
                                     ))}
                                 </select>
@@ -607,8 +607,8 @@ export default function CreateSalesInvoicePage() {
                                     {selectedCustomer.name}
                                 </p>
                                 <p className="text-[11px] text-[#6B7280] dark:text-[#9ca3af]">
-                                    {selectedCustomer.customerNo} Â· NTN/CNIC: {selectedCustomer.ntn} Â·{" "}
-                                    {selectedCustomer.province} Â·{" "}
+                                    {selectedCustomer.customerNo} &middot; NTN/CNIC: {selectedCustomer.ntn} &middot;{" "}
+                                    {selectedCustomer.province} &middot;{" "}
                                     <span className="font-medium">{selectedCustomer.registration}</span>
                                 </p>
                             </div>
@@ -712,7 +712,7 @@ export default function CreateSalesInvoicePage() {
                                                         else updateItem(item.id, { productId: null }, false);
                                                     }}
                                                 >
-                                                    <option value="">Select itemâ€¦</option>
+                                                    <option value="">Select item...</option>
                                                     {products.map((p) => (
                                                         <option key={p.id} value={p.id}>
                                                             {p.name}
@@ -746,7 +746,7 @@ export default function CreateSalesInvoicePage() {
                                                         updateItem(item.id, { uom: e.target.value }, false)
                                                     }
                                                 >
-                                                    <option value="">Select UOMâ€¦</option>
+                                                    <option value="">Select UOM...</option>
                                                     {uoms.map((u) => (
                                                         <option key={u.uomId} value={u.description}>
                                                             {u.description}
