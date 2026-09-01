@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -395,18 +395,73 @@ function MasterData() {
 }
 
 /* ── QUICK TIPS CARD ── */
+const ALL_TIPS = [
+  "Use bulk actions on list pages to post or delete multiple documents.",
+  "Run detail and summary reports from the Reports section.",
+  "Keep your ERP data updated under Company Profile.",
+  "Use Master Import to upload customers, items, and invoices at once.",
+  "Use the customer picker on invoices to link records quickly.",
+  "Post sales invoices to submit them to FBR.",
+  "Add customers, vendors, and items before invoicing.",
+  "Keep your company FBR token updated under Company Profile.",
+  "Open Transactions from the sidebar to create and post invoices.",
+];
+const SHOW = 4;
+const ITEM_H = 46; // px — fits 2 lines of wrapped text at 11px
+
 function Tips() {
+  const [offset, setOffset] = useState(0);
+  const [sliding, setSliding] = useState(false);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    const id = setInterval(() => setSliding(true), 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  const handleTransitionEnd = () => {
+    if (!sliding) return;
+    setSliding(false);
+    setOffset(o => (o + 1) % ALL_TIPS.length);
+  };
+
+  // Render SHOW visible + 1 peeking below so the slide reveals it
+  const shown = Array.from({ length: SHOW + 1 }, (_, i) =>
+    ALL_TIPS[(offset + i) % ALL_TIPS.length]
+  );
+
   return (
     <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-3.5">
-      <p className="flex items-center gap-2 text-[12px] font-semibold text-[#1F2937] dark:text-[#f0f0f0]">
-        <CircleHelp className="h-4 w-4 text-[#4B5563] dark:text-[#9ca3af]" /> Quick Tips
-      </p>
-      <ul className="mt-4 space-y-3 text-[11px] leading-relaxed text-[#6B7280] dark:text-[#9ca3af]">
-        <li>Use bulk Actions list pages to post or delete multiple documents.</li>
-        <li>Run detail and summary reports from the Reports section.</li>
-        <li>Keep your company ERP data updated under Company Profile.</li>
-        <li>Use Master Import to upload customers, items, and sales invoices in one go.</li>
-      </ul>
+      <div className="mb-2.5 flex items-center justify-between">
+        <p className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F2937] dark:text-[#f0f0f0]">
+          <CircleHelp className="h-3.5 w-3.5 text-[#4B5563] dark:text-[#9ca3af]" /> Quick Tips
+        </p>
+        <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-500">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+        </span>
+      </div>
+      <div className="overflow-hidden" style={{ height: SHOW * ITEM_H }}>
+        <ul
+          ref={listRef}
+          className="text-[11px] text-[#6B7280] dark:text-[#9ca3af]"
+          style={{
+            transform: sliding ? `translateY(-${ITEM_H}px)` : "translateY(0)",
+            transition: sliding ? "transform 0.45s ease-in-out" : "none",
+          }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {shown.map((tip, i) => (
+            <li
+              key={`${offset}-${i}`}
+              className="flex items-start gap-1.5 leading-snug"
+              style={{ height: ITEM_H, paddingTop: 2 }}
+            >
+              <span className="mt-[3px] h-1 w-1 shrink-0 rounded-full bg-[#c39445]" />
+              <span>{tip}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
