@@ -282,7 +282,7 @@ function Workload({ posted, unposted }: { posted: number; unposted: number }) {
   const total = posted + unposted;
   return (
     <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
-      <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Workload Split</p>
+      <p className="text-sm font-semibold tracking-wide text-[#1F2937] dark:text-[#f0f0f0]">Workload Split</p>
       <div className="mt-3 flex items-center justify-between">
         <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-[6px] border-[#C69856] bg-white dark:bg-[#242424] text-xs font-bold text-[#1F2937] dark:text-[#f0f0f0]">
           {total}
@@ -328,7 +328,7 @@ function Activity({ monthlySales }: { monthlySales: { month: string; count: numb
 
   return (
     <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
-      <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Activity Trend</p>
+      <p className="text-sm font-semibold tracking-wide text-[#1F2937] dark:text-[#f0f0f0]">Activity Trend</p>
 
       {!hasData ? (
         <div className="flex h-24 items-center justify-center text-[11px] text-[#9ca3af]">
@@ -372,7 +372,7 @@ function MasterData({ customers, vendors, items }: { customers: number; vendors:
   const maxVal = Math.max(...rows.map(r => r[1]), 1);
   return (
     <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
-      <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Master Data</p>
+      <p className="text-sm font-semibold tracking-wide text-[#1F2937] dark:text-[#f0f0f0]">Master Data</p>
       <div className="mt-3 space-y-3">
         {rows.map(([name, val, href]) => (
           <Link key={name} href={href} className="block text-[12px] font-medium rounded-lg px-1 py-0.5 -mx-1 hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors">
@@ -432,7 +432,7 @@ function Tips() {
   return (
     <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
       <div className="mb-2.5 flex items-center justify-between">
-        <p className="flex items-center gap-1.5 text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">
+        <p className="flex items-center gap-1.5 text-sm font-semibold tracking-wide text-[#1F2937] dark:text-[#f0f0f0]">
           <CircleHelp className="h-3.5 w-3.5 text-[#4B5563] dark:text-[#9ca3af]" /> Quick Tips
         </p>
         <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-500">
