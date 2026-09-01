@@ -117,6 +117,7 @@ function SalesInvoicesContent() {
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
+    const [copying, setCopying] = useState(false);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -167,6 +168,95 @@ function SalesInvoicesContent() {
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((i) => i.id)));
     };
 
+    const handlePrint = () => {
+        if (selected.size === 0) {
+            toast.error("Select at least one invoice to print.");
+            return;
+        }
+        const uuids = paginated.filter((i) => selected.has(i.id)).map((i) => i.uuid);
+        // Print via a hidden iframe so the browser's print dialog opens directly
+        // over the current page instead of navigating to a new tab.
+        uuids.forEach((uuid, idx) => {
+            setTimeout(() => {
+                const iframe = document.createElement("iframe");
+                iframe.style.position = "fixed";
+                iframe.style.left = "-10000px";
+                iframe.style.top = "0";
+                iframe.style.width = "800px";
+                iframe.style.height = "1100px";
+                iframe.style.border = "0";
+                iframe.src = `/print/invoice/${uuid}`;
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                    const cleanup = () => {
+                        if (iframe.parentNode) document.body.removeChild(iframe);
+                    };
+                    try {
+                        iframe.contentWindow?.addEventListener("afterprint", cleanup);
+                    } catch {
+                        // ignore — worst case iframe stays until navigation
+                    }
+                    setTimeout(cleanup, 15000); // safety fallback
+                };
+            }, idx * 800);
+        });
+    };
+
+    const handleCopy = async () => {
+        if (selected.size !== 1) {
+            toast.error("Select exactly one invoice to copy.");
+            return;
+        }
+        const row = paginated.find((i) => selected.has(i.id));
+        if (!row) return;
+        setCopying(true);
+        try {
+            const full = await invoicesService.getOne(row.uuid);
+            const src = full.data;
+            const today = new Date().toISOString().slice(0, 10);
+            const created = await invoicesService.create({
+                customerId: src.customerId,
+                invoiceType: src.invoiceType,
+                invoiceDate: today,
+                postingDate: null,
+                poDate: src.poDate,
+                poNumber: src.poNumber,
+                advanceTax: src.advanceTax,
+                environment: src.environment,
+                scenarioId: src.scenarioId,
+                notes: src.notes,
+                items: (src.items ?? []).map((it) => ({
+                    productId: it.productId,
+                    hsCode: it.hsCode,
+                    productDescription: it.productDescription,
+                    rate: it.rate,
+                    uom: it.uom,
+                    quantity: it.quantity,
+                    valueSalesExcludingST: it.valueSalesExcludingST,
+                    fixedNotifiedValueOrRetailPrice: it.fixedNotifiedValueOrRetailPrice,
+                    salesTaxApplicable: it.salesTaxApplicable,
+                    salesTaxWithheldAtSource: it.salesTaxWithheldAtSource,
+                    extraTax: it.extraTax,
+                    furtherTax: it.furtherTax,
+                    sroScheduleNo: it.sroScheduleNo,
+                    fedPayable: it.fedPayable,
+                    discount: it.discount,
+                    saleType: it.saleType,
+                    sroItemSerialNo: it.sroItemSerialNo,
+                    unitPrice: it.unitPrice,
+                    discountPercent: it.discountPercent,
+                })),
+            });
+            toast.success("Invoice copied as a new draft.");
+            setSelected(new Set());
+            router.push(`/dashboard/transactions/sales/${created.data.uuid}`);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to copy invoice.");
+        } finally {
+            setCopying(false);
+        }
+    };
+
     const statusBadge = (s: SalesInvoice["status"]) => {
         const map = {
             Posted: "bg-green-50 text-green-700 border border-green-200",
@@ -215,15 +305,18 @@ function SalesInvoicesContent() {
                     </button>
                     <button
                         type="button"
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                        onClick={handlePrint}
+                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
                     >
                         <Printer className="h-3.5 w-3.5 text-[#A27B3A]" /> Print
                     </button>
                     <button
                         type="button"
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                        onClick={handleCopy}
+                        disabled={copying}
+                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-50"
                     >
-                        <Copy className="h-3.5 w-3.5 text-[#A27B3A]" /> Copy
+                        <Copy className="h-3.5 w-3.5 text-[#A27B3A]" /> {copying ? "Copying..." : "Copy"}
                     </button>
                 </div>
             </div>
