@@ -22,6 +22,7 @@ import {
   customersService,
   dashboardService,
   productsService,
+  vendorsService,
   type DashboardResponse,
 } from "@/lib/services";
 
@@ -30,12 +31,13 @@ const gold = "#c99d54";
 interface SideCounts {
   customers: number | null;
   items: number | null;
+  vendors: number | null;
 }
 
 export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [data, setData] = useState<DashboardResponse | null>(null);
-  const [side, setSide] = useState<SideCounts>({ customers: null, items: null });
+  const [side, setSide] = useState<SideCounts>({ customers: null, items: null, vendors: null });
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
@@ -44,14 +46,15 @@ export default function DashboardPage() {
 
   const load = useCallback(async (showToast = false) => {
     try {
-      const [dash, cust, prod] = await Promise.all([
+      const [dash, cust, prod, vend] = await Promise.all([
         dashboardService.get(),
         // We only need the total count; `limit: 1` keeps the payload tiny.
         customersService.list({ limit: 1 }),
         productsService.list({ limit: 1 }),
+        vendorsService.list({ limit: 1 }),
       ]);
       setData(dash.data);
-      setSide({ customers: cust.data.meta.total, items: prod.data.meta.total });
+      setSide({ customers: cust.data.meta.total, items: prod.data.meta.total, vendors: vend.data.meta.total });
       if (showToast) toast.success("Dashboard refreshed.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to load dashboard.");
@@ -174,9 +177,9 @@ export default function DashboardPage() {
         <aside className="w-[272px] flex flex-col gap-2">
           <SideStat title="Customers" value={side.customers?.toString() ?? "—"} label="Total registered customers" href="/dashboard/customers" />
           <SideStat title="Items in Inventory" value={side.items?.toString() ?? "—"} label={`Products: ${side.items ?? 0}  ·  Services: 0`} href="/dashboard/items" />
-          <Workload />
-          <Activity />
-          <MasterData />
+          <Workload posted={data?.cards.acceptedInvoices ?? 0} unposted={data?.cards.pendingInvoices ?? 0} />
+          <Activity monthlySales={data?.charts.monthlySales ?? []} />
+          <MasterData customers={side.customers ?? 0} vendors={side.vendors ?? 0} items={side.items ?? 0} />
           <Tips />
         </aside>
       </div>
@@ -275,29 +278,29 @@ function SideStat({ title, value, label, href }: { title: string; value: string;
 }
 
 /* ── WORKLOAD SPLIT CARD ── */
-function Workload() {
+function Workload({ posted, unposted }: { posted: number; unposted: number }) {
+  const total = posted + unposted;
   return (
     <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
       <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Workload Split</p>
       <div className="mt-3 flex items-center justify-between">
         <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-[6px] border-[#C69856] bg-white dark:bg-[#242424] text-xs font-bold text-[#1F2937] dark:text-[#f0f0f0]">
-          859
+          {total}
         </div>
-
         <div className="flex-1 space-y-3 pl-4 text-[12px] font-medium text-[#4B5563] dark:text-[#c9cdd4]">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-[#C69856]" />
               Posted docs
             </span>
-            <b className="font-semibold text-[#1F2937] dark:text-[#f0f0f0]">812</b>
+            <b className="font-semibold text-[#1F2937] dark:text-[#f0f0f0]">{posted}</b>
           </div>
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB] dark:bg-[#555]" />
               Unposted docs
             </span>
-            <b className="font-semibold text-[#1F2937] dark:text-[#f0f0f0]">47</b>
+            <b className="font-semibold text-[#1F2937] dark:text-[#f0f0f0]">{unposted}</b>
           </div>
         </div>
       </div>
@@ -306,71 +309,72 @@ function Workload() {
 }
 
 /* ── ACTIVITY TREND CARD ── */
-function Activity() {
+function Activity({ monthlySales }: { monthlySales: { month: string; count: number }[] }) {
+  const points = monthlySales.slice(-7);
+  const hasData = points.length >= 2;
+  // month format from backend is "YYYY-MM" → convert to "Jan"
+  const toLabel = (ym: string) => {
+    const [y, m] = ym.split("-");
+    return new Date(+y, +m - 1).toLocaleString("en", { month: "short" });
+  };
+  const W = 250; const H = 80;
+  const maxVal = Math.max(...points.map(p => p.count), 1);
+  const coords = points.map((p, i) => ({
+    x: (i / (points.length - 1)) * W,
+    y: H - (p.count / maxVal) * (H - 4),
+  }));
+  const linePath = coords.map((c, i) => `${i === 0 ? "M" : "L"}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
+  const fillPath = `${linePath} L${W},${H} L0,${H} Z`;
+
   return (
     <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
       <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Activity Trend</p>
 
-      <div className="relative mt-4 h-32 w-full">
-        <div className="absolute left-0 top-0 flex h-24 flex-col justify-between text-[11px] font-medium text-[#9CA3AF] dark:text-[#6b7280]">
-          <span>32</span>
-          <span>16</span>
-          <span>8</span>
-          <span>0</span>
+      {!hasData ? (
+        <div className="flex h-24 items-center justify-center text-[11px] text-[#9ca3af]">
+          No activity data yet
         </div>
-
-        <div className="ml-5 h-24 w-[calc(100%-20px)]">
-          <svg className="h-full w-full overflow-visible" viewBox="0 0 250 80" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#C69856" stopOpacity="0.45" />
-                <stop offset="100%" stopColor="#C69856" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M0,70 Q 30,65 50,55 T 100,60 T 150,35 T 200,30 T 250,55 L 250,80 L 0,80 Z"
-              fill="url(#activityGradient)"
-            />
-            <path
-              d="M0,70 Q 30,65 50,55 T 100,60 T 150,35 T 200,30 T 250,55"
-              fill="none"
-              stroke="#C69856"
-              strokeWidth="2.5"
-            />
-          </svg>
+      ) : (
+        <div className="relative mt-4 h-32 w-full">
+          <div className="absolute left-0 top-0 flex h-24 flex-col justify-between text-[11px] font-medium text-[#9CA3AF] dark:text-[#6b7280]">
+            <span>{maxVal}</span>
+            <span>{Math.round(maxVal / 2)}</span>
+            <span>0</span>
+          </div>
+          <div className="ml-6 h-24 w-[calc(100%-24px)]">
+            <svg className="h-full w-full overflow-visible" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#C69856" stopOpacity="0.45" />
+                  <stop offset="100%" stopColor="#C69856" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path d={fillPath} fill="url(#activityGradient)" />
+              <path d={linePath} fill="none" stroke="#C69856" strokeWidth="2.5" />
+            </svg>
+          </div>
+          <div className="ml-6 mt-1 flex justify-between text-[11px] text-[#9CA3AF] dark:text-[#6b7280]">
+            {points.map((p, i) => <span key={i}>{toLabel(p.month)}</span>)}
+          </div>
         </div>
-
-        <div className="ml-5 mt-1 flex justify-between text-[11px] text-[#9CA3AF] dark:text-[#6b7280]">
-          <span>Jan</span>
-          <span>Feb</span>
-          <span>Mar</span>
-          <span>Apr</span>
-          <span>May</span>
-          <span>Jun</span>
-          <span>Jul</span>
-        </div>
-      </div>
-
-      <div className="mt-3 flex justify-between text-[11px] font-medium text-[#6B7280] dark:text-[#9ca3af]">
-        <span>Sales Invoices</span>
-        <span>Purchase Invoices</span>
-        <span>Returns</span>
-      </div>
+      )}
     </div>
   );
 }
 
 /* ── MASTER DATA CARD ── */
-function MasterData() {
+function MasterData({ customers, vendors, items }: { customers: number; vendors: number; items: number }) {
+  const rows: [string, number, string][] = [
+    ["Customers", customers, "/dashboard/customers"],
+    ["Vendors", vendors, "/dashboard/vendors"],
+    ["Items", items, "/dashboard/items"],
+  ];
+  const maxVal = Math.max(...rows.map(r => r[1]), 1);
   return (
     <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
       <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Master Data</p>
-      <div className="mt-4 space-y-3.5">
-        {[
-          ["Customer", "45%", "/dashboard/customers"],
-          ["Vendors", "82%", "/dashboard/vendors"],
-          ["Items", "56%", "/dashboard/items"],
-        ].map(([name, val, href]) => (
+      <div className="mt-3 space-y-3">
+        {rows.map(([name, val, href]) => (
           <Link key={name} href={href} className="block text-[12px] font-medium rounded-lg px-1 py-0.5 -mx-1 hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors">
             <div className="flex justify-between text-[#4B5563] dark:text-[#c9cdd4]">
               <span>{name}</span>
@@ -379,7 +383,7 @@ function MasterData() {
             <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#F3F4F6] dark:bg-[#333]">
               <div
                 className="h-full rounded-full bg-[#C69856] transition-all duration-300"
-                style={{ width: val }}
+                style={{ width: `${Math.round((val / maxVal) * 100)}%` }}
               />
             </div>
           </Link>
