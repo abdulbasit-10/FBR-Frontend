@@ -89,19 +89,19 @@ export default function DashboardPage() {
       style={{ fontFamily: 'var(--font-inter), sans-serif' }}
     >
       {/* Top Banner */}
-      <section className="relative overflow-hidden rounded-xl bg-[linear-gradient(110deg,#c99d54,#a6782d)] px-6 py-7 text-white shadow-sm">
-        <div className="absolute -right-10 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-white/15" />
-        <p className="relative text-xs">{today}</p>
-        <h1 className="relative mt-1 text-[28px] font-semibold leading-none">Welcome Back{authUser?.name ? `, ${authUser.name.split(" ")[0]}` : ""}!</h1>
-        <p className="relative mt-3 text-xs">{totalDocs} documents · {awaiting} awaiting post</p>
-        <div className="relative mt-4 flex flex-wrap gap-2 md:absolute md:right-5 md:top-1/2 md:mt-0 md:-translate-y-1/2">
-          <Link href="/dashboard/sales/create-invoice" className="flex h-[33px] items-center gap-1 rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
+      <section className="relative overflow-hidden rounded-lg bg-[linear-gradient(110deg,#c99d54,#a6782d)] px-6 py-5 text-white">
+        <div className="absolute -right-6 top-1/2 h-32 w-32 -translate-y-1/2 rounded-full bg-white/10" />
+        <p className="relative text-[10px] font-medium uppercase tracking-widest text-white/65">{today}</p>
+        <h1 className="relative mt-1 text-[21px] font-semibold leading-snug tracking-tight">Welcome Back{authUser?.name ? `, ${authUser.name.split(" ")[0]}` : ""}!</h1>
+        <p className="relative mt-1 text-[11px] text-white/70">{totalDocs} documents · {awaiting} awaiting post</p>
+        <div className="relative mt-4 flex flex-wrap gap-1.5 md:absolute md:right-5 md:top-1/2 md:mt-0 md:-translate-y-1/2">
+          <Link href="/dashboard/sales/create-invoice" className="flex h-[28px] items-center gap-1 rounded-md bg-white/95 px-3 text-[12px] font-medium text-[#5d5750] hover:bg-white transition-colors">
             New Sales Invoice <ArrowUpRight className="inline h-3 w-3" />
           </Link>
-          <Link href="/dashboard/reports/sales" className="flex h-[33px] items-center rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750]">
+          <Link href="/dashboard/reports/sales" className="flex h-[28px] items-center rounded-md bg-white/95 px-3 text-[12px] font-medium text-[#5d5750] hover:bg-white transition-colors">
             View Reports
           </Link>
-          <button onClick={handleRefresh} disabled={isRefreshing} className="flex h-[33px] items-center gap-1 rounded-[8px] bg-white px-3 py-2 text-center text-[14px] font-medium leading-none tracking-normal text-[#5d5750] disabled:opacity-70">
+          <button onClick={handleRefresh} disabled={isRefreshing} className="flex h-[28px] items-center gap-1 rounded-md bg-white/95 px-3 text-[12px] font-medium text-[#5d5750] hover:bg-white transition-colors disabled:opacity-60 cursor-pointer">
             <RefreshCw className={`inline h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} /> {isRefreshing ? "Refreshing..." : "Refresh data"}
           </button>
         </div>
