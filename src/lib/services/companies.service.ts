@@ -4,16 +4,18 @@ import { toQuery, type ListQuery, type Paginated } from "./_types";
 export interface Company {
     id: number;
     uuid: string;
+    name: string;
     businessName: string;
     ntn: string;
-    strn?: string | null;
+    salesTaxRegNo?: string | null;
+    strn?: string | null;       // alias kept for legacy UI references
     province: string;
     address: string;
     phone?: string | null;
     email?: string | null;
-    website?: string | null;
-    logoUrl?: string | null;
-    fbrEnvironment: "sandbox" | "production";
+    businessActivity?: string | null;
+    sector?: string | null;
+    fbrEnvironment: "sandbox" | "production" | "both";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;

@@ -134,10 +134,10 @@ export default function DashboardPage() {
 
           {/* ── COMPANY PROFILE SECTION ── */}
           <DashboardSection title="Company Profile">
-            <div className="rounded-[16px] border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-6 shadow-sm">
+            <div className="rounded-xl border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] p-4">
               {/* Header */}
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#a37934] text-xs font-bold text-white">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#a37934] text-xs font-bold text-white">
                   ES
                 </div>
                 <div>
@@ -161,6 +161,11 @@ export default function DashboardPage() {
                   right={{ icon: Calendar, label: "License Expiry", value: "2026-11-19" }}
                 />
               </div>
+              <div className="mt-4 border-t border-[#e8e9eb] dark:border-[#3a3a3a] pt-3">
+                <Link href="/dashboard/company-profile" className="flex items-center gap-1 text-[12px] font-medium text-[#c99d54] hover:text-[#a07830] transition-colors cursor-pointer">
+                  Open company profile <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             </div>
           </DashboardSection>
         </div>
@@ -182,7 +187,10 @@ export default function DashboardPage() {
 function DashboardSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <p className="mb-2 text-sm font-semibold text-[#3f4854] dark:text-white">{title}</p>
+      <div className="mb-2 flex items-center gap-2">
+        <span className="h-4 w-[3px] rounded-full bg-[#c99d54]" />
+        <p className="text-sm font-bold text-[#1f2937] dark:text-[#f0f0f0]">{title}</p>
+      </div>
       {children}
     </section>
   );
@@ -190,17 +198,17 @@ function DashboardSection({ title, children }: { title: string; children: React.
 
 function SummaryCard({ title, count, postedCount = "0", unpostedCount = "0", returnCard, inventory, postedHref, unpostedHref }: { title: string; count: string; postedCount?: string; unpostedCount?: string; returnCard?: boolean; inventory?: boolean; postedHref?: string; unpostedHref?: string }) {
   return (
-    <div className="flex w-full flex-col gap-[10px] rounded-[14px] border border-[#e8e9eb] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] pb-[22px] pl-[14px] pr-[14px] pt-[22px] shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="flex w-full flex-col gap-2.5 rounded-xl border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-3.5">
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-2 text-sm font-medium dark:text-[#f0f0f0]">
-          <span className="grid h-6 w-6 place-items-center rounded-full bg-[#f5ead7] dark:bg-[#2a2a2a] text-[#b88735]">
-            {inventory ? <Box className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+        <span className="flex items-center gap-1.5 text-[12px] font-medium text-[#374151] dark:text-[#f0f0f0]">
+          <span className="grid h-5 w-5 place-items-center rounded-md bg-[#f5ead7] dark:bg-[#2a2a2a] text-[#b88735]">
+            {inventory ? <Box className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
           </span>
           {title}
         </span>
-        <b className="text-sm dark:text-[#f0f0f0]">{count}</b>
+        <b className="text-[12px] text-[#374151] dark:text-[#f0f0f0]">{count}</b>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-1.5">
         <Status title="Posted" value={postedCount} active={Number(postedCount) > 0} href={postedHref} />
         <Status title="Unposted" value={unpostedCount} href={unpostedHref} />
       </div>
@@ -210,22 +218,9 @@ function SummaryCard({ title, count, postedCount = "0", unpostedCount = "0", ret
 
 function Status({ title, value, active, href }: { title: string; value: string; active?: boolean; href?: string }) {
   const inner = (
-    <div className={`flex w-full flex-col justify-between rounded-[10px] bg-[#cb9d58] p-3 text-xs${href ? " cursor-pointer hover:brightness-110 transition-[filter]" : ""}`}>
-      <div className="flex items-center justify-between text-white font-medium">
-        <span>{title}</span>
-        <b className="font-bold">{value}</b>
-      </div>
-      <div className="mt-3">
-        {active ? (
-          <span className="inline-block rounded-full bg-white px-3 py-1 text-[10px] font-semibold text-[#144f13] shadow-xs">
-            Active
-          </span>
-        ) : (
-          <span className="inline-block rounded-full bg-[#F4EEE457] dark:bg-[#2a2a2a] px-3 py-1 text-[10px] font-semibold text-[#70490B] dark:text-[#c99d54]">
-            Pending
-          </span>
-        )}
-      </div>
+    <div className={`flex items-center justify-between rounded-lg bg-[#c99d54]/[0.13] dark:bg-[#c99d54]/[0.1] px-3 py-2.5${href ? " cursor-pointer hover:bg-[#c99d54]/25 dark:hover:bg-[#c99d54]/20 transition-colors" : ""}`}>
+      <span className="text-[11px] font-medium text-[#7a5520] dark:text-[#c99d54]">{title}</span>
+      <b className="text-[13px] font-bold text-[#5d3d0d] dark:text-[#e0b870]">{value}</b>
     </div>
   );
   return href ? <Link href={href}>{inner}</Link> : inner;
@@ -240,24 +235,24 @@ interface ItemProps {
 
 function ProfileRow({ left, right }: { left: ItemProps; right: ItemProps }) {
   return (
-    <div className="grid grid-cols-2 items-center rounded-[8px] bg-[#FBF7F0] dark:bg-[#2a2a2a] px-4 py-3.5">
+    <div className="grid grid-cols-2 items-center rounded-lg bg-[#fdf8f0] dark:bg-[#2a2110] px-3 py-2.5">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#A37934] text-white">
-          <left.icon className="h-4 w-4 stroke-[2]" />
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#A37934] text-white">
+          <left.icon className="h-3.5 w-3.5 stroke-[2]" />
         </div>
         <div>
-          <p className="text-[13px] font-medium leading-none text-[#6B7280] dark:text-[#9ca3af]">{left.label}</p>
-          <p className="mt-1 text-[13px] font-semibold leading-none text-[#B88735] dark:text-[#c99d54]">{left.value}</p>
+          <p className="text-[10px] font-medium leading-none text-[#6B7280] dark:text-[#9ca3af]">{left.label}</p>
+          <p className="mt-0.5 text-[12px] font-semibold leading-none text-[#B88735] dark:text-[#c99d54]">{left.value}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-3 justify-self-start pl-8 md:pl-16">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#A37934] text-white">
-          <right.icon className="h-4 w-4 stroke-[2]" />
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#A37934] text-white">
+          <right.icon className="h-3.5 w-3.5 stroke-[2]" />
         </div>
         <div>
-          <p className="text-[13px] font-medium leading-none text-[#6B7280] dark:text-[#9ca3af]">{right.label}</p>
-          <p className="mt-1 text-[13px] font-semibold leading-none text-[#B88735] dark:text-[#c99d54]">{right.value}</p>
+          <p className="text-[10px] font-medium leading-none text-[#6B7280] dark:text-[#9ca3af]">{right.label}</p>
+          <p className="mt-0.5 text-[12px] font-semibold leading-none text-[#B88735] dark:text-[#c99d54]">{right.value}</p>
         </div>
       </div>
     </div>
