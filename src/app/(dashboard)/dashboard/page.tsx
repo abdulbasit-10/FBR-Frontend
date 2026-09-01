@@ -85,11 +85,11 @@ export default function DashboardPage() {
   });
   return (
     <div
-      className="mx-auto max-w-[1440px] font-sans text-[#4f5967]"
+      className="mx-auto max-w-[1440px] antialiased font-sans text-[#4f5967]"
       style={{ fontFamily: 'var(--font-inter), sans-serif' }}
     >
       {/* Top Banner */}
-      <section className="relative overflow-hidden rounded-lg bg-[linear-gradient(110deg,#c99d54,#a6782d)] px-6 py-5 text-white">
+      <section className="relative overflow-hidden rounded-lg bg-[linear-gradient(110deg,#c99d54,#a6782d)] px-6 py-3.5 text-white">
         <div className="absolute -right-6 top-1/2 h-32 w-32 -translate-y-1/2 rounded-full bg-white/10" />
         <p className="relative text-[10px] font-medium uppercase tracking-widest text-white/65">{today}</p>
         <h1 className="relative mt-1 text-[21px] font-semibold leading-snug tracking-tight">Welcome Back{authUser?.name ? `, ${authUser.name.split(" ")[0]}` : ""}!</h1>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Sidebar Column */}
-        <aside className="w-[272px] flex flex-col gap-2.5">
+        <aside className="w-[272px] flex flex-col gap-2">
           <SideStat title="Customers" value={side.customers?.toString() ?? "—"} label="Total registered customers" href="/dashboard/customers" />
           <SideStat title="Items in Inventory" value={side.items?.toString() ?? "—"} label={`Products: ${side.items ?? 0}  ·  Services: 0`} href="/dashboard/items" />
           <Workload />
@@ -262,7 +262,7 @@ function ProfileRow({ left, right }: { left: ItemProps; right: ItemProps }) {
 /* ── SIDEBAR STAT CARD ── */
 function SideStat({ title, value, label, href }: { title: string; value: string; label: string; href?: string }) {
   const inner = (
-    <div className={`rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-3.5${href ? " cursor-pointer hover:border-[#d4b88a] dark:hover:border-[#5a3e1a] transition-colors" : ""}`}>
+    <div className={`rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5${href ? " cursor-pointer hover:border-[#d4b88a] dark:hover:border-[#5a3e1a] transition-colors" : ""}`}>
       <div className="flex justify-between text-[12px] font-medium text-[#4B5563] dark:text-[#9ca3af]">
         <span>{title}</span>
         <ArrowUpRight className="h-3.5 w-3.5 text-[#9CA3AF]" />
@@ -277,14 +277,14 @@ function SideStat({ title, value, label, href }: { title: string; value: string;
 /* ── WORKLOAD SPLIT CARD ── */
 function Workload() {
   return (
-    <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-3.5">
-      <p className="text-[12px] font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Workload Split</p>
+    <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
+      <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Workload Split</p>
       <div className="mt-3 flex items-center justify-between">
         <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-[6px] border-[#C69856] bg-white dark:bg-[#242424] text-xs font-bold text-[#1F2937] dark:text-[#f0f0f0]">
           859
         </div>
 
-        <div className="flex-1 space-y-3 pl-4 text-xs font-medium text-[#4B5563] dark:text-[#9ca3af]">
+        <div className="flex-1 space-y-3 pl-4 text-[12px] font-medium text-[#4B5563] dark:text-[#c9cdd4]">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-[#C69856]" />
@@ -308,11 +308,11 @@ function Workload() {
 /* ── ACTIVITY TREND CARD ── */
 function Activity() {
   return (
-    <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-3.5">
-      <p className="text-[12px] font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Activity Trend</p>
+    <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
+      <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Activity Trend</p>
 
       <div className="relative mt-4 h-32 w-full">
-        <div className="absolute left-0 top-0 flex h-24 flex-col justify-between text-[10px] font-medium text-[#9CA3AF]">
+        <div className="absolute left-0 top-0 flex h-24 flex-col justify-between text-[11px] font-medium text-[#9CA3AF] dark:text-[#6b7280]">
           <span>32</span>
           <span>16</span>
           <span>8</span>
@@ -340,7 +340,7 @@ function Activity() {
           </svg>
         </div>
 
-        <div className="ml-5 mt-1 flex justify-between text-[9px] text-[#9CA3AF]">
+        <div className="ml-5 mt-1 flex justify-between text-[11px] text-[#9CA3AF] dark:text-[#6b7280]">
           <span>Jan</span>
           <span>Feb</span>
           <span>Mar</span>
@@ -351,7 +351,7 @@ function Activity() {
         </div>
       </div>
 
-      <div className="mt-3 flex justify-between text-[10px] font-medium text-[#9CA3AF]">
+      <div className="mt-3 flex justify-between text-[11px] font-medium text-[#6B7280] dark:text-[#9ca3af]">
         <span>Sales Invoices</span>
         <span>Purchase Invoices</span>
         <span>Returns</span>
@@ -363,16 +363,16 @@ function Activity() {
 /* ── MASTER DATA CARD ── */
 function MasterData() {
   return (
-    <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-3.5">
-      <p className="text-[12px] font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Master Data</p>
+    <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
+      <p className="text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">Master Data</p>
       <div className="mt-4 space-y-3.5">
         {[
           ["Customer", "45%", "/dashboard/customers"],
           ["Vendors", "82%", "/dashboard/vendors"],
           ["Items", "56%", "/dashboard/items"],
         ].map(([name, val, href]) => (
-          <Link key={name} href={href} className="block text-xs font-medium rounded-lg px-1 py-0.5 -mx-1 hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors">
-            <div className="flex justify-between text-[#4B5563] dark:text-[#9ca3af]">
+          <Link key={name} href={href} className="block text-[12px] font-medium rounded-lg px-1 py-0.5 -mx-1 hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors">
+            <div className="flex justify-between text-[#4B5563] dark:text-[#c9cdd4]">
               <span>{name}</span>
               <b className="font-bold text-[#1F2937] dark:text-[#f0f0f0]">{val}</b>
             </div>
@@ -426,9 +426,9 @@ function Tips() {
   );
 
   return (
-    <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-3.5">
+    <div className="rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-4 py-2.5">
       <div className="mb-2.5 flex items-center justify-between">
-        <p className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F2937] dark:text-[#f0f0f0]">
+        <p className="flex items-center gap-1.5 text-sm font-semibold text-[#1F2937] dark:text-[#f0f0f0]">
           <CircleHelp className="h-3.5 w-3.5 text-[#4B5563] dark:text-[#9ca3af]" /> Quick Tips
         </p>
         <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-500">

@@ -93,11 +93,11 @@ export function TopNav() {
           <button type="button" onClick={() => setShowConfirm(true)} aria-label="Logout" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5d5b0] dark:border-[#3d3d3d] bg-transparent dark:bg-[#252525] text-[#c39445] hover:bg-red-50 hover:text-red-500 hover:border-red-200 dark:hover:bg-red-950/40 dark:hover:text-red-400 dark:hover:border-red-800/50 transition-colors cursor-pointer">
             <LogOut className="h-3.5 w-3.5" />
           </button>
-          <button type="button" className="flex h-8 items-center gap-2 rounded-full bg-[#c99d54] hover:bg-[#b8893d] active:bg-[#a57830] py-0.5 pl-1 sm:pr-2 pr-1 text-left text-white transition-colors cursor-pointer">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#77583a] text-[9px] font-semibold">{initials}</span>
-            <span className="hidden sm:block leading-[1.05]">
-              <b className="block text-[10px] font-medium">{displayName}</b>
-              <small className="block text-[8px] text-white/80">{displayRole}</small>
+          <button type="button" className="flex h-8 items-center gap-2 rounded-full bg-[#c99d54] hover:bg-[#b8893d] active:bg-[#a57830] py-0.5 pl-1 sm:pr-3 pr-1 text-left text-white transition-colors cursor-pointer">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#77583a] text-[10px] font-bold">{initials}</span>
+            <span className="hidden sm:block leading-tight">
+              <b className="block text-[12px] font-semibold">{displayName}</b>
+              <small className="block text-[10px] text-white/90">{displayRole}</small>
             </span>
           </button>
         </div>
