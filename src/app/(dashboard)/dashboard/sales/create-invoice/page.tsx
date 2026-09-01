@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -41,7 +41,7 @@ import {
 } from "@/lib/constants/fbr";
 import { resolveFbrError } from "@/lib/constants/fbrErrorCodes";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface LineItem {
     id: string;
@@ -98,7 +98,7 @@ const parseRatePercent = (rate: string): number => {
 
 const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CreateSalesInvoicePage() {
     const router = useRouter();
@@ -130,14 +130,14 @@ export default function CreateSalesInvoicePage() {
         productsService
             .list({ limit: 200, sortBy: "name", sortDir: "ASC" })
             .then((res) => setProducts(res.data.rows))
-            .catch(() => {});
+            .catch(() => { });
         lookupService
             .uoms()
             .then((res) => setUoms(res.data))
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
-    // ─── Line-item helpers ────────────────────────────────────────────────────
+    // â”€â”€â”€ Line-item helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const addItem = () => setItems((xs) => [...xs, emptyLine()]);
     const removeItem = (id: string) =>
@@ -178,7 +178,7 @@ export default function CreateSalesInvoicePage() {
         });
     };
 
-    // ─── Totals (preview card) ────────────────────────────────────────────────
+    // â”€â”€â”€ Totals (preview card) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const totals = useMemo(() => {
         const valueExcl = items.reduce((s, i) => s + i.valueSalesExcludingST, 0);
@@ -199,7 +199,7 @@ export default function CreateSalesInvoicePage() {
         };
     }, [items, advanceTax]);
 
-    // ─── Payload + submit ─────────────────────────────────────────────────────
+    // â”€â”€â”€ Payload + submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const buildPayload = (): CreateInvoiceInput | null => {
         if (!documentDate) {
@@ -336,17 +336,17 @@ export default function CreateSalesInvoicePage() {
     };
 
     const inputStyleClass =
-        "h-[48px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none [color-scheme:light]";
+        "h-[38px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none [color-scheme:light]";
 
     const cellInput =
         "h-[36px] w-full rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] shadow-none";
 
     return (
         <div
-            className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]"
+            className="min-h-full space-y-3 antialiased text-[#4f5967] dark:text-[#9ca3af]"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
-            {/* ── Page Header ── */}
+            {/* â”€â”€ Page Header â”€â”€ */}
             <div className="flex items-center justify-between pb-1">
                 <button
                     onClick={() => router.back()}
@@ -360,7 +360,7 @@ export default function CreateSalesInvoicePage() {
                         type="button"
                         onClick={() => setShowResetConfirm(true)}
                         disabled={submitting !== null}
-                        className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[13px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-60"
+                        className="flex h-8 items-center gap-1.5 rounded border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-60"
                     >
                         <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
                     </button>
@@ -368,35 +368,35 @@ export default function CreateSalesInvoicePage() {
                         type="button"
                         onClick={() => handleSubmit("draft")}
                         disabled={submitting !== null}
-                        className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[13px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-60"
+                        className="flex h-8 items-center gap-1.5 rounded border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-60"
                     >
                         <Save className="h-3.5 w-3.5 text-[#A27B3A]" />
-                        {submitting === "draft" ? "Saving…" : "Save Draft"}
+                        {submitting === "draft" ? "Savingâ€¦" : "Save Draft"}
                     </button>
                     <button
                         type="button"
                         onClick={() => handleSubmit("validate")}
                         disabled={submitting !== null}
-                        className="flex h-9 items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[13px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-60"
+                        className="flex h-8 items-center gap-1.5 rounded border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-4 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-60"
                     >
                         <ShieldCheck className="h-3.5 w-3.5 text-[#A27B3A]" />
-                        {submitting === "validate" ? "Validating…" : "Validate"}
+                        {submitting === "validate" ? "Validatingâ€¦" : "Validate"}
                     </button>
                     <button
                         type="button"
                         onClick={() => handleSubmit("post")}
                         disabled={submitting !== null}
-                        className="flex h-9 items-center gap-1.5 rounded-[5px] bg-[#C69A52] px-5 text-[13px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs disabled:opacity-60"
+                        className="flex h-8 items-center gap-1.5 rounded bg-[#C69A52] px-5 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors  disabled:opacity-60"
                     >
                         <Send className="h-3.5 w-3.5" />
-                        {submitting === "post" ? "Posting…" : "Post to FBR"}
+                        {submitting === "post" ? "Postingâ€¦" : "Post to FBR"}
                     </button>
                 </div>
             </div>
 
             <div className="space-y-4">
-                {/* ── SALES HEADER ── */}
-                <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[18px] shadow-xs">
+                {/* â”€â”€ SALES HEADER â”€â”€ */}
+                <div className="rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 ">
                     <p className="mb-4 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
                         Sales Header
                     </p>
@@ -465,13 +465,13 @@ export default function CreateSalesInvoicePage() {
                                     placeholder="Add note"
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
-                                    className="h-[115px] min-h-[115px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[13px] pb-[12px] pl-[15px] pr-[10px] resize-none focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+                                    className="h-[90px] min-h-[90px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[13px] pb-[12px] pl-[15px] pr-[10px] resize-none focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
                                 />
                             </div>
                         </div>
 
                         {/* Preview card */}
-                        <div className="w-[265px] rounded-[14px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] px-[19px] py-[12px] flex flex-col justify-between gap-[16px]">
+                        <div className="w-[265px] rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] px-[19px] py-[12px] flex flex-col justify-between gap-[16px]">
                             <div className="flex flex-col items-center border-b border-[#F3F4F6] dark:border-[#3a3a3a] pb-[10px]">
                                 <Image
                                     src="/brand/Digital.svg"
@@ -522,8 +522,8 @@ export default function CreateSalesInvoicePage() {
                     </div>
                 </div>
 
-                {/* ── FBR OPTIONS ── */}
-                <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[18px] shadow-xs">
+                {/* â”€â”€ FBR OPTIONS â”€â”€ */}
+                <div className="rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 ">
                     <p className="mb-4 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
                         FBR Options
                     </p>
@@ -569,7 +569,7 @@ export default function CreateSalesInvoicePage() {
                                 >
                                     {FBR_SANDBOX_SCENARIOS.map((s) => (
                                         <option key={s.id} value={s.id}>
-                                            {s.id} — {s.description}
+                                            {s.id} â€” {s.description}
                                         </option>
                                     ))}
                                 </select>
@@ -594,8 +594,8 @@ export default function CreateSalesInvoicePage() {
                     </div>
                 </div>
 
-                {/* ── CUSTOMER ── */}
-                <div className="min-h-[118.5px] rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[21px] flex flex-col justify-between shadow-xs">
+                {/* â”€â”€ CUSTOMER â”€â”€ */}
+                <div className="min-h-[118.5px] rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 flex flex-col justify-between ">
                     <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
                         Customer
                     </p>
@@ -607,8 +607,8 @@ export default function CreateSalesInvoicePage() {
                                     {selectedCustomer.name}
                                 </p>
                                 <p className="text-[11px] text-[#6B7280] dark:text-[#9ca3af]">
-                                    {selectedCustomer.customerNo} · NTN/CNIC: {selectedCustomer.ntn} ·{" "}
-                                    {selectedCustomer.province} ·{" "}
+                                    {selectedCustomer.customerNo} Â· NTN/CNIC: {selectedCustomer.ntn} Â·{" "}
+                                    {selectedCustomer.province} Â·{" "}
                                     <span className="font-medium">{selectedCustomer.registration}</span>
                                 </p>
                             </div>
@@ -641,8 +641,8 @@ export default function CreateSalesInvoicePage() {
                     />
                 </div>
 
-                {/* ── LINE ITEMS ── */}
-                <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[20px] py-[16px] shadow-xs space-y-[10px]">
+                {/* â”€â”€ LINE ITEMS â”€â”€ */}
+                <div className="rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[20px] py-[16px]  space-y-[10px]">
                     <div className="flex items-center justify-between pb-1">
                         <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
                             Line Items
@@ -712,7 +712,7 @@ export default function CreateSalesInvoicePage() {
                                                         else updateItem(item.id, { productId: null }, false);
                                                     }}
                                                 >
-                                                    <option value="">Select item…</option>
+                                                    <option value="">Select itemâ€¦</option>
                                                     {products.map((p) => (
                                                         <option key={p.id} value={p.id}>
                                                             {p.name}
@@ -746,7 +746,7 @@ export default function CreateSalesInvoicePage() {
                                                         updateItem(item.id, { uom: e.target.value }, false)
                                                     }
                                                 >
-                                                    <option value="">Select UOM…</option>
+                                                    <option value="">Select UOMâ€¦</option>
                                                     {uoms.map((u) => (
                                                         <option key={u.uomId} value={u.description}>
                                                             {u.description}
