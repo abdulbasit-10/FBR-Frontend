@@ -46,7 +46,7 @@ export default function CreatePurchaseInvoicePage() {
     useEffect(() => {
         productsService.list({ limit: 200, sortBy: "name", sortDir: "ASC" })
             .then((res) => setProducts(res.data.rows))
-            .catch(() => {});
+            .catch(() => { });
     }, []);
     const [items, setItems] = useState<PurchaseItem[]>([{
         id: "1", productId: null, productName: "", qty: 1,
@@ -146,8 +146,8 @@ export default function CreatePurchaseInvoicePage() {
                     {/* Right preview card — reused from create-invoice */}
                     <div className="w-66.25 rounded-[14px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] px-4.75 py-3 flex flex-col justify-between gap-4">
                         <div className="flex flex-col items-center border-b border-[#F3F4F6] dark:border-[#3a3a3a] pb-2.5">
-                            <Image src="/brand/Digital.svg" alt="Encova Solution" width={48} height={48} className="h-12 w-auto mb-1.5 object-contain" priority />
-                            <h3 className="text-[14px] font-bold text-[#1E293B] dark:text-[#f0f0f0] leading-tight">Encova Solution</h3>
+                            <Image src="/brand/Digital.svg" alt="Encova Solutions" width={48} height={48} className="h-12 w-auto mb-1.5 object-contain" priority />
+                            <h3 className="text-[14px] font-bold text-[#1E293B] dark:text-[#f0f0f0] leading-tight">Encova Solutions</h3>
                             <span className="text-[11px] text-[#9CA3AF] font-normal mt-0.5">Sales invoice preview</span>
                         </div>
                         <div className="flex flex-col gap-1.75">

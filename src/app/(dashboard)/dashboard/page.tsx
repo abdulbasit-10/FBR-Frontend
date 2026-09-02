@@ -144,7 +144,7 @@ export default function DashboardPage() {
                   ES
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#1f2937] dark:text-[#f0f0f0]">BIO Encova Solution</h3>
+                  <h3 className="text-sm font-bold text-[#1f2937] dark:text-[#f0f0f0]">BIO Encova Solutions</h3>
                   <p className="text-[11px] text-[#9ca3af]">Enterprise Resource Planning Account</p>
                 </div>
               </div>

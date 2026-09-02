@@ -5,15 +5,14 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import {
-    ChevronDown,
     ChevronLeft,
-    ChevronRight,
     Plus,
     RotateCcw,
     Save,
     Send,
     ShieldCheck,
     Trash2,
+    Users,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -64,7 +63,6 @@ interface LineItem {
     discount: number;
     sroScheduleNo: string;
     sroItemSerialNo: string;
-    expanded: boolean;
 }
 
 const emptyLine = (): LineItem => ({
@@ -88,7 +86,6 @@ const emptyLine = (): LineItem => ({
     discount: 0,
     sroScheduleNo: "",
     sroItemSerialNo: "",
-    expanded: false,
 });
 
 const parseRatePercent = (rate: string): number => {
@@ -336,14 +333,14 @@ export default function CreateSalesInvoicePage() {
     };
 
     const inputStyleClass =
-        "h-[38px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none [color-scheme:light]";
+        "h-[38px] rounded-[6px] border border-[#E3D2BA] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none [color-scheme:light]";
 
     // Selects need balanced (not stacked) padding — the input's pt/pb combo overflows a <select>'s box.
     const selectStyleClass =
-        "h-[38px] w-full rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none appearance-none [color-scheme:light]";
+        "h-[38px] w-full rounded-[6px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none appearance-none [color-scheme:light]";
 
     const cellInput =
-        "h-[36px] w-full rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] shadow-none";
+        "h-8 w-full rounded-[6px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] dark:focus:bg-[#333] shadow-none";
 
     return (
         <div
@@ -398,17 +395,17 @@ export default function CreateSalesInvoicePage() {
                 </div>
             </div>
 
-            <div className="space-y-4">
-                {/* â”€â”€ SALES HEADER â”€â”€ */}
-                <div className="rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 ">
-                    <p className="mb-4 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
-                        Sales Header
-                    </p>
+            <div className="space-y-3">
+                {/* ── SALES HEADER + GRAND TOTAL PREVIEW (one row, matched heights) ── */}
+                <div className="flex flex-col md:flex-row items-stretch gap-4">
+                    <div className="flex-1 rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-4 py-3">
+                        <p className="mb-2 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
+                            Sales Header
+                        </p>
 
-                    <div className="grid gap-6 lg:grid-cols-[1fr_265px] items-stretch">
-                        <div className="flex flex-col gap-4">
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-1.5">
+                        <div className="flex flex-col gap-3">
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                <div className="space-y-1">
                                     <Label className="text-[12px] font-medium text-[#4F5967]">
                                         Document Date <span className="text-[#A27B3A]">*</span>
                                     </Label>
@@ -419,7 +416,7 @@ export default function CreateSalesInvoicePage() {
                                         className={inputStyleClass}
                                     />
                                 </div>
-                                <div className="space-y-1.5">
+                                <div className="space-y-1">
                                     <Label className="text-[12px] font-medium text-[#4F5967]">Posting Date</Label>
                                     <Input
                                         type="date"
@@ -428,10 +425,7 @@ export default function CreateSalesInvoicePage() {
                                         className={inputStyleClass}
                                     />
                                 </div>
-                            </div>
-
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-1.5">
+                                <div className="space-y-1">
                                     <Label className="text-[12px] font-medium text-[#4F5967]">PO Date</Label>
                                     <Input
                                         type="date"
@@ -440,7 +434,10 @@ export default function CreateSalesInvoicePage() {
                                         className={inputStyleClass}
                                     />
                                 </div>
-                                <div className="space-y-1.5">
+                            </div>
+
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-1">
                                     <Label className="text-[12px] font-medium text-[#4F5967]">PO Number</Label>
                                     <Input
                                         type="text"
@@ -450,203 +447,203 @@ export default function CreateSalesInvoicePage() {
                                         className={inputStyleClass}
                                     />
                                 </div>
+                                <div className="space-y-1">
+                                    <Label className="text-[12px] font-medium text-[#4F5967]">Advance Tax</Label>
+                                    <Input
+                                        type="number"
+                                        value={advanceTax === 0 ? "" : advanceTax}
+                                        placeholder="0"
+                                        onChange={(e) => setAdvanceTax(parseFloat(e.target.value) || 0)}
+                                        className={inputStyleClass}
+                                    />
+                                </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <Label className="text-[12px] font-medium text-[#4F5967]">Advance Tax</Label>
-                                <Input
-                                    type="number"
-                                    value={advanceTax === 0 ? "" : advanceTax}
-                                    placeholder="0"
-                                    onChange={(e) => setAdvanceTax(parseFloat(e.target.value) || 0)}
-                                    className={inputStyleClass}
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <Label className="text-[12px] font-medium text-[#4F5967]">Note</Label>
                                 <Textarea
                                     placeholder="Add note"
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
-                                    className="h-[90px] min-h-[90px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[13px] pb-[12px] pl-[15px] pr-[10px] resize-none focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+                                    className="h-14 min-h-14 rounded-[6px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 py-2 resize-none focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Preview card */}
-                        <div className="w-[265px] rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] px-[19px] py-[12px] flex flex-col justify-between gap-[16px]">
-                            <div className="flex flex-col items-center border-b border-[#F3F4F6] dark:border-[#3a3a3a] pb-[10px]">
-                                <Image
-                                    src="/brand/Digital.svg"
-                                    alt="Encova Solution"
-                                    width={48}
-                                    height={48}
-                                    className="h-12 w-auto mb-1.5 object-contain"
-                                    priority
-                                />
-                                <h3 className="text-[14px] font-bold text-[#1E293B] dark:text-[#f0f0f0] leading-tight">
-                                    Encova Solution
-                                </h3>
-                                <span className="text-[11px] text-[#9CA3AF] font-normal mt-0.5">
-                                    Sales invoice preview
-                                </span>
-                            </div>
+                    <div className="w-full md:w-[260px] shrink-0 rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] px-3.5 py-2.5 flex flex-col gap-2.5">
+                        <div className="flex flex-col items-center border-b border-[#F3F4F6] dark:border-[#3a3a3a] pb-2">
+                            <Image
+                                src="/brand/Digital.svg"
+                                alt="Encova Solutions"
+                                width={36}
+                                height={36}
+                                className="h-9 w-auto mb-1 object-contain"
+                                priority
+                            />
+                            <h3 className="text-[13px] font-bold text-[#1E293B] dark:text-[#f0f0f0] leading-tight">
+                                Encova Solutions
+                            </h3>
+                            <span className="text-[10px] text-[#9CA3AF] font-normal mt-0.5">
+                                Sales invoice preview
+                            </span>
+                        </div>
 
-                            <div className="flex flex-col gap-[7px]">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A] mb-1">
-                                    Sales Total
-                                </span>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A] mb-0.5">
+                                Sales Total
+                            </span>
 
-                                {[
-                                    ["Assessed value", totals.assessedValue.toFixed(2)],
-                                    ["Discount", totals.discount.toFixed(2)],
-                                    ["Amount excl. sales tax", totals.valueExcl.toFixed(2)],
-                                    ["Sales tax", totals.salesTax.toFixed(2)],
-                                    ["Further tax", totals.furtherTax.toFixed(2)],
-                                    ["Amount incl. sales tax", totals.totalIncl.toFixed(2)],
-                                    ["Advance tax", advanceTax.toFixed(2)],
-                                ].map(([label, value]) => (
-                                    <div key={label} className="flex justify-between items-center text-[11px]">
-                                        <span className="text-[#6B7280] dark:text-[#9ca3af] font-normal">{label}</span>
-                                        <span className="text-[#1E293B] dark:text-[#f0f0f0] font-bold">{value}</span>
-                                    </div>
-                                ))}
-                            </div>
+                            {[
+                                ["Assessed value", totals.assessedValue.toFixed(2)],
+                                ["Discount", totals.discount.toFixed(2)],
+                                ["Amount excl. sales tax", totals.valueExcl.toFixed(2)],
+                                ["Sales tax", totals.salesTax.toFixed(2)],
+                                ["Further tax", totals.furtherTax.toFixed(2)],
+                                ["Amount incl. sales tax", totals.totalIncl.toFixed(2)],
+                                ["Advance tax", advanceTax.toFixed(2)],
+                            ].map(([label, value]) => (
+                                <div key={label} className="flex justify-between items-center text-[11px]">
+                                    <span className="text-[#6B7280] dark:text-[#9ca3af] font-normal">{label}</span>
+                                    <span className="text-[#1E293B] dark:text-[#f0f0f0] font-bold">{value}</span>
+                                </div>
+                            ))}
+                        </div>
 
-                            <div className="w-full h-[39px] rounded-[7px] bg-[#FAF6EE] dark:bg-[#2a1e0a] border border-[#F3EAD8] dark:border-[#4a3a20] px-[14px] py-[8px] flex items-center justify-between mt-auto">
-                                <span className="text-[11px] font-bold uppercase text-[#A27B3A] tracking-wider">
-                                    Grand Total
-                                </span>
-                                <span className="text-[13px] font-bold text-[#A27B3A]">
-                                    {totals.grandTotal.toFixed(2)}
-                                </span>
-                            </div>
+                        <div className="w-full h-9 rounded-[7px] bg-[#FAF6EE] dark:bg-[#2a1e0a] border border-[#F3EAD8] dark:border-[#4a3a20] px-3.5 py-2 flex items-center justify-between mt-auto">
+                            <span className="text-[11px] font-bold uppercase text-[#A27B3A] tracking-wider">
+                                Grand Total
+                            </span>
+                            <span className="text-[13px] font-bold text-[#A27B3A]">
+                                {totals.grandTotal.toFixed(2)}
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                {/* â”€â”€ FBR OPTIONS â”€â”€ */}
-                <div className="rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 ">
-                    <p className="mb-4 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
-                        FBR Options
-                    </p>
+                {/* ── FBR OPTIONS + CUSTOMER (one row, independent cards, matched heights) ── */}
+                <div className="flex flex-col md:flex-row items-stretch gap-4">
+                    <div className="flex-1 rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-4 py-3">
+                        <p className="mb-2 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
+                            FBR Options
+                        </p>
 
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="space-y-1.5">
-                            <Label className="text-[12px] font-medium text-[#4F5967]">
-                                Invoice Type <span className="text-[#A27B3A]">*</span>
-                            </Label>
-                            <select
-                                value={invoiceType}
-                                onChange={(e) => setInvoiceType(e.target.value as InvoiceType)}
-                                className={selectStyleClass + " pr-8"}
-                            >
-                                <option value="Sale Invoice">Sale Invoice</option>
-                                <option value="Debit Note">Debit Note</option>
-                            </select>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label className="text-[12px] font-medium text-[#4F5967]">
-                                Environment <span className="text-[#A27B3A]">*</span>
-                            </Label>
-                            <select
-                                value={environment}
-                                onChange={(e) => setEnvironment(e.target.value as InvoiceEnvironment)}
-                                className={selectStyleClass + " pr-8"}
-                            >
-                                <option value="sandbox">Sandbox</option>
-                                <option value="production">Production</option>
-                            </select>
-                        </div>
-
-                        {environment === "sandbox" && (
-                            <div className="space-y-1.5 lg:col-span-2">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-1.5">
                                 <Label className="text-[12px] font-medium text-[#4F5967]">
-                                    Scenario ID <span className="text-[#A27B3A]">*</span>
+                                    Invoice Type <span className="text-[#A27B3A]">*</span>
                                 </Label>
                                 <select
-                                    value={scenarioId}
-                                    onChange={(e) => setScenarioId(e.target.value)}
-                                    className={selectStyleClass + " pr-8 truncate"}
+                                    value={invoiceType}
+                                    onChange={(e) => setInvoiceType(e.target.value as InvoiceType)}
+                                    className={selectStyleClass + " pr-8"}
                                 >
-                                    {FBR_SANDBOX_SCENARIOS.map((s) => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.id} &mdash; {s.description}
-                                        </option>
-                                    ))}
+                                    <option value="Sale Invoice">Sale Invoice</option>
+                                    <option value="Debit Note">Debit Note</option>
                                 </select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label className="text-[12px] font-medium text-[#4F5967]">
+                                    Environment <span className="text-[#A27B3A]">*</span>
+                                </Label>
+                                <select
+                                    value={environment}
+                                    onChange={(e) => setEnvironment(e.target.value as InvoiceEnvironment)}
+                                    className={selectStyleClass + " pr-8"}
+                                >
+                                    <option value="sandbox">Sandbox</option>
+                                    <option value="production">Production</option>
+                                </select>
+                            </div>
+
+                            {environment === "sandbox" && (
+                                <div className="space-y-1.5 sm:col-span-2">
+                                    <Label className="text-[12px] font-medium text-[#4F5967]">
+                                        Scenario ID <span className="text-[#A27B3A]">*</span>
+                                    </Label>
+                                    <select
+                                        value={scenarioId}
+                                        onChange={(e) => setScenarioId(e.target.value)}
+                                        className={selectStyleClass + " pr-8 truncate"}
+                                    >
+                                        {FBR_SANDBOX_SCENARIOS.map((s) => (
+                                            <option key={s.id} value={s.id}>
+                                                {s.id} &mdash; {s.description}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {invoiceType === "Debit Note" && (
+                                <div className="space-y-1.5 sm:col-span-2">
+                                    <Label className="text-[12px] font-medium text-[#4F5967]">
+                                        Original Invoice Ref No <span className="text-[#A27B3A]">*</span>
+                                    </Label>
+                                    <Input
+                                        type="text"
+                                        placeholder="22 digits (NTN) or 28 digits (CNIC)"
+                                        value={invoiceRefNo}
+                                        onChange={(e) => setInvoiceRefNo(e.target.value.replace(/\D/g, ""))}
+                                        maxLength={28}
+                                        className={inputStyleClass}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="w-full md:w-[300px] shrink-0 rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-4 py-3">
+                        <p className="mb-2 text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
+                            Customer
+                        </p>
+
+                        {selectedCustomer ? (
+                            <div className="flex items-center justify-between rounded-[7px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-[#FAF6F0] dark:bg-[#2a2a2a] px-3 py-2 gap-2">
+                                <div className="min-w-0">
+                                    <p className="text-[13px] font-semibold text-[#1E293B] dark:text-[#f0f0f0] truncate">
+                                        {selectedCustomer.name}
+                                    </p>
+                                    <p className="text-[11px] text-[#6B7280] dark:text-[#9ca3af] truncate">
+                                        {selectedCustomer.customerNo} &middot; {selectedCustomer.ntn} &middot;{" "}
+                                        <span className="font-medium">{selectedCustomer.registration}</span>
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowCustomerModal(true)}
+                                    className="shrink-0 text-[12px] text-[#A27B3A] hover:underline font-medium"
+                                >
+                                    Change
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center gap-2 rounded-[7px] border border-dashed border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#FAFAF7] dark:bg-[#1f1f1f] px-3 py-4 text-center">
+                                <Users className="h-6 w-6 text-[#D8C08A]" />
+                                <p className="text-[11px] text-[#9CA3AF]">No customer selected yet</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCustomerModal(true)}
+                                    className="w-full h-[36px] rounded-[7px] border border-dashed border-[#C69B56] bg-[#C69A52]/[0.04] px-4 text-[13px] font-medium text-[#C69B56] hover:bg-[#C69A52]/[0.08] transition-colors flex items-center justify-center"
+                                >
+                                    Select customer
+                                </button>
                             </div>
                         )}
 
-                        {invoiceType === "Debit Note" && (
-                            <div className="space-y-1.5 lg:col-span-2">
-                                <Label className="text-[12px] font-medium text-[#4F5967]">
-                                    Original Invoice Ref No <span className="text-[#A27B3A]">*</span>
-                                </Label>
-                                <Input
-                                    type="text"
-                                    placeholder="22 digits (NTN) or 28 digits (CNIC)"
-                                    value={invoiceRefNo}
-                                    onChange={(e) => setInvoiceRefNo(e.target.value.replace(/\D/g, ""))}
-                                    maxLength={28}
-                                    className={inputStyleClass}
-                                />
-                            </div>
-                        )}
+                        <SelectCustomerModal
+                            isOpen={showCustomerModal}
+                            onClose={() => setShowCustomerModal(false)}
+                            onSelect={(c) => {
+                                setSelectedCustomer(c);
+                                setShowCustomerModal(false);
+                            }}
+                        />
                     </div>
                 </div>
 
-                {/* â”€â”€ CUSTOMER â”€â”€ */}
-                <div className="min-h-[118.5px] rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 flex flex-col justify-between ">
-                    <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
-                        Customer
-                    </p>
-
-                    {selectedCustomer ? (
-                        <div className="mt-3 flex items-center justify-between rounded-[7px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-[#FAF6F0] dark:bg-[#2a2a2a] px-4 py-2">
-                            <div>
-                                <p className="text-[13px] font-semibold text-[#1E293B] dark:text-[#f0f0f0]">
-                                    {selectedCustomer.name}
-                                </p>
-                                <p className="text-[11px] text-[#6B7280] dark:text-[#9ca3af]">
-                                    {selectedCustomer.customerNo} &middot; NTN/CNIC: {selectedCustomer.ntn} &middot;{" "}
-                                    {selectedCustomer.province} &middot;{" "}
-                                    <span className="font-medium">{selectedCustomer.registration}</span>
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => setShowCustomerModal(true)}
-                                className="text-[12px] text-[#A27B3A] hover:underline font-medium"
-                            >
-                                Change
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="mt-3 flex justify-center w-full">
-                            <button
-                                type="button"
-                                onClick={() => setShowCustomerModal(true)}
-                                className="max-w-[392px] w-full h-[40.5px] rounded-[7px] border border-dashed border-[#C69B56] bg-[#C69A52]/[0.04] px-[28px] text-[13px] font-medium text-[#C69B56] hover:bg-[#C69A52]/[0.08] transition-colors flex items-center justify-center"
-                            >
-                                Select customer
-                            </button>
-                        </div>
-                    )}
-
-                    <SelectCustomerModal
-                        isOpen={showCustomerModal}
-                        onClose={() => setShowCustomerModal(false)}
-                        onSelect={(c) => {
-                            setSelectedCustomer(c);
-                            setShowCustomerModal(false);
-                        }}
-                    />
-                </div>
-
-                {/* â”€â”€ LINE ITEMS â”€â”€ */}
-                <div className="rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-[20px] py-[16px]  space-y-[10px]">
+                {/* ── LINE ITEMS ── */}
+                <div className="rounded-lg border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-4 py-3 space-y-2.5">
                     <div className="flex items-center justify-between pb-1">
                         <p className="text-[12px] font-bold uppercase tracking-wider text-[#A27B3A]">
                             Line Items
@@ -661,28 +658,35 @@ export default function CreateSalesInvoicePage() {
                     </div>
 
                     <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
-                        <table className="w-full text-[12px] min-w-[1400px] border-collapse">
+                        <table className="w-full text-[12px] min-w-[2100px] border-collapse">
                             <thead>
                                 <tr className="bg-[#C69A52] text-white">
-                                    <th className="w-16 py-3 px-2 text-center font-bold">#</th>
-                                    <th className="w-[180px] py-3 px-2 text-left font-bold">Item / Description</th>
-                                    <th className="w-[110px] py-3 px-2 text-left font-bold">HS Code</th>
-                                    <th className="w-[140px] py-3 px-2 text-left font-bold">UOM</th>
-                                    <th className="w-20 py-3 px-2 text-center font-bold">Qty</th>
-                                    <th className="w-[100px] py-3 px-2 text-center font-bold">Unit Price</th>
-                                    <th className="w-16 py-3 px-2 text-center font-bold">Disc %</th>
-                                    <th className="w-[110px] py-3 px-2 text-right font-bold">Value Excl. ST</th>
-                                    <th className="w-[95px] py-3 px-2 text-center font-bold">Rate</th>
-                                    <th className="w-[170px] py-3 px-2 text-left font-bold">Sale Type</th>
-                                    <th className="w-[100px] py-3 px-2 text-right font-bold">Sales Tax</th>
-                                    <th className="w-10 py-3 px-2 text-center font-bold"></th>
+                                    <th className="w-16 py-1.5 px-2 text-center font-bold leading-none">#</th>
+                                    <th className="w-[180px] py-1.5 px-2 text-left font-bold leading-none">Item / Description</th>
+                                    <th className="w-[110px] py-1.5 px-2 text-left font-bold leading-none">HS Code</th>
+                                    <th className="w-[140px] py-1.5 px-2 text-left font-bold leading-none">UOM</th>
+                                    <th className="w-20 py-1.5 px-2 text-center font-bold leading-none">Qty</th>
+                                    <th className="w-[100px] py-1.5 px-2 text-center font-bold leading-none">Unit Price</th>
+                                    <th className="w-16 py-1.5 px-2 text-center font-bold leading-none">Disc %</th>
+                                    <th className="w-[110px] py-1.5 px-2 text-right font-bold leading-none">Value Excl. ST</th>
+                                    <th className="w-[95px] py-1.5 px-2 text-center font-bold leading-none">Rate</th>
+                                    <th className="w-[170px] py-1.5 px-2 text-left font-bold leading-none">Sale Type</th>
+                                    <th className="w-[100px] py-1.5 px-2 text-right font-bold leading-none">Sales Tax</th>
+                                    <th className="w-[130px] py-1.5 px-2 text-right font-bold leading-none">Fixed / Retail Price</th>
+                                    <th className="w-[110px] py-1.5 px-2 text-right font-bold leading-none">ST Withheld</th>
+                                    <th className="w-[100px] py-1.5 px-2 text-right font-bold leading-none">Extra Tax</th>
+                                    <th className="w-[100px] py-1.5 px-2 text-right font-bold leading-none">Further Tax</th>
+                                    <th className="w-[100px] py-1.5 px-2 text-right font-bold leading-none">FED Payable</th>
+                                    <th className="w-[120px] py-1.5 px-2 text-left font-bold leading-none">SRO Schedule No</th>
+                                    <th className="w-[120px] py-1.5 px-2 text-left font-bold leading-none">SRO Item Serial No</th>
+                                    <th className="w-10 py-1.5 px-2 text-center font-bold leading-none"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#E5E7EB] dark:divide-[#2e2e2e] bg-white dark:bg-[#242424]">
                                 {items.map((item, index) => (
                                     <React.Fragment key={item.id}>
                                         <tr className="hover:bg-[#FAF6F0]/40 dark:hover:bg-[#2a2a2a] transition-colors">
-                                            <td className="py-2 px-2 text-center">
+                                            <td className="py-1.5 px-2 text-center">
                                                 <div className="flex items-center justify-center gap-1.5">
                                                     <button
                                                         type="button"
@@ -706,7 +710,7 @@ export default function CreateSalesInvoicePage() {
                                                 </div>
                                             </td>
 
-                                            <td className="py-2 px-2">
+                                            <td className="py-1.5 px-2">
                                                 <select
                                                     className={cellInput}
                                                     value={item.productId ?? ""}
@@ -730,7 +734,7 @@ export default function CreateSalesInvoicePage() {
                                                 )}
                                             </td>
 
-                                            <td className="py-2 px-2">
+                                            <td className="py-1.5 px-2">
                                                 <Input
                                                     type="text"
                                                     placeholder="0000.0000"
@@ -742,7 +746,7 @@ export default function CreateSalesInvoicePage() {
                                                 />
                                             </td>
 
-                                            <td className="py-2 px-2">
+                                            <td className="py-1.5 px-2">
                                                 <select
                                                     className={cellInput}
                                                     value={item.uom}
@@ -763,7 +767,7 @@ export default function CreateSalesInvoicePage() {
                                                 </select>
                                             </td>
 
-                                            <td className="py-2 px-2 text-center">
+                                            <td className="py-1.5 px-2 text-center">
                                                 <Input
                                                     type="number"
                                                     min={0}
@@ -778,7 +782,7 @@ export default function CreateSalesInvoicePage() {
                                                 />
                                             </td>
 
-                                            <td className="py-2 px-2 text-center">
+                                            <td className="py-1.5 px-2 text-center">
                                                 <Input
                                                     type="number"
                                                     min={0}
@@ -794,7 +798,7 @@ export default function CreateSalesInvoicePage() {
                                                 />
                                             </td>
 
-                                            <td className="py-2 px-2 text-center">
+                                            <td className="py-1.5 px-2 text-center">
                                                 <Input
                                                     type="number"
                                                     min={0}
@@ -811,7 +815,7 @@ export default function CreateSalesInvoicePage() {
                                                 />
                                             </td>
 
-                                            <td className="py-2 px-2 text-right">
+                                            <td className="py-1.5 px-2 text-right">
                                                 <Input
                                                     type="number"
                                                     step="0.01"
@@ -830,7 +834,7 @@ export default function CreateSalesInvoicePage() {
                                                 />
                                             </td>
 
-                                            <td className="py-2 px-2 text-center">
+                                            <td className="py-1.5 px-2 text-center">
                                                 <select
                                                     className={cellInput}
                                                     value={item.rate}
@@ -849,7 +853,7 @@ export default function CreateSalesInvoicePage() {
                                                 </select>
                                             </td>
 
-                                            <td className="py-2 px-2">
+                                            <td className="py-1.5 px-2">
                                                 <select
                                                     className={cellInput}
                                                     value={item.saleType}
@@ -868,7 +872,7 @@ export default function CreateSalesInvoicePage() {
                                                 </select>
                                             </td>
 
-                                            <td className="py-2 px-2 text-right">
+                                            <td className="py-1.5 px-2 text-right">
                                                 <Input
                                                     type="number"
                                                     step="0.01"
@@ -886,110 +890,58 @@ export default function CreateSalesInvoicePage() {
                                                 />
                                             </td>
 
-                                            <td className="py-2 px-2 text-center">
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        updateItem(item.id, { expanded: !item.expanded }, false)
-                                                    }
-                                                    className="text-[#A27B3A] hover:text-[#b58b44]"
-                                                    title={item.expanded ? "Hide advanced" : "Advanced tax fields"}
-                                                >
-                                                    {item.expanded ? (
-                                                        <ChevronDown className="h-4 w-4" />
-                                                    ) : (
-                                                        <ChevronRight className="h-4 w-4" />
-                                                    )}
-                                                </button>
-                                            </td>
-                                        </tr>
-
-                                        {item.expanded && (
-                                            <tr className="bg-[#FAFAF7] dark:bg-[#2a2a2a]/60">
-                                                <td colSpan={12} className="px-3 py-3">
-                                                    <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-6">
-                                                        <div className="space-y-1 md:col-span-2 lg:col-span-3">
-                                                            <Label className="text-[11px] text-[#6B7280]">Description Override</Label>
-                                                            <Input
-                                                                type="text"
-                                                                placeholder="Auto-filled from product; override for this line only"
-                                                                value={item.productDescription}
-                                                                onChange={(e) =>
-                                                                    updateItem(
-                                                                        item.id,
-                                                                        { productDescription: e.target.value },
-                                                                        false,
-                                                                    )
-                                                                }
-                                                                className={cellInput}
-                                                            />
-                                                        </div>
-                                                        {(
-                                                            [
-                                                                ["fixedNotifiedValueOrRetailPrice", "Fixed / Retail Price"],
-                                                                ["salesTaxWithheldAtSource", "ST Withheld @ Source"],
-                                                                ["extraTax", "Extra Tax"],
-                                                                ["furtherTax", "Further Tax"],
-                                                                ["fedPayable", "FED Payable"],
-                                                            ] as [keyof LineItem, string][]
-                                                        ).map(([key, label]) => (
-                                                            <div key={key} className="space-y-1">
-                                                                <Label className="text-[11px] text-[#6B7280]">
-                                                                    {label}
-                                                                </Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    value={(item[key] as number) || ""}
-                                                                    placeholder="0"
-                                                                    onChange={(e) =>
-                                                                        updateItem(
-                                                                            item.id,
-                                                                            {
-                                                                                [key]: parseFloat(e.target.value) || 0,
-                                                                            } as Partial<LineItem>,
-                                                                            false,
-                                                                        )
-                                                                    }
-                                                                    className={cellInput}
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                        <div className="space-y-1">
-                                                            <Label className="text-[11px] text-[#6B7280]">SRO Schedule No</Label>
-                                                            <Input
-                                                                type="text"
-                                                                value={item.sroScheduleNo}
-                                                                placeholder="e.g. SRO123"
-                                                                onChange={(e) =>
-                                                                    updateItem(
-                                                                        item.id,
-                                                                        { sroScheduleNo: e.target.value },
-                                                                        false,
-                                                                    )
-                                                                }
-                                                                className={cellInput}
-                                                            />
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <Label className="text-[11px] text-[#6B7280]">SRO Item Serial No</Label>
-                                                            <Input
-                                                                type="text"
-                                                                value={item.sroItemSerialNo}
-                                                                onChange={(e) =>
-                                                                    updateItem(
-                                                                        item.id,
-                                                                        { sroItemSerialNo: e.target.value },
-                                                                        false,
-                                                                    )
-                                                                }
-                                                                className={cellInput}
-                                                            />
-                                                        </div>
-                                                    </div>
+                                            {(
+                                                [
+                                                    ["fixedNotifiedValueOrRetailPrice", "right"],
+                                                    ["salesTaxWithheldAtSource", "right"],
+                                                    ["extraTax", "right"],
+                                                    ["furtherTax", "right"],
+                                                    ["fedPayable", "right"],
+                                                ] as [keyof LineItem, string][]
+                                            ).map(([key]) => (
+                                                <td key={key} className="py-1.5 px-2 text-right">
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={(item[key] as number) || ""}
+                                                        placeholder="0"
+                                                        onChange={(e) =>
+                                                            updateItem(
+                                                                item.id,
+                                                                { [key]: parseFloat(e.target.value) || 0 } as Partial<LineItem>,
+                                                                false,
+                                                            )
+                                                        }
+                                                        className={cellInput + " text-right"}
+                                                    />
                                                 </td>
-                                            </tr>
-                                        )}
+                                            ))}
+
+                                            <td className="py-1.5 px-2">
+                                                <Input
+                                                    type="text"
+                                                    value={item.sroScheduleNo}
+                                                    placeholder="e.g. SRO123"
+                                                    onChange={(e) =>
+                                                        updateItem(item.id, { sroScheduleNo: e.target.value }, false)
+                                                    }
+                                                    className={cellInput}
+                                                />
+                                            </td>
+
+                                            <td className="py-1.5 px-2">
+                                                <Input
+                                                    type="text"
+                                                    value={item.sroItemSerialNo}
+                                                    onChange={(e) =>
+                                                        updateItem(item.id, { sroItemSerialNo: e.target.value }, false)
+                                                    }
+                                                    className={cellInput}
+                                                />
+                                            </td>
+
+                                            <td className="py-1.5 px-2 text-center" />
+                                        </tr>
                                     </React.Fragment>
                                 ))}
                             </tbody>

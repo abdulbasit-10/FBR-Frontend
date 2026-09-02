@@ -205,7 +205,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
         {/* Bottom logo â€” anchored to bottom with mt-auto */}
         <div className="mt-auto shrink-0 border-t border-[#eeeeee] dark:border-[#2e2e2e] px-4 py-4">
           <div className="relative h-12 w-full">
-            <Image src="/brand/lOGO.ai.svg" alt="Encova Solution" fill sizes="180px" className="object-contain object-left" />
+            <Image src="/brand/lOGO.ai.svg" alt="Encova Solutions" fill sizes="180px" className="object-contain object-left" />
           </div>
         </div>
       </div>
