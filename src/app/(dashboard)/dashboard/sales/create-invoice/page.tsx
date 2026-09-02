@@ -338,6 +338,10 @@ export default function CreateSalesInvoicePage() {
     const inputStyleClass =
         "h-[38px] rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] pt-[12px] pb-[12px] pl-[15px] pr-[10px] focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none [color-scheme:light]";
 
+    // Selects need balanced (not stacked) padding — the input's pt/pb combo overflows a <select>'s box.
+    const selectStyleClass =
+        "h-[38px] w-full rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[13px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:ring-0 focus:border-[#D1D5DB] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none appearance-none [color-scheme:light]";
+
     const cellInput =
         "h-[36px] w-full rounded-[6px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-[#F9FAFB] dark:bg-[#2a2a2a] px-2 text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:ring-0 focus:border-[#C69A52] focus:bg-white dark:focus:bg-[#333] shadow-none";
 
@@ -536,7 +540,7 @@ export default function CreateSalesInvoicePage() {
                             <select
                                 value={invoiceType}
                                 onChange={(e) => setInvoiceType(e.target.value as InvoiceType)}
-                                className={inputStyleClass + " pr-8"}
+                                className={selectStyleClass + " pr-8"}
                             >
                                 <option value="Sale Invoice">Sale Invoice</option>
                                 <option value="Debit Note">Debit Note</option>
@@ -550,7 +554,7 @@ export default function CreateSalesInvoicePage() {
                             <select
                                 value={environment}
                                 onChange={(e) => setEnvironment(e.target.value as InvoiceEnvironment)}
-                                className={inputStyleClass + " pr-8"}
+                                className={selectStyleClass + " pr-8"}
                             >
                                 <option value="sandbox">Sandbox</option>
                                 <option value="production">Production</option>
@@ -565,7 +569,7 @@ export default function CreateSalesInvoicePage() {
                                 <select
                                     value={scenarioId}
                                     onChange={(e) => setScenarioId(e.target.value)}
-                                    className={inputStyleClass + " pr-8"}
+                                    className={selectStyleClass + " pr-8 truncate"}
                                 >
                                     {FBR_SANDBOX_SCENARIOS.map((s) => (
                                         <option key={s.id} value={s.id}>
