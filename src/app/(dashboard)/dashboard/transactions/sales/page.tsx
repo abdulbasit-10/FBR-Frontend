@@ -249,6 +249,7 @@ function SalesInvoicesContent() {
             });
             toast.success("Invoice copied as a new draft.");
             setSelected(new Set());
+            router.refresh(); // bust Next.js router cache so returning to this list shows fresh data
             router.push(`/dashboard/transactions/sales/${created.data.uuid}`);
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to copy invoice.");

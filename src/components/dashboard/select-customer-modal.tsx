@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 
 import { cn } from "@/lib/utils";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { customersService, type Customer as ApiCustomer } from "@/lib/services";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,21 +29,17 @@ interface SelectCustomerModalProps {
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
-const MOCK_CUSTOMERS: Customer[] = [
-    { id: 1, customerNo: "C-000209", name: "DINAR HOSPITAL D.I KHAN", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—" },
-    { id: 2, customerNo: "C-000208", name: "A_one Pharmacy", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—" },
-    { id: 3, customerNo: "C-000207", name: "AMIN WZIRSTAN PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "1110181965", strn: "—" },
-    { id: 4, customerNo: "C-000206", name: "Musa Pharmacy", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—" },
-    { id: 5, customerNo: "C-000205", name: "ONCOMED PHARMA", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "1521135", strn: "—" },
-    { id: 6, customerNo: "C-000204", name: "FARMAN MEDICINE COMPANY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "F617441", strn: "—" },
-    { id: 7, customerNo: "C-000203", name: "AL HAMZA PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "8131978", strn: "—" },
-    { id: 8, customerNo: "C-000202", name: "HEALTHCARE VACCINE HOUSE", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "9997735", strn: "—" },
-    { id: 9, customerNo: "C-000201", name: "FAIR PRICE PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Registered", ntn: "5051406", strn: "—" },
-    { id: 10, customerNo: "C-000200", name: "MAX HEALTH PHARMACY", province: "Punjab", type: "Individual", registration: "Unregistered", ntn: "332024545", strn: "—" },
-    { id: 11, customerNo: "C-000199", name: "SHAH SAUD", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "332024545", strn: "—" },
-    { id: 12, customerNo: "C-000198", name: "KOHAT BANNU", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "999999999", strn: "—" },
-    { id: 13, customerNo: "C-000197", name: "IBRAHIM MUSA PHARMACY", province: "Khyber Pakhtunkhwa", type: "Individual", registration: "Unregistered", ntn: "C895660", strn: "—" },
-];
+// Map the real backend Customer model onto this modal's display shape.
+const toDisplayCustomer = (c: ApiCustomer): Customer => ({
+    id: c.id,
+    customerNo: c.customerNo ?? "—",
+    name: c.businessName,
+    province: c.province,
+    type: c.customerType,
+    registration: c.registrationType,
+    ntn: c.ntnCnic ?? "—",
+    strn: c.strn ?? "—",
+});
 
 const TYPE_OPTIONS = ["All", "Individual", "Company", "AOP"];
 const REGISTRATION_OPTIONS = ["All", "Registered", "Unregistered"];
@@ -59,15 +56,14 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
     const [page, setPage] = useState(1);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
-    // Simulate initial load
+    // Fetch real customers from the backend (was previously hardcoded mock data).
     const loadCustomers = useCallback(() => {
         setIsLoading(true);
-        setCustomers([]);
-        const timer = setTimeout(() => {
-            setCustomers(MOCK_CUSTOMERS);
-            setIsLoading(false);
-        }, 1200);
-        return () => clearTimeout(timer);
+        customersService
+            .list({ limit: 200 })
+            .then((res) => setCustomers(res.data.rows.map(toDisplayCustomer)))
+            .catch(() => setCustomers([]))
+            .finally(() => setIsLoading(false));
     }, []);
 
     useEffect(() => {
@@ -76,12 +72,9 @@ export function SelectCustomerModal({ isOpen, onClose, onSelect }: SelectCustome
             setTypeFilter("All");
             setRegistrationFilter("All");
             setPage(1);
-            const cleanup = loadCustomers();
+            loadCustomers();
             const focusTimer = setTimeout(() => searchInputRef.current?.focus(), 80);
-            return () => {
-                cleanup();
-                clearTimeout(focusTimer);
-            };
+            return () => clearTimeout(focusTimer);
         }
     }, [isOpen, loadCustomers]);
 

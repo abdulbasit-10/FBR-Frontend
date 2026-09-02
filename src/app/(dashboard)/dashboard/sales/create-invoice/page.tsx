@@ -292,6 +292,7 @@ export default function CreateSalesInvoicePage() {
             const uuid = created.data.uuid;
             if (mode === "draft") {
                 toast.success("Invoice saved as draft.");
+                router.refresh(); // bust Next.js router cache so the list shows fresh data
                 router.push("/dashboard/transactions/sales");
                 return;
             }
@@ -309,6 +310,7 @@ export default function CreateSalesInvoicePage() {
                     entry?.briefMsgDesc ?? fbrError ?? `FBR ${fbrStatus ?? "rejected"} the invoice.`;
                 toast.error(fbrErrorCode ? `[${fbrErrorCode}] ${msg}` : msg);
             }
+            router.refresh(); // bust Next.js router cache so the list shows fresh data
             router.push(`/dashboard/transactions/sales`);
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to submit invoice.");

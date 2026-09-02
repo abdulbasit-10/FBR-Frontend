@@ -75,6 +75,7 @@ export default function InvoiceDetailPage(
         try {
             const res = await invoicesService.submit(uuid, mode);
             setInvoice(res.data);
+            router.refresh(); // bust Next.js router cache so the sales list shows the updated status
             if (res.data.status === "posted") {
                 toast.success(`Posted: ${res.data.fbrInvoiceNumber}`);
             } else if (res.data.status === "validated") {
