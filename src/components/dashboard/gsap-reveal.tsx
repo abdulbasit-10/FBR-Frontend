@@ -37,6 +37,7 @@ export function GsapReveal({
             ease: "power2.out",
             stagger: 0.06,
             delay: 0.1,
+            clearProps: "transform",
           },
         );
       }

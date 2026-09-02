@@ -75,7 +75,7 @@ export default function Home() {
             <div className="lp-logo relative h-7 sm:h-8 w-20 sm:w-24 mb-2.5 sm:mb-3.5 shrink-0">
               <Image
                 src="/brand/lOGO.ai.svg"
-                alt="Encova Solution"
+                alt="Encova Solutions"
                 fill
                 priority
                 className="object-contain object-left"
@@ -211,7 +211,7 @@ export default function Home() {
                 </form>
 
                 <div className="pt-1 text-center text-[12px] text-[#9CA3AF] space-y-0.5">
-                  <p>Developed by <span className="font-semibold text-[#C69A52]">Encova Solution</span></p>
+                  <p>Developed by <span className="font-semibold text-[#C69A52]">Encova Solutions</span></p>
                   <p>info@encovasolution.com</p>
                 </div>
               </div>

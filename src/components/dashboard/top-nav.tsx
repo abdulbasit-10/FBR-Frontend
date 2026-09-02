@@ -66,7 +66,7 @@ export function TopNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#e7e7e7] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] px-4 lg:px-6">
+      <header className="sticky top-0 z-40 flex h-12 items-center justify-between border-b border-[#e7e7e7] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] px-4 lg:px-6">
         <div className="flex items-center gap-2">
           {/* Mobile hamburger */}
           <MobileSidebar>
@@ -77,15 +77,12 @@ export function TopNav() {
         <div className="flex items-center gap-3" />
 
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-2 sm:px-3 text-[11px] text-[#424b56] dark:text-[#9ca3af] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
-            <span className="grid h-5 w-5 place-items-center rounded-full bg-[#fff4df] dark:bg-[#2a2a2a] text-[#c39445]">
-              {/* render Moon as default to match SSR; swap to Sun only after mount */}
-              {mounted && theme === "dark" ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
-            </span>
-            <span className="hidden sm:inline">{mounted && theme === "dark" ? "Light" : "Dark"}</span>
+          <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle theme" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5d5b0] dark:border-[#3d3d3d] bg-transparent dark:bg-[#252525] text-[#c39445] hover:bg-[#fff4df] hover:border-[#c9a96e] dark:hover:bg-[#2f2b22] dark:hover:border-[#c39445]/40 transition-colors cursor-pointer">
+            {/* render Moon as default to match SSR; swap to Sun only after mount */}
+            {mounted && theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
           {/* Notifications */}
-          <button type="button" aria-label="Notifications" className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#eee4d4] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] text-[#424b56] dark:text-[#9ca3af] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
+          <button type="button" aria-label="Notifications" className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5d5b0] dark:border-[#3d3d3d] bg-transparent dark:bg-[#252525] text-[#c39445] hover:bg-[#fff4df] hover:border-[#c9a96e] dark:hover:bg-[#2f2b22] dark:hover:border-[#c39445]/40 transition-colors cursor-pointer">
             <Bell className="h-3.5 w-3.5 text-[#c39445]" />
             {unread > 0 && (
               <span className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-semibold text-white">
@@ -93,15 +90,14 @@ export function TopNav() {
               </span>
             )}
           </button>
-          <button type="button" onClick={() => setShowConfirm(true)} className="flex h-8 items-center gap-1.5 rounded-full border border-[#eee4d4] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] px-2 sm:px-3 text-[11px] text-[#424b56] dark:text-[#9ca3af] shadow-[0_1px_2px_rgba(0,0,0,.03)]">
-            <span className="grid h-5 w-5 place-items-center rounded-full bg-[#fff4df] dark:bg-[#2a2a2a] text-[#c39445]"><LogOut className="h-3 w-3" /></span>
-            <span className="hidden sm:inline">Logout</span>
+          <button type="button" onClick={() => setShowConfirm(true)} aria-label="Logout" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5d5b0] dark:border-[#3d3d3d] bg-transparent dark:bg-[#252525] text-[#c39445] hover:bg-red-50 hover:text-red-500 hover:border-red-200 dark:hover:bg-red-950/40 dark:hover:text-red-400 dark:hover:border-red-800/50 transition-colors cursor-pointer">
+            <LogOut className="h-3.5 w-3.5" />
           </button>
-          <button type="button" className="flex h-9 items-center gap-2 rounded-full bg-[#c99d54] py-0.5 pl-1 sm:pr-3 pr-1 text-left text-white shadow-sm">
-            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#77583a] text-[9px] font-semibold">{initials}</span>
-            <span className="hidden sm:block leading-[1.05]">
-              <b className="block text-[10px] font-medium">{displayName}</b>
-              <small className="block text-[8px] text-white/80">{displayRole}</small>
+          <button type="button" className="flex h-8 items-center gap-2 rounded-full bg-[#c99d54] hover:bg-[#b8893d] active:bg-[#a57830] py-0.5 pl-1 sm:pr-3 pr-1 text-left text-white transition-colors cursor-pointer">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#77583a] text-[10px] font-bold">{initials}</span>
+            <span className="hidden sm:block leading-tight">
+              <b className="block text-[12px] font-semibold">{displayName}</b>
+              <small className="block text-[10px] text-white/90">{displayRole}</small>
             </span>
           </button>
         </div>

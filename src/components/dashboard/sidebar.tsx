@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -26,13 +26,15 @@ function collectLeafHrefs(items: NavItem[], out = new Set<string>()): Set<string
 const ALL_LEAF_HREFS = collectLeafHrefs(primaryNav);
 
 function NavItemComponent({
-  item, collapsed, pathname, depth = 0,
+  item, collapsed, pathname, depth = 0, openTopLevel, onTopLevelToggle,
+  controlledExpanded, onControlledToggle,
 }: {
   item: NavItem; collapsed: boolean; pathname: string; depth?: number;
+  openTopLevel?: string | null; onTopLevelToggle?: (href: string) => void;
+  controlledExpanded?: boolean; onControlledToggle?: () => void;
 }) {
   const hasChildren = !!item.children?.length;
 
-  // startsWith only fires for sub-paths not explicitly listed in the nav (e.g. /create, /edit)
   const nodeMatches = (node: NavItem, d: number): boolean =>
     pathname === node.href ||
     (d > 0 && !node.children?.length && pathname.startsWith(node.href + "/") && !ALL_LEAF_HREFS.has(pathname)) ||
@@ -41,7 +43,17 @@ function NavItemComponent({
   const containsActive = (node: NavItem, d = 0): boolean =>
     nodeMatches(node, d) || !!node.children?.some((c) => containsActive(c, d + 1));
 
-  const [isExpanded, setIsExpanded] = useState(() => containsActive(item, depth));
+  // depth-0: accordion controlled by Sidebar; depth-1 with children: controlled by parent; else local
+  const [localExpanded, setLocalExpanded] = useState(() => containsActive(item, depth));
+  const isExpanded =
+    depth === 0 && hasChildren ? openTopLevel === item.href :
+      controlledExpanded !== undefined ? controlledExpanded :
+        localExpanded;
+
+  // Accordion state for depth-1 children (controls which depth-1 sub-dropdown is open)
+  const initialOpenChild = item.children?.find(c => c.children?.length && containsActive(c, depth + 1))?.href ?? null;
+  const [openChild, setOpenChild] = useState<string | null>(initialOpenChild);
+
   const isActiveLeaf = !hasChildren && nodeMatches(item, depth);
   const isActiveParent = hasChildren && containsActive(item, depth);
   const isActive = isActiveLeaf || isActiveParent;
@@ -62,11 +74,23 @@ function NavItemComponent({
       isActive ? "text-[#A27B3A]" :
         "text-[#9CA3AF] dark:text-[#666] group-hover:text-[#a4782d]";
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (!hasChildren) return;
+    e.preventDefault(); e.stopPropagation();
+    if (depth === 0 && onTopLevelToggle) {
+      onTopLevelToggle(item.href);
+    } else if (onControlledToggle) {
+      onControlledToggle();
+    } else {
+      setLocalExpanded((v) => !v);
+    }
+  };
+
   return (
     <div className="flex flex-col">
       <Link
         href={hasChildren ? "#" : item.href}
-        onClick={(e) => { if (hasChildren) { e.preventDefault(); e.stopPropagation(); setIsExpanded((v) => !v); } }}
+        onClick={handleClick}
         className={cn(
           "group flex items-center gap-2.5 py-2 rounded font-medium transition-colors",
           pl, textSize, activeCls,
@@ -88,9 +112,20 @@ function NavItemComponent({
 
       {!collapsed && hasChildren && isExpanded && (
         <div className={cn("flex flex-col gap-0.5 mt-0.5", depth === 0 && "border-l border-[#F3EAD8] dark:border-[#3a2a1a] ml-5")}>
-          {item.children!.map((child) => (
-            <NavItemComponent key={child.href} item={child} collapsed={collapsed} pathname={pathname} depth={depth + 1} />
-          ))}
+          {item.children!.map((child) => {
+            const childHasChildren = !!child.children?.length;
+            return (
+              <NavItemComponent
+                key={child.href}
+                item={child}
+                collapsed={collapsed}
+                pathname={pathname}
+                depth={depth + 1}
+                controlledExpanded={childHasChildren ? openChild === child.href : undefined}
+                onControlledToggle={childHasChildren ? () => setOpenChild(prev => prev === child.href ? null : child.href) : undefined}
+              />
+            );
+          })}
         </div>
       )}
     </div>
@@ -100,15 +135,29 @@ function NavItemComponent({
 export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) {
   const pathname = usePathname();
 
+  // Accordion: only one top-level dropdown open at a time
+  const initialOpen = primaryNav.find(item =>
+    item.children?.length && item.children.some(c =>
+      pathname === c.href || pathname.startsWith(c.href + "/") ||
+      c.children?.some(cc => pathname === cc.href || pathname.startsWith(cc.href + "/"))
+    )
+  )?.href ?? null;
+  const [openTopLevel, setOpenTopLevel] = useState<string | null>(initialOpen);
+
+  const handleTopLevelToggle = (href: string) => {
+    setOpenTopLevel(prev => prev === href ? null : href);
+  };
+
   return (
     <aside
       style={{ fontFamily: "var(--font-inter), 'Inter', sans-serif" }}
       className={cn(
         "sidebar flex h-full flex-col bg-white dark:bg-[#1e1e1e] border-r border-[#E5E7EB] dark:border-[#2e2e2e] shadow-[0_1px_3px_rgba(0,0,0,0.02)]",
-        collapsed ? "w-[72px]" : "w-[220px]",
+        collapsed ? "w-18" : "w-55",
       )}
     >
-      <div className={cn("flex h-16 shrink-0 items-center px-3", collapsed ? "justify-center" : "justify-start")}>
+      {/* Header â€” matches navbar h-12 */}
+      <div className={cn("flex h-12 shrink-0 items-center px-3", collapsed ? "justify-center" : "justify-start")}>
         {collapsed ? (
           <button
             type="button"
@@ -135,10 +184,10 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
 
       <Separator className="opacity-50 shrink-0" />
 
-      {/* scrollable area — nav pushes Encova Solution down when dropdowns open */}
+      {/* Scrollable nav area */}
       <div className="flex flex-1 flex-col overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
-        <div className="py-5">
-          <p className={cn("px-5 pb-3 text-[10px] font-medium tracking-wide text-[#9aa2ac] dark:text-[#555]", collapsed && "sr-only")}>MENU</p>
+        <div className="py-4">
+          <p className={cn("px-5 pb-2.5 text-[10px] font-medium tracking-wide text-[#9aa2ac] dark:text-[#555]", collapsed && "sr-only")}>MENU</p>
           <nav className={cn("flex flex-col gap-1.5 px-4", collapsed && "px-2")}>
             {primaryNav.map((item) => (
               <NavItemComponent
@@ -146,18 +195,20 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
                 item={item}
                 collapsed={collapsed}
                 pathname={pathname}
+                openTopLevel={openTopLevel}
+                onTopLevelToggle={handleTopLevelToggle}
               />
             ))}
           </nav>
         </div>
 
-        <div className="mt-auto mb-8 flex h-30 items-center justify-center border-t border-[#eeeeee] dark:border-[#2e2e2e] shrink-0">
-          <div className="relative h-14.5 w-29.5">
-            <Image src="/brand/lOGO.ai.svg" alt="Encova Solution" fill sizes="118px" className="object-contain" />
+        {/* Bottom logo â€” anchored to bottom with mt-auto */}
+        <div className="mt-auto shrink-0 border-t border-[#eeeeee] dark:border-[#2e2e2e] px-4 py-4">
+          <div className="relative h-12 w-full">
+            <Image src="/brand/lOGO.ai.svg" alt="Encova Solutions" fill sizes="180px" className="object-contain object-left" />
           </div>
         </div>
       </div>
     </aside>
   );
 }
-

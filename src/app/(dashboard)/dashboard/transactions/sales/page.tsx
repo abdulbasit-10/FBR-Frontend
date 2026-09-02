@@ -13,6 +13,7 @@ import {
     ChevronRight,
     FileText,
     Square,
+    Eye,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
@@ -42,6 +43,15 @@ interface SalesInvoice {
     amtExclST: number;
     salesTax: number;
     amtInclST: number;
+    furtherTax: number;
+    amtInclFT: number;
+    advanceTax: number;
+    advTaxPercent: number;
+    total: number;
+    fbrInvoiceNo: string;
+    source: string;
+    user: string;
+    mappingId: string;
 }
 
 /**
@@ -80,7 +90,16 @@ const toRow = (inv: ApiInvoice): SalesInvoice => ({
     discount: Number(inv.totalDiscount),
     amtExclST: Number(inv.totalValueExcludingST),
     salesTax: Number(inv.totalSalesTax),
-    amtInclST: Number(inv.totalValueIncludingST),
+    amtInclST: Number(inv.totalValueIncludingST) - Number(inv.totalFurtherTax) - Number(inv.totalFedPayable),
+    furtherTax: Number(inv.totalFurtherTax),
+    amtInclFT: Number(inv.totalValueIncludingST) - Number(inv.totalFedPayable),
+    advanceTax: Number(inv.advanceTax),
+    advTaxPercent: Number(inv.totalValueIncludingST) > 0 ? (Number(inv.advanceTax) / Number(inv.totalValueIncludingST)) * 100 : 0,
+    total: Number(inv.totalValueIncludingST) + Number(inv.advanceTax),
+    fbrInvoiceNo: inv.fbrInvoiceNumber ?? "—",
+    source: inv.environment === "production" ? "Production" : "Sandbox",
+    user: inv.creator?.name ?? "—",
+    mappingId: inv.mappingId ?? "—",
 });
 
 const STATUS_OPTIONS = ["All", "Posted", "UnPosted", "Cancelled"];
@@ -88,11 +107,14 @@ const SOURCE_OPTIONS = ["All", "Manual", "API", "Import"];
 const ROW_OPTIONS = [50, 100, 200];
 
 const fmt = (n: number) => n.toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPercent = (n: number) => `${n.toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 
 const TABLE_COLS = [
     "Invoice no", "Customer No", "Customer Name", "Status",
     "Doc date", "Posting date", "Assessed value",
     "Amt excl disc", "Discount", "Amt excl ST", "Sales tax", "Amt incl ST",
+    "Further tax", "Amt incl FT", "Advance tax", "Adv tax %", "Total",
+    "FBR invoice no", "Source", "User", "Mapping id",
 ];
 
 const selectStyle = "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer";
@@ -117,6 +139,7 @@ function SalesInvoicesContent() {
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
+    const [copying, setCopying] = useState(false);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -167,6 +190,103 @@ function SalesInvoicesContent() {
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((i) => i.id)));
     };
 
+    const printInvoices = (uuids: string[]) => {
+        // Print via a hidden iframe so the browser's print dialog opens directly
+        // over the current page instead of navigating to a new tab.
+        uuids.forEach((uuid, idx) => {
+            setTimeout(() => {
+                const iframe = document.createElement("iframe");
+                iframe.style.position = "fixed";
+                iframe.style.left = "-10000px";
+                iframe.style.top = "0";
+                iframe.style.width = "800px";
+                iframe.style.height = "1100px";
+                iframe.style.border = "0";
+                iframe.src = `/print/invoice/${uuid}`;
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                    const cleanup = () => {
+                        if (iframe.parentNode) document.body.removeChild(iframe);
+                    };
+                    try {
+                        iframe.contentWindow?.addEventListener("afterprint", cleanup);
+                    } catch {
+                        // ignore — worst case iframe stays until navigation
+                    }
+                    setTimeout(cleanup, 15000); // safety fallback
+                };
+            }, idx * 800);
+        });
+    };
+
+    const handlePrint = () => {
+        if (selected.size === 0) {
+            toast.error("Select at least one invoice to print.");
+            return;
+        }
+        printInvoices(paginated.filter((i) => selected.has(i.id)).map((i) => i.uuid));
+    };
+
+    const copyInvoice = async (uuid: string) => {
+        setCopying(true);
+        try {
+            const full = await invoicesService.getOne(uuid);
+            const src = full.data;
+            const today = new Date().toISOString().slice(0, 10);
+            const created = await invoicesService.create({
+                customerId: src.customerId,
+                invoiceType: src.invoiceType,
+                invoiceDate: today,
+                postingDate: null,
+                poDate: src.poDate,
+                poNumber: src.poNumber,
+                advanceTax: src.advanceTax,
+                environment: src.environment,
+                scenarioId: src.scenarioId,
+                notes: src.notes,
+                items: (src.items ?? []).map((it) => ({
+                    productId: it.productId,
+                    hsCode: it.hsCode,
+                    productDescription: it.productDescription,
+                    rate: it.rate,
+                    uom: it.uom,
+                    quantity: it.quantity,
+                    valueSalesExcludingST: it.valueSalesExcludingST,
+                    fixedNotifiedValueOrRetailPrice: it.fixedNotifiedValueOrRetailPrice,
+                    salesTaxApplicable: it.salesTaxApplicable,
+                    salesTaxWithheldAtSource: it.salesTaxWithheldAtSource,
+                    extraTax: it.extraTax,
+                    furtherTax: it.furtherTax,
+                    sroScheduleNo: it.sroScheduleNo,
+                    fedPayable: it.fedPayable,
+                    discount: it.discount,
+                    saleType: it.saleType,
+                    sroItemSerialNo: it.sroItemSerialNo,
+                    unitPrice: it.unitPrice,
+                    discountPercent: it.discountPercent,
+                })),
+            });
+            toast.success("Invoice copied as a new draft.");
+            setSelected(new Set());
+            router.refresh(); // bust Next.js router cache so returning to this list shows fresh data
+            router.push(`/dashboard/transactions/sales/${created.data.uuid}`);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to copy invoice.");
+        } finally {
+            setCopying(false);
+        }
+    };
+
+    const handleCopy = () => {
+        if (selected.size !== 1) {
+            toast.error("Select exactly one invoice to copy.");
+            return;
+        }
+        const row = paginated.find((i) => selected.has(i.id));
+        if (!row) return;
+        copyInvoice(row.uuid);
+    };
+
     const statusBadge = (s: SalesInvoice["status"]) => {
         const map = {
             Posted: "bg-green-50 text-green-700 border border-green-200",
@@ -215,15 +335,18 @@ function SalesInvoicesContent() {
                     </button>
                     <button
                         type="button"
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                        onClick={handlePrint}
+                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
                     >
                         <Printer className="h-3.5 w-3.5 text-[#A27B3A]" /> Print
                     </button>
                     <button
                         type="button"
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                        onClick={handleCopy}
+                        disabled={copying}
+                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-50"
                     >
-                        <Copy className="h-3.5 w-3.5 text-[#A27B3A]" /> Copy
+                        <Copy className="h-3.5 w-3.5 text-[#A27B3A]" /> {copying ? "Copying..." : "Copy"}
                     </button>
                 </div>
             </div>
@@ -314,10 +437,10 @@ function SalesInvoicesContent() {
 
                 {/* Data Table */}
                 <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
-                    <table className="w-full text-[12px] min-w-225 border-collapse">
+                    <table className="w-full text-[12px] min-w-275 border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
-                                <th className="w-10 px-3 py-2.5 text-center">
+                                <th className="w-8 px-2 py-2 text-center">
                                     <button
                                         type="button"
                                         onClick={toggleAll}
@@ -327,22 +450,23 @@ function SalesInvoicesContent() {
                                     </button>
                                 </th>
                                 {TABLE_COLS.map((col) => (
-                                    <th key={col} className="px-3 py-2.5 text-left font-semibold whitespace-nowrap">
+                                    <th key={col} className="px-2.5 py-2 text-left font-semibold whitespace-nowrap">
                                         {col}
                                     </th>
                                 ))}
+                                <th className="px-2.5 py-2 text-left font-semibold whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 1} className="py-10 text-center bg-white dark:bg-[#242424]">
+                                    <td colSpan={TABLE_COLS.length + 2} className="py-10 text-center bg-white dark:bg-[#242424]">
                                         <LogoSpinner label="Loading Sales Invoices..." className="mx-auto" />
                                     </td>
                                 </tr>
                             ) : paginated.length === 0 ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 1} className="py-12 text-center bg-white dark:bg-[#242424]">
+                                    <td colSpan={TABLE_COLS.length + 2} className="py-12 text-center bg-white dark:bg-[#242424]">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6EE]">
                                                 <FileText className="h-5 w-5 text-[#C69A52]" />
@@ -363,7 +487,7 @@ function SalesInvoicesContent() {
                                         )}
                                         onClick={() => toggleSelect(inv.id)}
                                     >
-                                        <td className="px-3 py-2.5 text-center">
+                                        <td className="px-2 py-2 text-center">
                                             <input
                                                 type="checkbox"
                                                 checked={selected.has(inv.id)}
@@ -372,7 +496,7 @@ function SalesInvoicesContent() {
                                                 className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer"
                                             />
                                         </td>
-                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">
+                                        <td className="px-2.5 py-2 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
@@ -384,17 +508,64 @@ function SalesInvoicesContent() {
                                                 {inv.invoiceNo}
                                             </button>
                                         </td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.customerNo}</td>
-                                        <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.customerName}</td>
-                                        <td className="px-3 py-2.5">{statusBadge(inv.status)}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclDisc)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
+                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af]">{inv.customerNo}</td>
+                                        <td className="px-2.5 py-2 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.customerName}</td>
+                                        <td className="px-2.5 py-2">{statusBadge(inv.status)}</td>
+                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
+                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclDisc)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.furtherTax)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtInclFT)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.advanceTax)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmtPercent(inv.advTaxPercent)}</td>
+                                        <td className="px-2.5 py-2 text-right font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.total)}</td>
+                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.fbrInvoiceNo}</td>
+                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.source}</td>
+                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.user}</td>
+                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.mappingId}</td>
+                                        <td className="px-2.5 py-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <button
+                                                    type="button"
+                                                    title="View"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.push(`/print/invoice/${inv.uuid}?view=1`);
+                                                    }}
+                                                    className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors"
+                                                >
+                                                    <Eye className="h-3.5 w-3.5" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    title="Copy"
+                                                    disabled={copying}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        copyInvoice(inv.uuid);
+                                                    }}
+                                                    className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors disabled:opacity-40"
+                                                >
+                                                    <Copy className="h-3.5 w-3.5" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    title="Print"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        printInvoices([inv.uuid]);
+                                                    }}
+                                                    className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors"
+                                                >
+                                                    <Printer className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             )}
