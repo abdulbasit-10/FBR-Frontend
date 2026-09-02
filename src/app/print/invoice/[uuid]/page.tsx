@@ -1,20 +1,27 @@
 "use client";
 
-import { useEffect, useState, use as usePromise } from "react";
+import { useEffect, useState, use as usePromise, Suspense } from "react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { invoicesService, type Invoice } from "@/lib/services/invoices.service";
 
 /**
  * Standalone printable invoice page (spec §6).
  * Includes the mandatory FBR Digital Invoicing System logo and a
  * QR Code (Version 2 / 25×25, 1.0 × 1.0 inch) encoding the FBR
- * invoice number. Auto-invokes window.print() on load.
+ * invoice number. Auto-invokes window.print() on load, unless opened
+ * with ?view=1 (used by the "View" row action) — in that mode it just
+ * shows the invoice with a manual Print button instead.
  */
-export default function PrintInvoicePage(
+function PrintInvoiceContent(
     { params }: { params: Promise<{ uuid: string }> },
 ) {
     const { uuid } = usePromise(params);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const isViewMode = searchParams.get("view") === "1";
     const [invoice, setInvoice] = useState<Invoice | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -26,11 +33,11 @@ export default function PrintInvoicePage(
     }, [uuid]);
 
     useEffect(() => {
-        if (invoice) {
+        if (invoice && !isViewMode) {
             const t = setTimeout(() => window.print(), 400);
             return () => clearTimeout(t);
         }
-    }, [invoice]);
+    }, [invoice, isViewMode]);
 
     if (error) {
         return (
@@ -60,6 +67,24 @@ export default function PrintInvoicePage(
             `}</style>
 
             <div className="mx-auto max-w-[820px] p-8 print:p-0">
+                {isViewMode && (
+                    <div className="no-print mb-5 flex items-center justify-between">
+                        <button
+                            type="button"
+                            onClick={() => router.back()}
+                            className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 hover:text-neutral-900"
+                        >
+                            <ArrowLeft className="h-4 w-4" /> View Invoice
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => window.print()}
+                            className="flex items-center gap-1.5 rounded bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700"
+                        >
+                            <Printer className="h-3.5 w-3.5" /> Print
+                        </button>
+                    </div>
+                )}
                 {/* ── HEADER ── */}
                 <header className="flex items-start justify-between border-b-2 border-neutral-800 pb-4">
                     <div>
@@ -184,10 +209,10 @@ export default function PrintInvoicePage(
                                     <td className="py-2 px-2 text-right font-medium">
                                         {fmt(
                                             Number(it.valueSalesExcludingST) +
-                                                Number(it.salesTaxApplicable) +
-                                                Number(it.furtherTax) +
-                                                Number(it.extraTax) +
-                                                Number(it.fedPayable),
+                                            Number(it.salesTaxApplicable) +
+                                            Number(it.furtherTax) +
+                                            Number(it.extraTax) +
+                                            Number(it.fedPayable),
                                         )}
                                     </td>
                                 </tr>
@@ -260,23 +285,35 @@ export default function PrintInvoicePage(
                     </span>
                 </footer>
 
-                <div className="no-print mt-6 flex justify-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => window.print()}
-                        className="rounded bg-neutral-900 px-5 py-2 text-xs font-medium text-white hover:bg-neutral-700"
-                    >
-                        Print
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => window.close()}
-                        className="rounded border border-neutral-300 px-5 py-2 text-xs font-medium hover:bg-neutral-50"
-                    >
-                        Close
-                    </button>
-                </div>
+                {!isViewMode && (
+                    <div className="no-print mt-6 flex justify-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => window.print()}
+                            className="rounded bg-neutral-900 px-5 py-2 text-xs font-medium text-white hover:bg-neutral-700"
+                        >
+                            Print
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => window.close()}
+                            className="rounded border border-neutral-300 px-5 py-2 text-xs font-medium hover:bg-neutral-50"
+                        >
+                            Close
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
+    );
+}
+
+export default function PrintInvoicePage(
+    { params }: { params: Promise<{ uuid: string }> },
+) {
+    return (
+        <Suspense fallback={null}>
+            <PrintInvoiceContent params={params} />
+        </Suspense>
     );
 }

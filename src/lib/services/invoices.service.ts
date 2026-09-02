@@ -64,6 +64,7 @@ export interface Invoice {
     updatedAt: string;
 
     customer?: InvoiceCustomerSummary;
+    creator?: { id: number; name: string } | null;
     items?: InvoiceItem[];
 }
 
