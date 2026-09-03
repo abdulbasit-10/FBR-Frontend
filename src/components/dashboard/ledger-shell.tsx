@@ -52,6 +52,7 @@ export interface LedgerShellProps {
     dateFromLabel?: string;
     dateToLabel?: string;
     filterHint?: string;
+    banner?: React.ReactNode;
     children: React.ReactNode; // rendered <tr> rows
 }
 
@@ -75,6 +76,7 @@ export function LedgerShell({
     dateFromLabel = "Posting date from",
     dateToLabel = "Posting date to",
     filterHint,
+    banner,
     children,
 }: LedgerShellProps) {
     const router = useRouter();
@@ -91,23 +93,29 @@ export function LedgerShell({
                     <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
                     {title}
                 </button>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                     <button
                         type="button"
                         onClick={() => { onRefresh(); toast.success("Ledger refreshed."); }}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
+                        className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
                     >
-                        <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
+                        <RefreshCw className="h-3 w-3 text-[#A27B3A]" /> Refresh
                     </button>
                     <button
                         type="button"
                         onClick={() => toast.success("Exported successfully.")}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs"
+                        className="flex h-8 items-center gap-1 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs"
                     >
-                        <Download className="h-3.5 w-3.5" /> Export
+                        <Download className="h-3 w-3" /> Export
                     </button>
                 </div>
             </div>
+
+            {banner && (
+                <div className="rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-[#FAF6F0] dark:bg-[#241d10] px-4 py-2.5 text-[12px] text-[#8a5f24] dark:text-[#c99d54]">
+                    {banner}
+                </div>
+            )}
 
             {/* ── Filters ── */}
             <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3">
@@ -175,7 +183,7 @@ export function LedgerShell({
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
                                 {columns.map((col) => (
-                                    <th key={col} className="px-3 py-2.5 text-left font-semibold whitespace-nowrap">{col}</th>
+                                    <th key={col} className="px-2.5 py-2 text-left font-semibold whitespace-nowrap">{col}</th>
                                 ))}
                             </tr>
                         </thead>

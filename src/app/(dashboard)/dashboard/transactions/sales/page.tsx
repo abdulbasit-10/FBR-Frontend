@@ -14,9 +14,11 @@ import {
     FileText,
     Square,
     Eye,
+    BookOpen,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import {
@@ -140,6 +142,7 @@ function SalesInvoicesContent() {
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
     const [copying, setCopying] = useState(false);
+    const [copyTargetUuid, setCopyTargetUuid] = useState<string | null>(null);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -284,7 +287,14 @@ function SalesInvoicesContent() {
         }
         const row = paginated.find((i) => selected.has(i.id));
         if (!row) return;
-        copyInvoice(row.uuid);
+        setCopyTargetUuid(row.uuid);
+    };
+
+    const confirmCopy = () => {
+        if (!copyTargetUuid) return;
+        const uuid = copyTargetUuid;
+        setCopyTargetUuid(null);
+        copyInvoice(uuid);
     };
 
     const statusBadge = (s: SalesInvoice["status"]) => {
@@ -301,65 +311,65 @@ function SalesInvoicesContent() {
     };
 
     return (
-        <div className="min-h-full space-y-4 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="min-h-full space-y-2.5 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Page Level Header Bar ── */}
-            <div className="flex items-center justify-between pb-1">
+            <div className="flex items-center justify-between pb-0.5">
                 <div className="flex items-center gap-1.5">
                     <button type="button" onClick={() => router.back()} className="cursor-pointer text-[#A27B3A] hover:opacity-75 transition-opacity">
                         <ChevronLeft className="h-5 w-5" />
                     </button>
                     <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]" style={{ fontFamily: "'Inter', sans-serif" }}>{status === "All" ? "All" : status} Sales Invoices</h1>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                     <button
                         type="button"
                         onClick={() => load(true)}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                        className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
                     >
-                        <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
+                        <RefreshCw className="h-3 w-3 text-[#A27B3A]" /> Refresh
                     </button>
                     <button
                         type="button"
                         onClick={() => router.push("/dashboard/sales/create-invoice")}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs"
+                        className="flex h-8 items-center gap-1 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs cursor-pointer"
                     >
-                        <Plus className="h-3.5 w-3.5" /> New
+                        <Plus className="h-3 w-3" /> New
                     </button>
                     <button
                         type="button"
                         onClick={toggleAll}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors"
+                        className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
                     >
-                        <CheckSquare className="h-3.5 w-3.5 text-[#A27B3A]" /> Select All
+                        <CheckSquare className="h-3 w-3 text-[#A27B3A]" /> Select All
                     </button>
                     <button
                         type="button"
                         onClick={handlePrint}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
+                        className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
                     >
-                        <Printer className="h-3.5 w-3.5 text-[#A27B3A]" /> Print
+                        <Printer className="h-3 w-3 text-[#A27B3A]" /> Print
                     </button>
                     <button
                         type="button"
                         onClick={handleCopy}
                         disabled={copying}
-                        className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] bg-white px-3.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-50"
+                        className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-50"
                     >
-                        <Copy className="h-3.5 w-3.5 text-[#A27B3A]" /> {copying ? "Copying..." : "Copy"}
+                        <Copy className="h-3 w-3 text-[#A27B3A]" /> {copying ? "Copying..." : "Copy"}
                     </button>
                 </div>
             </div>
 
             {/* ── SMTP warning banner ── */}
-            <div className="rounded-[6px] border border-[#F3D89A] dark:border-[#4a3010] bg-[#FFFBEB] dark:bg-[#1e1a08] px-4 py-2.5">
+            <div className="rounded-[6px] border border-[#F3D89A] dark:border-[#4a3010] bg-[#FFFBEB] dark:bg-[#1e1a08] px-3 py-1.5">
                 <p className="text-[11px] text-[#92590A] italic">
                     Email filter is hidden until SMTP is configured on the company profile.
                 </p>
             </div>
 
             {/* ── SECTION 1: FILTER CONTAINER ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3 min-h-43.25">
+            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2 min-h-38">
                 {/* Search Input Row */}
                 <div className="flex items-center gap-2">
                     <div className="flex-1 relative">
@@ -368,27 +378,27 @@ function SalesInvoicesContent() {
                             placeholder="Name, customer no, mapping id, NTN, STRN,"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
+                            className="h-9 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button
                         type="button"
                         onClick={() => setPage(1)}
-                        className="h-10 rounded-[6px] bg-[#C69A52] px-6 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors shadow-xs"
+                        className="h-9 rounded-[6px] bg-[#C69A52] px-5 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors shadow-xs cursor-pointer"
                     >
                         Search
                     </button>
                 </div>
 
                 {/* Filter Dropdowns Row */}
-                <div className="flex flex-wrap items-end gap-3 pt-1">
+                <div className="flex flex-wrap items-end gap-2.5 pt-0.5">
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Date from</label>
                         <input
                             type="date"
                             value={dateFrom}
                             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
+                            className="h-9 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
@@ -397,18 +407,18 @@ function SalesInvoicesContent() {
                             type="date"
                             value={dateTo}
                             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
+                            className="h-9 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] shadow-none scheme-light"
                         />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Status</label>
-                        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectStyle, "h-10 min-w-30")} style={selectArrow}>
+                        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={cn(selectStyle, "h-9 min-w-30")} style={selectArrow}>
                             {STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Source</label>
-                        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectStyle, "h-10 min-w-30")} style={selectArrow}>
+                        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className={cn(selectStyle, "h-9 min-w-30")} style={selectArrow}>
                             {SOURCE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
@@ -422,13 +432,13 @@ function SalesInvoicesContent() {
 
 
             {/* ── SECTION 2: TABLE & ACTIONS CONTAINER ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
+            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 shadow-xs space-y-2">
 
                 {/* Export & Row Info Bar */}
                 <div className="flex items-center justify-between">
                     <button
                         type="button"
-                        className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors"
+                        className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer"
                     >
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>
@@ -440,21 +450,21 @@ function SalesInvoicesContent() {
                     <table className="w-full text-[12px] min-w-275 border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
-                                <th className="w-8 px-2 py-2 text-center">
+                                <th className="w-8 px-2 py-1.5 text-center">
                                     <button
                                         type="button"
                                         onClick={toggleAll}
-                                        className="h-4 w-4 rounded-[3px] border border-white/60 bg-transparent flex items-center justify-center mx-auto hover:border-white transition-colors"
+                                        className="h-4 w-4 rounded-[3px] border border-white/60 bg-transparent flex items-center justify-center mx-auto hover:border-white transition-colors cursor-pointer"
                                     >
                                         <Square className="h-3 w-3 text-white fill-white/20" />
                                     </button>
                                 </th>
                                 {TABLE_COLS.map((col) => (
-                                    <th key={col} className="px-2.5 py-2 text-left font-semibold whitespace-nowrap">
+                                    <th key={col} className="px-2 py-1.5 text-left font-semibold whitespace-nowrap">
                                         {col}
                                     </th>
                                 ))}
-                                <th className="px-2.5 py-2 text-left font-semibold whitespace-nowrap">Actions</th>
+                                <th className="px-2 py-1.5 text-left font-semibold whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
@@ -487,7 +497,7 @@ function SalesInvoicesContent() {
                                         )}
                                         onClick={() => toggleSelect(inv.id)}
                                     >
-                                        <td className="px-2 py-2 text-center">
+                                        <td className="px-2 py-1.5 text-center">
                                             <input
                                                 type="checkbox"
                                                 checked={selected.has(inv.id)}
@@ -496,73 +506,73 @@ function SalesInvoicesContent() {
                                                 className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer"
                                             />
                                         </td>
-                                        <td className="px-2.5 py-2 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">
+                                        <td className="px-2 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     router.push(`/dashboard/transactions/sales/${inv.uuid}`);
                                                 }}
-                                                className="text-[#A27B3A] hover:underline font-semibold"
+                                                className="text-[#A27B3A] hover:underline font-semibold cursor-pointer"
                                             >
                                                 {inv.invoiceNo}
                                             </button>
                                         </td>
-                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af]">{inv.customerNo}</td>
-                                        <td className="px-2.5 py-2 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.customerName}</td>
-                                        <td className="px-2.5 py-2">{statusBadge(inv.status)}</td>
-                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
-                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclDisc)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.furtherTax)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtInclFT)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.advanceTax)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmtPercent(inv.advTaxPercent)}</td>
-                                        <td className="px-2.5 py-2 text-right font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.total)}</td>
-                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.fbrInvoiceNo}</td>
-                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.source}</td>
-                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.user}</td>
-                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.mappingId}</td>
-                                        <td className="px-2.5 py-2">
-                                            <div className="flex items-center gap-1.5">
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.customerNo}</td>
+                                        <td className="px-2 py-1.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.customerName}</td>
+                                        <td className="px-2 py-1.5">{statusBadge(inv.status)}</td>
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclDisc)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.furtherTax)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtInclFT)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.advanceTax)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmtPercent(inv.advTaxPercent)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.total)}</td>
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.fbrInvoiceNo}</td>
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.source}</td>
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.user}</td>
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.mappingId}</td>
+                                        <td className="px-2 py-1.5">
+                                            <div className="flex items-center gap-1">
                                                 <button
                                                     type="button"
-                                                    title="View"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        router.push(`/print/invoice/${inv.uuid}?view=1`);
-                                                    }}
-                                                    className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors"
-                                                >
-                                                    <Eye className="h-3.5 w-3.5" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    title="Copy"
+                                                    title="Copy to a new unposted invoice"
                                                     disabled={copying}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        copyInvoice(inv.uuid);
+                                                        setCopyTargetUuid(inv.uuid);
                                                     }}
-                                                    className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors disabled:opacity-40"
+                                                    className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
                                                 >
                                                     <Copy className="h-3.5 w-3.5" />
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    title="Print"
+                                                    title="Open customer ledger"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        printInvoices([inv.uuid]);
+                                                        router.push(`/dashboard/transactions/ledger/customer-ledger?invoiceUuid=${inv.uuid}`);
                                                     }}
-                                                    className="flex h-7 w-7 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors"
+                                                    className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
                                                 >
-                                                    <Printer className="h-3.5 w-3.5" />
+                                                    <BookOpen className="h-3.5 w-3.5" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    title="View invoice report"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.push(`/print/invoice/${inv.uuid}?view=1`);
+                                                    }}
+                                                    className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                                                >
+                                                    <Eye className="h-3.5 w-3.5" />
                                                 </button>
                                             </div>
                                         </td>
@@ -580,7 +590,7 @@ function SalesInvoicesContent() {
                         <select
                             value={rowsPerPage}
                             onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
+                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
                             style={selectArrow}
                         >
                             {ROW_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -590,7 +600,7 @@ function SalesInvoicesContent() {
                         <button
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </button>
@@ -601,7 +611,7 @@ function SalesInvoicesContent() {
                         <button
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
                             <ChevronRight className="h-4 w-4" />
                         </button>
@@ -609,6 +619,18 @@ function SalesInvoicesContent() {
                 </div>
 
             </div>
+
+            {/* ── Copy confirmation dialog ── */}
+            <ConfirmDialog
+                isOpen={copyTargetUuid !== null}
+                onClose={() => setCopyTargetUuid(null)}
+                onConfirm={confirmCopy}
+                title="Copy invoice?"
+                message="Create a new unposted sales invoice with the same customer and lines (today's document and posting dates)?"
+                confirmLabel="Copy"
+                isLoading={copying}
+                loadingLabel="Copying..."
+            />
         </div>
     );
 }
