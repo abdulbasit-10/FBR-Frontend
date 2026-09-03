@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -125,6 +126,9 @@ function SalesReturnContent() {
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    const [posting, setPosting] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -169,6 +173,53 @@ function SalesReturnContent() {
         router.push(`/dashboard/transactions/sales/returns/create?originalUuid=${inv.uuid}`);
     };
 
+    const handlePost = async () => {
+        const targets = paginated.filter((r) => selected.has(r.id) && r.status === "UnPosted");
+        if (targets.length === 0) {
+            toast.error("Select at least one unposted return to post.");
+            return;
+        }
+        setPosting(true);
+        let ok = 0, failed = 0;
+        for (const r of targets) {
+            try {
+                const res = await invoicesService.submit(r.uuid, "post");
+                if (res.data.status === "posted") ok++; else failed++;
+            } catch {
+                failed++;
+            }
+        }
+        setPosting(false);
+        setSelected(new Set());
+        if (ok > 0) toast.success(`${ok} sales return${ok > 1 ? "s" : ""} posted to FBR.`);
+        if (failed > 0) toast.error(`${failed} return${failed > 1 ? "s" : ""} failed to post.`);
+        load(false);
+    };
+
+    const handleDelete = async () => {
+        const targets = paginated.filter((r) => selected.has(r.id) && r.status !== "Posted");
+        setShowDeleteConfirm(false);
+        if (targets.length === 0) {
+            toast.error("Posted returns cannot be deleted.");
+            return;
+        }
+        setDeleting(true);
+        let ok = 0, failed = 0;
+        for (const r of targets) {
+            try {
+                await invoicesService.remove(r.uuid);
+                ok++;
+            } catch {
+                failed++;
+            }
+        }
+        setDeleting(false);
+        setSelected(new Set());
+        if (ok > 0) toast.success(`${ok} sales return${ok > 1 ? "s" : ""} deleted.`);
+        if (failed > 0) toast.error(`${failed} return${failed > 1 ? "s" : ""} failed to delete.`);
+        load(false);
+    };
+
     const statusBadge = (s: SalesReturn["status"]) => {
         const map = { Posted: "bg-green-50 text-green-700 border border-green-200", UnPosted: "bg-yellow-50 text-yellow-700 border border-yellow-200", Cancelled: "bg-red-50 text-red-600 border border-red-200" };
         return <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold", map[s])}>{s}</span>;
@@ -195,11 +246,11 @@ function SalesReturnContent() {
                     <button type="button" onClick={toggleAll} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer">
                         <CheckSquare className="h-3 w-3 text-[#A27B3A]" /> Select All
                     </button>
-                    <button type="button" disabled={selected.size === 0} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                        <Send className="h-3 w-3 text-[#A27B3A]" /> Post
+                    <button type="button" disabled={selected.size === 0 || posting} onClick={handlePost} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                        <Send className="h-3 w-3 text-[#A27B3A]" /> {posting ? "Posting..." : "Post"}
                     </button>
-                    <button type="button" disabled={selected.size === 0} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                        <Trash2 className="h-3 w-3 text-[#A27B3A]" /> Delete
+                    <button type="button" disabled={selected.size === 0 || deleting} onClick={() => setShowDeleteConfirm(true)} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                        <Trash2 className="h-3 w-3 text-[#A27B3A]" /> {deleting ? "Deleting..." : "Delete"}
                     </button>
                 </div>
             </div>
@@ -428,6 +479,17 @@ function SalesReturnContent() {
             </div>
 
             <SelectInvoiceModal isOpen={showInvoiceModal} onClose={() => setShowInvoiceModal(false)} onSelect={handleInvoiceSelect} />
+
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                title="Delete selected returns?"
+                message="Draft/failed returns will be permanently removed. Posted returns in the selection will be skipped."
+                confirmLabel="Delete"
+                isLoading={deleting}
+                loadingLabel="Deleting..."
+            />
         </div>
     );
 }
