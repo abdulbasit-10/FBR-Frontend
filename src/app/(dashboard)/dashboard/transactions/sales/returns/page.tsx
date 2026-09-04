@@ -21,6 +21,7 @@ import {
     type InvoiceStatus,
     type InvoiceListQuery,
 } from "@/lib/services";
+import { exportRowsToExcel } from "@/lib/export";
 
 interface SalesReturn {
     id: number;
@@ -173,6 +174,22 @@ function SalesReturnContent() {
         router.push(`/dashboard/transactions/sales/returns/create?originalUuid=${inv.uuid}`);
     };
 
+    const handleExport = () => {
+        if (paginated.length === 0) {
+            toast.error("No sales returns to export.");
+            return;
+        }
+        const rows = paginated.map((r) => [
+            r.returnNo, r.originalId, r.customerNo, r.customerName, r.status,
+            r.docDate, r.postingDate, r.assessedValue,
+            r.amtExclDisc, r.discount, r.amtExclST, r.salesTax, r.amtInclST,
+            r.furtherTax, r.amtInclFT, r.advanceTax, r.advTaxPercent, r.total,
+            r.fbrInvoiceNo, r.source, r.user, r.mappingId,
+        ]);
+        exportRowsToExcel("Sales_Returns", TABLE_COLS, rows);
+        toast.success("Sales returns exported.");
+    };
+
     const handlePost = async () => {
         const targets = paginated.filter((r) => selected.has(r.id) && r.status === "UnPosted");
         if (targets.length === 0) {
@@ -314,6 +331,7 @@ function SalesReturnContent() {
                 <div className="flex items-center justify-between">
                     <button
                         type="button"
+                        onClick={handleExport}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer"
                     >
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
