@@ -16,6 +16,7 @@ import {
     type Purchase as ApiPurchase,
     type PurchaseStatus,
 } from "@/lib/services";
+import { exportRowsToExcel } from "@/lib/export";
 
 interface PurchaseInvoice {
     id: number;
@@ -159,6 +160,22 @@ function PurchaseInvoiceContent() {
     const toggleAll = () =>
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((i) => i.id)));
 
+    const handleExport = () => {
+        if (paginated.length === 0) {
+            toast.error("No purchase invoices to export.");
+            return;
+        }
+        const exportCols = COLUMNS.filter((c) => c !== "Actions");
+        const rows = paginated.map((inv) => [
+            inv.invoiceNo, inv.vendorNo, inv.vendorName, inv.vendorInvoiceNo,
+            inv.status, inv.source, inv.user, inv.docDate, inv.postingDate,
+            inv.assessedValue, inv.discount, inv.amtExclST, inv.salesTax, inv.amtInclST,
+            inv.furtherTax, inv.amtInclFT, inv.advanceTax, inv.advTaxPercent, inv.total,
+        ]);
+        exportRowsToExcel("Purchase_Invoices", exportCols, rows);
+        toast.success("Purchase invoices exported.");
+    };
+
     return (
         <TransactionListShell
             title={`${status === "All" ? "All" : status} Purchase Invoices`}
@@ -197,6 +214,7 @@ function PurchaseInvoiceContent() {
             source={source} onSourceChange={setSource}
             rowsPerPage={rowsPerPage} onRowsPerPageChange={setRowsPerPage}
             page={page} totalPages={totalPages} onPageChange={setPage}
+            onExport={handleExport}
         >
             {paginated.map((inv, i) => (
                 <tr key={inv.id}

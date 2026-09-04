@@ -69,6 +69,7 @@ export interface TransactionListShellProps {
     page: number;
     totalPages: number;
     onPageChange: (p: number) => void;
+    onExport?: () => void;
     children: React.ReactNode;
 }
 
@@ -93,6 +94,7 @@ export function TransactionListShell({
     source, onSourceChange,
     rowsPerPage, onRowsPerPageChange,
     page, totalPages, onPageChange,
+    onExport,
     children,
 }: TransactionListShellProps) {
     const router = useRouter();
@@ -166,7 +168,7 @@ export function TransactionListShell({
             {/* ── Table card ── */}
             <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                    <button type="button" onClick={() => toast.success("Exported successfully.")}
+                    <button type="button" onClick={() => (onExport ? onExport() : toast.success("Exported successfully."))}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>
