@@ -59,9 +59,9 @@ function NavItemComponent({
   const isActive = isActiveLeaf || isActiveParent;
   const Icon = item.icon;
 
-  const pl = depth === 0 ? "px-3" : depth === 1 ? "pl-5 pr-3" : "pl-8 pr-3";
-  const textSize = depth >= 2 ? "text-[12px]" : "text-[13px]";
-  const iconSize = depth >= 2 ? "h-3.5 w-3.5" : "h-4 w-4";
+  const pl = depth === 0 ? "px-2.5" : depth === 1 ? "pl-4 pr-2.5" : "pl-7 pr-2.5";
+  const textSize = depth >= 2 ? "text-[11.5px]" : "text-[12.5px]";
+  const iconSize = depth >= 1 ? "h-3.5 w-3.5" : "h-4 w-4";
 
   const activeCls =
     isActive && depth === 0 ? "bg-[#d4ad68] text-white" :
@@ -92,7 +92,7 @@ function NavItemComponent({
         href={hasChildren ? "#" : item.href}
         onClick={handleClick}
         className={cn(
-          "group flex items-center gap-2.5 py-2 rounded font-medium transition-colors",
+          "group flex items-center gap-2 py-1.5 rounded font-medium transition-colors",
           pl, textSize, activeCls,
           !isActive && "hover:bg-[#f7f2e8] dark:hover:bg-[#2a2a2a]",
           collapsed && depth === 0 && "justify-center px-2",
@@ -111,7 +111,7 @@ function NavItemComponent({
       </Link>
 
       {!collapsed && hasChildren && isExpanded && (
-        <div className={cn("flex flex-col gap-0.5 mt-0.5", depth === 0 && "border-l border-[#F3EAD8] dark:border-[#3a2a1a] ml-5")}>
+        <div className={cn("flex flex-col gap-0.5 mt-0.5", depth === 0 && "border-l border-[#F3EAD8] dark:border-[#3a2a1a] ml-4")}>
           {item.children!.map((child) => {
             const childHasChildren = !!child.children?.length;
             return (
@@ -186,9 +186,9 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
 
       {/* Scrollable nav area */}
       <div className="flex flex-1 flex-col overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
-        <div className="py-4">
-          <p className={cn("px-5 pb-2.5 text-[10px] font-medium tracking-wide text-[#9aa2ac] dark:text-[#555]", collapsed && "sr-only")}>MENU</p>
-          <nav className={cn("flex flex-col gap-1.5 px-4", collapsed && "px-2")}>
+        <div className="py-2.5">
+          <p className={cn("px-4 pb-1.5 text-[10px] font-medium tracking-wide text-[#9aa2ac] dark:text-[#555]", collapsed && "sr-only")}>MENU</p>
+          <nav className={cn("flex flex-col gap-1 px-3", collapsed && "px-2")}>
             {primaryNav.map((item) => (
               <NavItemComponent
                 key={item.href}
@@ -203,8 +203,8 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
         </div>
 
         {/* Bottom logo â€” anchored to bottom with mt-auto */}
-        <div className="mt-auto shrink-0 border-t border-[#eeeeee] dark:border-[#2e2e2e] px-4 py-4">
-          <div className="relative h-12 w-full">
+        <div className="mt-auto shrink-0 border-t border-[#eeeeee] dark:border-[#2e2e2e] px-3 py-2.5">
+          <div className="relative h-9 w-full">
             <Image src="/brand/lOGO.ai.svg" alt="Encova Solutions" fill sizes="180px" className="object-contain object-left" />
           </div>
         </div>
