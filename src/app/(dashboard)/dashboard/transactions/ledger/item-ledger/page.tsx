@@ -70,12 +70,12 @@ export default function ItemLedgerPage() {
         setRows([]);
         const docTypeParam: LedgerDocumentType | undefined =
             docType === "All" ? undefined :
-            docType === "Sales Invoice" ? "Sales Invoice" :
-            docType === "Sales Return" ? "Debit Note" :
-            docType === "Purchase Invoice" ? "Purchase Invoice" :
-            docType === "Purchase Return" ? "Purchase Return" :
-            docType === "Inventory Adjustment" ? "Inventory Adjustment" :
-            undefined;
+                docType === "Sales Invoice" ? "Sales Invoice" :
+                    docType === "Sales Return" ? "Debit Note" :
+                        docType === "Purchase Invoice" ? "Purchase Invoice" :
+                            docType === "Purchase Return" ? "Purchase Return" :
+                                docType === "Inventory Adjustment" ? "Inventory Adjustment" :
+                                    undefined;
         ledgerService.items({
             from: dateFrom || undefined,
             to: dateTo || undefined,
