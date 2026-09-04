@@ -5,6 +5,7 @@ import { X, Search, RefreshCw, ChevronLeft, ChevronRight, Package } from "lucide
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { productsService, type Product } from "@/lib/services";
 
 export interface Item {
     id: number;
@@ -16,6 +17,7 @@ export interface Item {
     saleType: string;
     tax: number;
     unitPrice: number;
+    uom: string;
 }
 
 interface SelectItemModalProps {
@@ -24,15 +26,21 @@ interface SelectItemModalProps {
     onSelect: (item: Item) => void;
 }
 
-const MOCK_ITEMS: Item[] = [
-    { id: 1, itemNo: "ITEM-001", name: "Laptop 15\"", type: "Finished Goods", hsCode: "8471.30", category: "Electronics", saleType: "Taxable", tax: 17, unitPrice: 95000 },
-    { id: 2, itemNo: "ITEM-002", name: "Mobile Phone", type: "Finished Goods", hsCode: "8517.12", category: "Electronics", saleType: "Taxable", tax: 17, unitPrice: 52000 },
-    { id: 3, itemNo: "ITEM-003", name: "Plastic Casing", type: "Raw Material", hsCode: "3926.90", category: "Packaging", saleType: "Taxable", tax: 17, unitPrice: 320 },
-    { id: 4, itemNo: "ITEM-004", name: "Steel Sheet", type: "Raw Material", hsCode: "7204.10", category: "Metal", saleType: "Exempt", tax: 0, unitPrice: 0 },
-    { id: 5, itemNo: "ITEM-005", name: "Assembly Service", type: "Service", hsCode: "9987.00", category: "Services", saleType: "Taxable", tax: 13, unitPrice: 5000 },
-];
+// Map the real backend Product model onto this modal's display shape (mirrors items/page.tsx).
+const toDisplayItem = (p: Product): Item => ({
+    id: p.id,
+    itemNo: `I-${String(p.id).padStart(6, "0")}`,
+    name: p.name,
+    type: p.itemType ?? "Goods",
+    hsCode: p.hsCode,
+    category: p.itemCategory ?? p.description ?? "—",
+    saleType: p.saleType,
+    tax: Number(p.rateValue ?? 0),
+    unitPrice: Number(p.unitPrice ?? 0),
+    uom: p.uom,
+});
 
-const TYPE_OPTIONS = ["All", "Finished Goods", "Raw Material", "Semi-Finished", "Service", "Consumable"];
+const TYPE_OPTIONS = ["All", "Goods", "Service", "Digital", "Raw Material", "Finished Goods"];
 const PAGE_SIZE = 10;
 
 const selectArrow = {
@@ -54,16 +62,18 @@ export function SelectItemModal({ isOpen, onClose, onSelect }: SelectItemModalPr
 
     const loadItems = useCallback(() => {
         setIsLoading(true); setItems([]);
-        const t = setTimeout(() => { setItems(MOCK_ITEMS); setIsLoading(false); }, 1000);
-        return () => clearTimeout(t);
+        productsService.list({ limit: 200 })
+            .then((res) => setItems(res.data.rows.map(toDisplayItem)))
+            .catch(() => setItems([]))
+            .finally(() => setIsLoading(false));
     }, []);
 
     useEffect(() => {
         if (isOpen) {
             setSearchQuery(""); setTypeFilter("All"); setPage(1);
-            const cleanup = loadItems();
+            loadItems();
             const ft = setTimeout(() => searchInputRef.current?.focus(), 80);
-            return () => { cleanup(); clearTimeout(ft); };
+            return () => clearTimeout(ft);
         }
     }, [isOpen, loadItems]);
 

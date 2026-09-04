@@ -3,16 +3,20 @@
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, RotateCcw, Save, Plus, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SelectItemModal, type Item } from "@/components/dashboard/select-item-modal";
+import { inventoryAdjustmentsService } from "@/lib/services";
 import { cn } from "@/lib/utils";
 
 interface LineItem {
     id: string;
+    productId: number | null;
     itemNo: string;
     itemName: string;
+    uom: string;
     qty: number;
     unitCost: number;
 }
@@ -22,7 +26,7 @@ const fmt = (n: number) => n.toLocaleString("en-PK", { minimumFractionDigits: 2,
 const inputCls =
     "h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] !bg-white dark:!bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] dark:placeholder:text-[#555] focus:outline-none focus:ring-0 focus:border-[#C69A52] shadow-none [color-scheme:light] dark:[color-scheme:dark]";
 
-const emptyLine = (): LineItem => ({ id: crypto.randomUUID(), itemNo: "", itemName: "", qty: 1, unitCost: 0 });
+const emptyLine = (): LineItem => ({ id: crypto.randomUUID(), productId: null, itemNo: "", itemName: "", uom: "", qty: 1, unitCost: 0 });
 
 export default function NewInventoryAdjustmentPage() {
     const router = useRouter();
@@ -32,6 +36,7 @@ export default function NewInventoryAdjustmentPage() {
     const [showResetConfirm, setShowResetConfirm] = useState(false);
     const [showItemModal, setShowItemModal] = useState(false);
     const [activeLineId, setActiveLineId] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
 
     const linesWithItem = lines.filter((l) => l.itemNo !== "");
     const totalAbsQty = lines.reduce((sum, l) => sum + Math.abs(l.qty), 0);
@@ -40,7 +45,7 @@ export default function NewInventoryAdjustmentPage() {
         setLines((prev) =>
             prev.map((l) =>
                 l.id === activeLineId
-                    ? { ...l, itemNo: item.itemNo, itemName: item.name, unitCost: item.unitPrice }
+                    ? { ...l, productId: item.id, itemNo: item.itemNo, itemName: item.name, uom: item.uom, unitCost: item.unitPrice }
                     : l
             )
         );
@@ -67,47 +72,80 @@ export default function NewInventoryAdjustmentPage() {
         setShowResetConfirm(false);
     };
 
+    const handleSave = async () => {
+        if (!documentDate || !postingDate) {
+            toast.error("Please fill Document Date and Posting Date.");
+            return;
+        }
+        if (linesWithItem.length === 0) {
+            toast.error("Select at least one item.");
+            return;
+        }
+        setSaving(true);
+        try {
+            await inventoryAdjustmentsService.create({
+                docDate: documentDate,
+                postingDate,
+                items: linesWithItem.map((l) => ({
+                    productId: l.productId,
+                    productDescription: l.itemName,
+                    uom: l.uom || "Numbers, pieces, units",
+                    quantity: l.qty,
+                    unitCost: l.unitCost,
+                })),
+            });
+            toast.success("Inventory adjustment saved as draft.");
+            router.push("/dashboard/transactions/inventory-adjustment");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to save adjustment.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
     return (
         <>
-            <div className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <div className="min-h-full space-y-2.5 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
                 {/* ── Top Navigation / Header ── */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-0.5">
                     <button
                         onClick={() => router.back()}
-                        className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity"
+                        className="flex items-center gap-1.5 text-[16px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity"
                     >
-                        <ChevronLeft className="h-5 w-5 text-[#A27B3A]" />
+                        <ChevronLeft className="h-4.5 w-4.5 text-[#A27B3A]" />
                         <span>New Inventory Adjustment</span>
                     </button>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         <button
                             type="button"
                             onClick={() => setShowResetConfirm(true)}
-                            className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors"
+                            className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer"
                         >
-                            <RotateCcw className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
+                            <RotateCcw className="h-3 w-3 text-[#A27B3A]" /> Reset
                         </button>
                         <button
                             type="button"
-                            className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-5 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs"
+                            disabled={saving}
+                            onClick={handleSave}
+                            className="flex h-8 items-center gap-1 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs cursor-pointer disabled:opacity-50"
                         >
-                            <Save className="h-3.5 w-3.5" /> Save
+                            <Save className="h-3 w-3" /> {saving ? "Saving..." : "Save"}
                         </button>
                     </div>
                 </div>
 
                 {/* ── CARD 1: ADJUSTMENT HEADER ── */}
-                <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] p-4 sm:p-5 shadow-xs space-y-4">
+                <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] p-3 shadow-xs space-y-2.5">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">
                         Adjustment Header
                     </p>
 
-                    <div className="grid gap-6 grid-cols-1 lg:grid-cols-[1fr_260px] items-start">
+                    <div className="grid gap-2.5 grid-cols-1 lg:grid-cols-[1fr_220px] items-start">
                         {/* Date Inputs */}
-                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                            <div className="space-y-1.5">
+                        <div className="grid gap-2.5 grid-cols-1 sm:grid-cols-2">
+                            <div className="space-y-1">
                                 <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                                     Document Date <span className="text-[#A27B3A]">*</span>
                                 </Label>
@@ -118,7 +156,7 @@ export default function NewInventoryAdjustmentPage() {
                                     className={inputCls}
                                 />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <Label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af]">
                                     Posting Date <span className="text-[#A27B3A]">*</span>
                                 </Label>
@@ -132,11 +170,11 @@ export default function NewInventoryAdjustmentPage() {
                         </div>
 
                         {/* Summary Box */}
-                        <div className="rounded-[10px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-[#FAF6F0]/60 dark:bg-[#2a2a2a] p-4">
-                            <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">
+                        <div className="rounded-[8px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-[#FAF6F0]/60 dark:bg-[#2a2a2a] p-2.5">
+                            <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">
                                 Summary
                             </p>
-                            <div className="space-y-2 text-[12px]">
+                            <div className="space-y-1 text-[12px]">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[#4F5967] dark:text-[#9ca3af]">Lines with item</span>
                                     <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{linesWithItem.length}</span>
@@ -150,32 +188,30 @@ export default function NewInventoryAdjustmentPage() {
                     </div>
                 </div>
 
-                {/* ── CARD 2: STANDALONE SELECT ITEMS CARD ── */}
-                <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] p-6 shadow-xs flex justify-center items-center">
-                    <button
-                        type="button"
-                        onClick={() => { setActiveLineId(lines[lines.length - 1].id); setShowItemModal(true); }}
-                        className="rounded-[6px] border border-[#C69A52] px-12 py-2 text-[12px] font-medium text-[#C69A52] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors"
-                    >
-                        Select Items
-                    </button>
-                </div>
+                {/* ── CARD 2: ITEMS TABLE CARD ── */}
+                <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] p-3 shadow-xs space-y-2.5">
 
-                {/* ── CARD 3: ITEMS TABLE CARD (Figma: Frame 2147223902) ── */}
-                <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1e1e1e] p-4 sm:p-5 shadow-xs space-y-3">
-
-                    {/* Card Header: ITEMS title on left + Add Line button on right */}
+                    {/* Card Header: ITEMS title on left + Select Items / Add Line on right */}
                     <div className="flex items-center justify-between">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">
                             Items
                         </p>
-                        <button
-                            type="button"
-                            onClick={addLine}
-                            className="flex items-center gap-1.5 rounded-[5px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-3 py-1 text-[11px] font-medium text-[#424B56] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors"
-                        >
-                            <Plus className="h-3 w-3 text-[#A27B3A]" /> Add line
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                type="button"
+                                onClick={() => { setActiveLineId(lines[lines.length - 1].id); setShowItemModal(true); }}
+                                className="flex items-center gap-1 rounded-[5px] border border-[#C69A52] bg-white dark:bg-[#1e1e1e] px-2.5 py-1 text-[11px] font-medium text-[#C69A52] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer"
+                            >
+                                Select Items
+                            </button>
+                            <button
+                                type="button"
+                                onClick={addLine}
+                                className="flex items-center gap-1 rounded-[5px] border border-[#E3D2BA] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-2.5 py-1 text-[11px] font-medium text-[#424B56] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer"
+                            >
+                                <Plus className="h-3 w-3 text-[#A27B3A]" /> Add line
+                            </button>
+                        </div>
                     </div>
 
                     {/* Table Container */}
@@ -183,7 +219,7 @@ export default function NewInventoryAdjustmentPage() {
                         <div className="min-w-[650px]">
 
                             {/* Figma Yellow/Gold Table Header */}
-                            <div className="flex items-center bg-[#C69A52] px-3 py-2.5 gap-2 text-white text-[12px] font-semibold">
+                            <div className="flex items-center bg-[#C69A52] px-3 py-1.5 gap-2 text-white text-[12px] font-semibold">
                                 <div className="w-12 shrink-0" />
                                 <span className="w-8 shrink-0">#</span>
                                 <span className="flex-1 min-w-0">Item no</span>
@@ -200,7 +236,7 @@ export default function NewInventoryAdjustmentPage() {
                                         <div
                                             key={line.id}
                                             className={cn(
-                                                "flex items-center gap-2 px-3 py-2 text-[12px]",
+                                                "flex items-center gap-2 px-3 py-1.5 text-[12px]",
                                                 i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]"
                                             )}
                                         >
@@ -209,14 +245,14 @@ export default function NewInventoryAdjustmentPage() {
                                                 <button
                                                     type="button"
                                                     onClick={addLine}
-                                                    className="flex h-6 w-6 items-center justify-center rounded text-[#C69A52] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors"
+                                                    className="flex h-6 w-6 items-center justify-center rounded text-[#C69A52] hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => removeLine(line.id)}
-                                                    className="flex h-6 w-6 items-center justify-center rounded text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                                                    className="flex h-6 w-6 items-center justify-center rounded text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                                                 >
                                                     <Trash2 className="h-3.5 w-3.5" />
                                                 </button>
@@ -231,7 +267,7 @@ export default function NewInventoryAdjustmentPage() {
                                                     type="button"
                                                     onClick={() => openItemModal(line.id)}
                                                     className={cn(
-                                                        "text-left text-[12px] transition-colors truncate",
+                                                        "text-left text-[12px] transition-colors truncate cursor-pointer",
                                                         line.itemNo
                                                             ? "text-[#1E293B] dark:text-[#f0f0f0] font-medium hover:text-[#C69A52]"
                                                             : "text-[#9CA3AF] dark:text-[#555] hover:text-[#C69A52]"
@@ -248,7 +284,7 @@ export default function NewInventoryAdjustmentPage() {
                                                     min={0}
                                                     value={line.qty}
                                                     onChange={(e) => updateLine(line.id, "qty", Number(e.target.value))}
-                                                    className="w-16 h-8 rounded-[5px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 text-center text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52]"
+                                                    className="w-16 h-7 rounded-[5px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 text-center text-[12px] text-[#1E293B] dark:text-[#f0f0f0] focus:outline-none focus:border-[#C69A52]"
                                                 />
                                             </div>
 

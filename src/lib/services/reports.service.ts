@@ -34,11 +34,13 @@ export interface SalesReportRow {
     // customer grouping
     customerId?: number;
     buyerBusinessName?: string;
+    count?: number;
+    total?: number;
     // product grouping
     productId?: number;
     productDescription?: string;
     qty?: number;
-    sales: number;
+    sales?: number;
     salesTax: number;
 }
 

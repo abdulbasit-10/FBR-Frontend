@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LedgerShell, fmt } from "@/components/dashboard/ledger-shell";
 import {
@@ -47,6 +48,14 @@ const COLUMNS = [
 ];
 
 export default function VendorLedgerPage() {
+    return <Suspense fallback={null}><VendorLedgerContent /></Suspense>;
+}
+
+function VendorLedgerContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const purchaseUuid = searchParams.get("purchaseUuid");
+
     const [search, setSearch] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
@@ -60,6 +69,14 @@ export default function VendorLedgerPage() {
     const load = useCallback(() => {
         setIsLoading(true);
         setRows([]);
+        if (purchaseUuid) {
+            purchasesService
+                .getOne(purchaseUuid)
+                .then((res) => setRows([toRow(res.data)]))
+                .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load."))
+                .finally(() => setIsLoading(false));
+            return;
+        }
         purchasesService.list({
             page,
             limit: rowsPerPage,
@@ -71,14 +88,16 @@ export default function VendorLedgerPage() {
             .then((res) => setRows(res.data.rows.map(toRow)))
             .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load vendor ledger."))
             .finally(() => setIsLoading(false));
-    }, [page, rowsPerPage, search, dateFrom, dateTo]);
+    }, [page, rowsPerPage, search, dateFrom, dateTo, purchaseUuid]);
 
     useEffect(() => load(), [load]);
 
-    const filtered = rows.filter((r) =>
-        (docType === "All" || r.documentType === docType) &&
-        (vendorType === "All" || r.vendorType === vendorType)
-    );
+    const filtered = purchaseUuid
+        ? rows
+        : rows.filter((r) =>
+            (docType === "All" || r.documentType === docType) &&
+            (vendorType === "All" || r.vendorType === vendorType)
+        );
     const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
     const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
@@ -92,6 +111,20 @@ export default function VendorLedgerPage() {
             emptyMessage="No ledger rows match the current filters."
             isLoading={isLoading}
             hasRows={paginated.length > 0}
+            banner={purchaseUuid ? (
+                <div className="flex items-center justify-between">
+                    <span>
+                        Filtered to one document. Purchase Invoice · ID {purchaseUuid}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => router.push("/dashboard/transactions/ledger/vendor-ledger")}
+                        className="font-semibold underline hover:opacity-75"
+                    >
+                        Clear filter
+                    </button>
+                </div>
+            ) : undefined}
             search={search} onSearchChange={setSearch}
             dateFrom={dateFrom} onDateFromChange={setDateFrom}
             dateTo={dateTo} onDateToChange={setDateTo}

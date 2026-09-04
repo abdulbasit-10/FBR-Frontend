@@ -21,6 +21,7 @@ import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
+import { exportRowsToExcel } from "@/lib/export";
 import {
     invoicesService,
     type Invoice as ApiInvoice,
@@ -290,6 +291,22 @@ function SalesInvoicesContent() {
         setCopyTargetUuid(row.uuid);
     };
 
+    const handleExport = () => {
+        if (paginated.length === 0) {
+            toast.error("No invoices to export.");
+            return;
+        }
+        const rows = paginated.map((inv) => [
+            inv.invoiceNo, inv.customerNo, inv.customerName, inv.status,
+            inv.docDate, inv.postingDate, inv.assessedValue,
+            inv.amtExclDisc, inv.discount, inv.amtExclST, inv.salesTax, inv.amtInclST,
+            inv.furtherTax, inv.amtInclFT, inv.advanceTax, inv.advTaxPercent, inv.total,
+            inv.fbrInvoiceNo, inv.source, inv.user, inv.mappingId,
+        ]);
+        exportRowsToExcel("Sales_Invoices", TABLE_COLS, rows);
+        toast.success("Sales invoices exported.");
+    };
+
     const confirmCopy = () => {
         if (!copyTargetUuid) return;
         const uuid = copyTargetUuid;
@@ -438,6 +455,7 @@ function SalesInvoicesContent() {
                 <div className="flex items-center justify-between">
                     <button
                         type="button"
+                        onClick={handleExport}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer"
                     >
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export

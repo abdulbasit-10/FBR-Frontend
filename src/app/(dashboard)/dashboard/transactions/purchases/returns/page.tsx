@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { RefreshCw, Plus } from "lucide-react";
+import { RefreshCw, Plus, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 import {
@@ -15,6 +15,7 @@ import {
     SelectPurchaseInvoiceModal,
     type PurchaseInvoiceForReturn,
 } from "@/components/dashboard/select-purchase-invoice-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
     purchasesService,
     type Purchase as ApiPurchase,
@@ -96,6 +97,9 @@ function PurchaseReturnContent() {
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
     const [showModal, setShowModal] = useState(false);
+    const [posting, setPosting] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -152,12 +156,55 @@ function PurchaseReturnContent() {
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((r) => r.id)));
 
     const handleInvoiceSelect = (inv: PurchaseInvoiceForReturn) => {
-        const params = new URLSearchParams({
-            invoiceNo: inv.invoiceNo, vendor: inv.vendor,
-            vendorNo: inv.vendorNo, docDate: inv.docDate,
-            assessed: String(inv.assessed), discount: String(inv.discount),
-        });
+        const params = new URLSearchParams({ originalUuid: inv.uuid });
         router.push(`/dashboard/transactions/purchases/returns/create?${params.toString()}`);
+    };
+
+    const handlePost = async () => {
+        const targets = paginated.filter((r) => selected.has(r.id) && r.status === "UnPosted");
+        if (targets.length === 0) {
+            toast.error("Select at least one unposted return to post.");
+            return;
+        }
+        setPosting(true);
+        let ok = 0, failed = 0;
+        for (const r of targets) {
+            try {
+                await purchasesService.post(r.uuid);
+                ok++;
+            } catch {
+                failed++;
+            }
+        }
+        setPosting(false);
+        setSelected(new Set());
+        if (ok > 0) toast.success(`${ok} purchase return${ok > 1 ? "s" : ""} posted.`);
+        if (failed > 0) toast.error(`${failed} return${failed > 1 ? "s" : ""} failed to post.`);
+        load(false);
+    };
+
+    const handleDelete = async () => {
+        const targets = paginated.filter((r) => selected.has(r.id) && r.status !== "Posted");
+        setShowDeleteConfirm(false);
+        if (targets.length === 0) {
+            toast.error("Posted returns cannot be deleted.");
+            return;
+        }
+        setDeleting(true);
+        let ok = 0, failed = 0;
+        for (const r of targets) {
+            try {
+                await purchasesService.remove(r.uuid);
+                ok++;
+            } catch {
+                failed++;
+            }
+        }
+        setDeleting(false);
+        setSelected(new Set());
+        if (ok > 0) toast.success(`${ok} purchase return${ok > 1 ? "s" : ""} deleted.`);
+        if (failed > 0) toast.error(`${failed} return${failed > 1 ? "s" : ""} failed to delete.`);
+        load(false);
     };
 
     return (
@@ -168,6 +215,12 @@ function PurchaseReturnContent() {
                 headerActions={<>
                     <button type="button" onClick={() => load(true)} className={`h-9 ${btnOutline}`}>
                         <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
+                    </button>
+                    <button type="button" disabled={selected.size === 0 || posting} onClick={handlePost} className={`h-9 ${btnOutline} disabled:opacity-40 disabled:cursor-not-allowed`}>
+                        <Send className="h-3.5 w-3.5 text-[#A27B3A]" /> {posting ? "Posting..." : "Post"}
+                    </button>
+                    <button type="button" disabled={selected.size === 0 || deleting} onClick={() => setShowDeleteConfirm(true)} className={`h-9 ${btnOutline} disabled:opacity-40 disabled:cursor-not-allowed`}>
+                        <Trash2 className="h-3.5 w-3.5 text-[#A27B3A]" /> {deleting ? "Deleting..." : "Delete"}
                     </button>
                     <button type="button" onClick={() => setShowModal(true)}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
@@ -220,6 +273,16 @@ function PurchaseReturnContent() {
                 })}
             </TransactionListShell>
             <SelectPurchaseInvoiceModal isOpen={showModal} onClose={() => setShowModal(false)} onSelect={handleInvoiceSelect} />
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                title="Delete selected purchase returns?"
+                message="Unposted purchase returns in the selection will be permanently removed. Posted returns will be skipped."
+                confirmLabel="Delete"
+                isLoading={deleting}
+                loadingLabel="Deleting..."
+            />
         </>
     );
 }

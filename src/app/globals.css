@@ -249,3 +249,12 @@
   .lp-form > * + * { margin-top: 0.125rem; }
   .lp-btn     { height: 2rem; }
 }
+
+/* Printing a dashboard page (e.g. Reports "Print" button) should only show the page
+   content, not the sidebar/topnav chrome — those are hidden via `print:hidden` on the
+   layout. This just fixes page size/margins and forces background colors to print. */
+@media print {
+  @page { size: A4; margin: 10mm; }
+  html, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
