@@ -11,6 +11,7 @@ import {
     statusBadge,
     btnOutline,
 } from "@/components/dashboard/transaction-list-shell";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
     purchasesService,
     type Purchase as ApiPurchase,
@@ -103,6 +104,9 @@ function PurchaseInvoiceContent() {
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
+    const [posting, setPosting] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -176,102 +180,162 @@ function PurchaseInvoiceContent() {
         toast.success("Purchase invoices exported.");
     };
 
+    const handlePost = async () => {
+        const targets = paginated.filter((i) => selected.has(i.id) && i.status === "UnPosted");
+        if (targets.length === 0) {
+            toast.error("Select at least one unposted invoice to post.");
+            return;
+        }
+        setPosting(true);
+        let ok = 0, failed = 0;
+        for (const inv of targets) {
+            try {
+                await purchasesService.post(inv.uuid);
+                ok++;
+            } catch {
+                failed++;
+            }
+        }
+        setPosting(false);
+        setSelected(new Set());
+        if (ok > 0) toast.success(`${ok} purchase invoice${ok > 1 ? "s" : ""} posted.`);
+        if (failed > 0) toast.error(`${failed} invoice${failed > 1 ? "s" : ""} failed to post.`);
+        load(false);
+    };
+
+    const handleDelete = async () => {
+        const targets = paginated.filter((i) => selected.has(i.id) && i.status !== "Posted");
+        setShowDeleteConfirm(false);
+        if (targets.length === 0) {
+            toast.error("Posted invoices cannot be deleted.");
+            return;
+        }
+        setDeleting(true);
+        let ok = 0, failed = 0;
+        for (const inv of targets) {
+            try {
+                await purchasesService.remove(inv.uuid);
+                ok++;
+            } catch {
+                failed++;
+            }
+        }
+        setDeleting(false);
+        setSelected(new Set());
+        if (ok > 0) toast.success(`${ok} purchase invoice${ok > 1 ? "s" : ""} deleted.`);
+        if (failed > 0) toast.error(`${failed} invoice${failed > 1 ? "s" : ""} failed to delete.`);
+        load(false);
+    };
+
     return (
-        <TransactionListShell
-            title={`${status === "All" ? "All" : status} Purchase Invoices`}
-            backHref="/dashboard"
-            headerActions={<>
-                <button type="button" onClick={() => load(true)} className={`h-8 ${btnOutline}`}>
-                    <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
-                </button>
-                <button type="button" onClick={() => router.push("/dashboard/transactions/purchases/create")}
-                    className="flex h-8 items-center gap-1 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer">
-                    <Plus className="h-3.5 w-3.5" /> New
-                </button>
-                <button type="button" onClick={toggleAll} className={`h-8 ${btnOutline}`}>
-                    <CheckSquare className="h-3.5 w-3.5 text-[#A27B3A]" /> Select All
-                </button>
-                <button type="button" disabled={selected.size === 0} className={`h-8 ${btnOutline} disabled:opacity-40 disabled:cursor-not-allowed`}>
-                    <Send className="h-3.5 w-3.5 text-[#A27B3A]" /> Post
-                </button>
-                <button type="button" disabled={selected.size === 0} className={`h-8 ${btnOutline} disabled:opacity-40 disabled:cursor-not-allowed`}>
-                    <Trash2 className="h-3.5 w-3.5 text-[#A27B3A]" /> Delete
-                </button>
-            </>}
-            columns={COLUMNS}
-            withCheckbox
-            isAllSelected={paginated.length > 0 && selected.size === paginated.length}
-            onToggleAll={toggleAll}
-            isLoading={isLoading}
-            hasRows={paginated.length > 0}
-            loadingLabel="Loading Purchase Invoices..."
-            emptyMessage="No purchase invoices match the current filters."
-            dateHint={DATE_HINT}
-            search={search} onSearchChange={setSearch}
-            dateFrom={dateFrom} onDateFromChange={setDateFrom}
-            dateTo={dateTo} onDateToChange={setDateTo}
-            status={status} onStatusChange={setStatus}
-            source={source} onSourceChange={setSource}
-            rowsPerPage={rowsPerPage} onRowsPerPageChange={setRowsPerPage}
-            page={page} totalPages={totalPages} onPageChange={setPage}
-            onExport={handleExport}
-        >
-            {paginated.map((inv, i) => (
-                <tr key={inv.id}
-                    className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]", selected.has(inv.id) ? "bg-[#FDF3E3] dark:bg-[#3a2a10]" : i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]")}
-                    onClick={() => toggleSelect(inv.id)}>
-                    <td className="px-2 py-1.5 text-center">
-                        <input type="checkbox" checked={selected.has(inv.id)} onChange={() => toggleSelect(inv.id)}
-                            onClick={(e) => e.stopPropagation()} className="h-3.5 w-3.5 accent-[#C69A52] cursor-pointer" />
-                    </td>
-                    <td className="px-2 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
-                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorNo}</td>
-                    <td className="px-2 py-1.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.vendorName}</td>
-                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorInvoiceNo}</td>
-                    <td className="px-2 py-1.5">{statusBadge(inv.status)}</td>
-                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.source}</td>
-                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.user}</td>
-                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
-                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.furtherTax)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtInclFT)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.advanceTax)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmtPercent(inv.advTaxPercent)}</td>
-                    <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.total)}</td>
-                    <td className="px-2 py-1.5">
-                        <div className="flex items-center gap-1">
-                            <button
-                                type="button"
-                                title="Open vendor ledger"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/dashboard/transactions/ledger/vendor-ledger?purchaseUuid=${inv.uuid}`);
-                                }}
-                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
-                            >
-                                <BookOpen className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                                type="button"
-                                title="View purchase invoice"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/print/purchase/${inv.uuid}`);
-                                }}
-                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
-                            >
-                                <Eye className="h-3.5 w-3.5" />
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            ))}
-        </TransactionListShell>
+        <>
+            <TransactionListShell
+                title={`${status === "All" ? "All" : status} Purchase Invoices`}
+                backHref="/dashboard"
+                headerActions={<>
+                    <button type="button" onClick={() => load(true)} className={`h-8 ${btnOutline}`}>
+                        <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
+                    </button>
+                    <button type="button" onClick={() => router.push("/dashboard/transactions/purchases/create")}
+                        className="flex h-8 items-center gap-1 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer">
+                        <Plus className="h-3.5 w-3.5" /> New
+                    </button>
+                    <button type="button" onClick={toggleAll} className={`h-8 ${btnOutline}`}>
+                        <CheckSquare className="h-3.5 w-3.5 text-[#A27B3A]" /> Select All
+                    </button>
+                    <button type="button" disabled={selected.size === 0 || posting} onClick={handlePost} className={`h-8 ${btnOutline} disabled:opacity-40 disabled:cursor-not-allowed`}>
+                        <Send className="h-3.5 w-3.5 text-[#A27B3A]" /> {posting ? "Posting..." : "Post"}
+                    </button>
+                    <button type="button" disabled={selected.size === 0 || deleting} onClick={() => setShowDeleteConfirm(true)} className={`h-8 ${btnOutline} disabled:opacity-40 disabled:cursor-not-allowed`}>
+                        <Trash2 className="h-3.5 w-3.5 text-[#A27B3A]" /> {deleting ? "Deleting..." : "Delete"}
+                    </button>
+                </>}
+                columns={COLUMNS}
+                withCheckbox
+                isAllSelected={paginated.length > 0 && selected.size === paginated.length}
+                onToggleAll={toggleAll}
+                isLoading={isLoading}
+                hasRows={paginated.length > 0}
+                loadingLabel="Loading Purchase Invoices..."
+                emptyMessage="No purchase invoices match the current filters."
+                dateHint={DATE_HINT}
+                search={search} onSearchChange={setSearch}
+                dateFrom={dateFrom} onDateFromChange={setDateFrom}
+                dateTo={dateTo} onDateToChange={setDateTo}
+                status={status} onStatusChange={setStatus}
+                source={source} onSourceChange={setSource}
+                rowsPerPage={rowsPerPage} onRowsPerPageChange={setRowsPerPage}
+                page={page} totalPages={totalPages} onPageChange={setPage}
+                onExport={handleExport}
+            >
+                {paginated.map((inv, i) => (
+                    <tr key={inv.id}
+                        className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]", selected.has(inv.id) ? "bg-[#FDF3E3] dark:bg-[#3a2a10]" : i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]")}
+                        onClick={() => toggleSelect(inv.id)}>
+                        <td className="px-2 py-1.5 text-center">
+                            <input type="checkbox" checked={selected.has(inv.id)} onChange={() => toggleSelect(inv.id)}
+                                onClick={(e) => e.stopPropagation()} className="h-3.5 w-3.5 accent-[#C69A52] cursor-pointer" />
+                        </td>
+                        <td className="px-2 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
+                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorNo}</td>
+                        <td className="px-2 py-1.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.vendorName}</td>
+                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorInvoiceNo}</td>
+                        <td className="px-2 py-1.5">{statusBadge(inv.status)}</td>
+                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.source}</td>
+                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.user}</td>
+                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
+                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.furtherTax)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtInclFT)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.advanceTax)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmtPercent(inv.advTaxPercent)}</td>
+                        <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.total)}</td>
+                        <td className="px-2 py-1.5">
+                            <div className="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    title="Open vendor ledger"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push(`/dashboard/transactions/ledger/vendor-ledger?purchaseUuid=${inv.uuid}`);
+                                    }}
+                                    className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                                >
+                                    <BookOpen className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                    type="button"
+                                    title="View purchase invoice"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push(`/print/purchase/${inv.uuid}`);
+                                    }}
+                                    className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                                >
+                                    <Eye className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                ))}
+            </TransactionListShell>
+
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                title="Delete selected purchase invoices?"
+                message="Unposted purchase invoices in the selection will be permanently removed. Posted invoices will be skipped."
+                confirmLabel="Delete"
+                isLoading={deleting}
+                loadingLabel="Deleting..."
+            />
+        </>
     );
 }
 

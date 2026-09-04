@@ -78,7 +78,7 @@ export default function DashboardPage() {
   const salesInvoicesCount = String(cards?.totalInvoices ?? "—");
   const postedCount = String(cards?.acceptedInvoices ?? "0");
   const unpostedCount = String(cards?.pendingInvoices ?? "0");
-  const rejectedCount = String(cards?.rejectedInvoices ?? "0");
+  const dc = cards?.docCounts;
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "short",
@@ -117,21 +117,21 @@ export default function DashboardPage() {
           <DashboardSection title="Sales">
             <div className="grid gap-2 sm:grid-cols-2">
               <SummaryCard title="Sales Invoices" count={salesInvoicesCount} postedCount={postedCount} unpostedCount={unpostedCount} postedHref="/dashboard/transactions/sales?status=Posted" unpostedHref="/dashboard/transactions/sales?status=UnPosted" />
-              <SummaryCard title="Sales Returns" count={rejectedCount} postedCount={rejectedCount} unpostedCount="0" returnCard postedHref="/dashboard/transactions/sales/returns?status=Posted" unpostedHref="/dashboard/transactions/sales/returns?status=UnPosted" />
+              <SummaryCard title="Sales Returns" count={String(dc?.salesReturns.total ?? 0)} postedCount={String(dc?.salesReturns.posted ?? 0)} unpostedCount={String(dc?.salesReturns.unposted ?? 0)} returnCard postedHref="/dashboard/transactions/sales/returns?status=Posted" unpostedHref="/dashboard/transactions/sales/returns?status=UnPosted" />
             </div>
           </DashboardSection>
 
           <DashboardSection title="Purchases">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Purchase Invoices" count="0" postedCount="0" unpostedCount="0" postedHref="/dashboard/transactions/purchases?status=Posted" unpostedHref="/dashboard/transactions/purchases?status=UnPosted" />
-              <SummaryCard title="Purchase Returns" count="0" postedCount="0" unpostedCount="0" returnCard postedHref="/dashboard/transactions/purchases/returns?status=Posted" unpostedHref="/dashboard/transactions/purchases/returns?status=UnPosted" />
+              <SummaryCard title="Purchase Invoices" count={String(dc?.purchaseInvoices.total ?? 0)} postedCount={String(dc?.purchaseInvoices.posted ?? 0)} unpostedCount={String(dc?.purchaseInvoices.unposted ?? 0)} postedHref="/dashboard/transactions/purchases?status=Posted" unpostedHref="/dashboard/transactions/purchases?status=UnPosted" />
+              <SummaryCard title="Purchase Returns" count={String(dc?.purchaseReturns.total ?? 0)} postedCount={String(dc?.purchaseReturns.posted ?? 0)} unpostedCount={String(dc?.purchaseReturns.unposted ?? 0)} returnCard postedHref="/dashboard/transactions/purchases/returns?status=Posted" unpostedHref="/dashboard/transactions/purchases/returns?status=UnPosted" />
             </div>
           </DashboardSection>
 
           <DashboardSection title="Inventory">
             <div className="grid gap-2 sm:grid-cols-2">
-              <SummaryCard title="Posted Adjustments" count="0" postedCount="0" unpostedCount="0" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
-              <SummaryCard title="Unposted Adjustments" count="0" postedCount="0" unpostedCount="0" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
+              <SummaryCard title="Posted Adjustments" count={String(dc?.inventoryAdjustments.posted ?? 0)} postedCount={String(dc?.inventoryAdjustments.posted ?? 0)} unpostedCount="0" inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
+              <SummaryCard title="Unposted Adjustments" count={String(dc?.inventoryAdjustments.unposted ?? 0)} postedCount="0" unpostedCount={String(dc?.inventoryAdjustments.unposted ?? 0)} inventory postedHref="/dashboard/transactions/inventory-adjustment?status=Posted" unpostedHref="/dashboard/transactions/inventory-adjustment?status=UnPosted" />
             </div>
           </DashboardSection>
 
@@ -177,8 +177,8 @@ export default function DashboardPage() {
         <aside className="w-[272px] flex flex-col gap-2">
           <SideStat title="Customers" value={side.customers?.toString() ?? "—"} label="Total registered customers" href="/dashboard/customers" />
           <SideStat title="Items in Inventory" value={side.items?.toString() ?? "—"} label={`Products: ${side.items ?? 0}  ·  Services: 0`} href="/dashboard/items" />
-          <Workload posted={data?.cards.acceptedInvoices ?? 0} unposted={data?.cards.pendingInvoices ?? 0} />
-          <Activity monthlySales={data?.charts.monthlySales ?? []} />
+          <Workload posted={data?.cards.workload.posted ?? 0} unposted={data?.cards.workload.unposted ?? 0} />
+          <Activity monthlyActivity={data?.charts.monthlyActivity ?? []} />
           <MasterData customers={side.customers ?? 0} vendors={side.vendors ?? 0} items={side.items ?? 0} />
           <Tips />
         </aside>
@@ -309,9 +309,10 @@ function Workload({ posted, unposted }: { posted: number; unposted: number }) {
 }
 
 /* ── ACTIVITY TREND CARD ── */
-function Activity({ monthlySales }: { monthlySales: { month: string; count: number }[] }) {
-  const points = monthlySales.slice(-7);
-  const hasData = points.length >= 2;
+function Activity({ monthlyActivity }: { monthlyActivity: { month: string; count: number }[] }) {
+  const points = monthlyActivity.slice(-7);
+  const hasData = points.length > 0 && points.some((p) => p.count > 0);
+  const singlePoint = points.length === 1;
   // month format from backend is "YYYY-MM" → convert to "Jan"
   const toLabel = (ym: string) => {
     const [y, m] = ym.split("-");
@@ -320,7 +321,7 @@ function Activity({ monthlySales }: { monthlySales: { month: string; count: numb
   const W = 250; const H = 80;
   const maxVal = Math.max(...points.map(p => p.count), 1);
   const coords = points.map((p, i) => ({
-    x: (i / (points.length - 1)) * W,
+    x: singlePoint ? W / 2 : (i / (points.length - 1)) * W,
     y: H - (p.count / maxVal) * (H - 4),
   }));
   const linePath = coords.map((c, i) => `${i === 0 ? "M" : "L"}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
@@ -349,8 +350,14 @@ function Activity({ monthlySales }: { monthlySales: { month: string; count: numb
                   <stop offset="100%" stopColor="#C69856" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
-              <path d={fillPath} fill="url(#activityGradient)" />
-              <path d={linePath} fill="none" stroke="#C69856" strokeWidth="2.5" />
+              {singlePoint ? (
+                <circle cx={coords[0].x} cy={coords[0].y} r={4} fill="#C69856" />
+              ) : (
+                <>
+                  <path d={fillPath} fill="url(#activityGradient)" />
+                  <path d={linePath} fill="none" stroke="#C69856" strokeWidth="2.5" />
+                </>
+              )}
             </svg>
           </div>
           <div className="ml-6 mt-1 flex justify-between text-[11px] text-[#9CA3AF] dark:text-[#6b7280]">

@@ -2,6 +2,12 @@ import { api } from "@/lib/api";
 
 // Shape mirrors FBR-Backend/src/services/dashboard.service.ts → getDashboard()
 
+export interface DocCount {
+    total: number;
+    posted: number;
+    unposted: number;
+}
+
 export interface DashboardCards {
     totalInvoices: number;
     acceptedInvoices: number;
@@ -12,11 +18,27 @@ export interface DashboardCards {
     todayCount: number;
     monthSales: number;
     monthCount: number;
+    docCounts: {
+        salesInvoices: DocCount;
+        salesReturns: DocCount;
+        purchaseInvoices: DocCount;
+        purchaseReturns: DocCount;
+        inventoryAdjustments: DocCount;
+    };
+    workload: {
+        posted: number;
+        unposted: number;
+    };
 }
 
 export interface MonthlySalesRow {
     month: string;
     sales: number;
+    count: number;
+}
+
+export interface MonthlyActivityRow {
+    month: string;
     count: number;
 }
 
@@ -35,6 +57,7 @@ export interface TaxSummary {
 
 export interface DashboardCharts {
     monthlySales: MonthlySalesRow[];
+    monthlyActivity: MonthlyActivityRow[];
     invoiceStatus: InvoiceStatusRow[];
     taxSummary: TaxSummary;
 }
