@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { RefreshCw, Plus, CheckSquare, Send, Trash2 } from "lucide-react";
+import { RefreshCw, Plus, CheckSquare, Send, Trash2, BookOpen, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 import {
@@ -31,11 +31,15 @@ interface PurchaseInvoice {
     postingDate: string;
     assessedValue: number;
     discount: number;
+    amtExclST: number;
     salesTax: number;
+    amtInclST: number;
     furtherTax: number;
+    amtInclFT: number;
+    advanceTax: number;
+    advTaxPercent: number;
+    total: number;
 }
-
-const MOCK_PURCHASES: PurchaseInvoice[] = [];
 
 const uiStatus = (s: PurchaseStatus): PurchaseInvoice["status"] => {
     if (s === "posted") return "Posted";
@@ -64,14 +68,23 @@ const toRow = (p: ApiPurchase): PurchaseInvoice => ({
     postingDate: (p.postingDate ?? p.docDate ?? "").slice(0, 10),
     assessedValue: Number(p.assessedValue),
     discount: Number(p.totalDiscount),
+    amtExclST: Number(p.totalValueExcludingST),
     salesTax: Number(p.totalSalesTax),
+    amtInclST: Number(p.totalValueIncludingST) - Number(p.totalFurtherTax) - Number(p.totalFedPayable),
     furtherTax: Number(p.totalFurtherTax),
+    amtInclFT: Number(p.totalValueIncludingST) - Number(p.totalFedPayable),
+    advanceTax: Number(p.advanceTax),
+    advTaxPercent: Number(p.totalValueIncludingST) > 0 ? (Number(p.advanceTax) / Number(p.totalValueIncludingST)) * 100 : 0,
+    total: Number(p.totalValueIncludingST) + Number(p.advanceTax),
 });
+
+const fmtPercent = (n: number) => `${n.toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 
 const COLUMNS = [
     "Invoice No", "Vendor No", "Vendor Name", "Vendor Invoice No",
     "Status", "Source", "User", "Doc Date", "Posting Date",
-    "Assessed Value", "Discount", "Sales Tax", "Further Tax",
+    "Assessed Value", "Discount", "Amt Excl ST", "Sales Tax", "Amt Incl ST",
+    "Further Tax", "Amt Incl FT", "Advance Tax", "Adv Tax %", "Total", "Actions",
 ];
 
 const DATE_HINT = "Date range includes invoices where document date or posting date falls between the selected days (inclusive). Leave dates empty to load all periods.";
@@ -127,7 +140,8 @@ function PurchaseInvoiceContent() {
 
     useEffect(() => load(), [load]);
 
-    const filtered = invoices.filter((inv) => {        const q = search.toLowerCase();
+    const filtered = invoices.filter((inv) => {
+        const q = search.toLowerCase();
         return (
             (!q || inv.invoiceNo.toLowerCase().includes(q) || inv.vendorNo.toLowerCase().includes(q) || inv.vendorName.toLowerCase().includes(q) || inv.vendorInvoiceNo.toLowerCase().includes(q)) &&
             (status === "All" || inv.status === status) &&
@@ -154,7 +168,7 @@ function PurchaseInvoiceContent() {
                     <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
                 </button>
                 <button type="button" onClick={() => router.push("/dashboard/transactions/purchases/create")}
-                    className="flex h-8 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors">
+                    className="flex h-8 items-center gap-1 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer">
                     <Plus className="h-3.5 w-3.5" /> New
                 </button>
                 <button type="button" onClick={toggleAll} className={`h-8 ${btnOutline}`}>
@@ -188,23 +202,55 @@ function PurchaseInvoiceContent() {
                 <tr key={inv.id}
                     className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]", selected.has(inv.id) ? "bg-[#FDF3E3] dark:bg-[#3a2a10]" : i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]")}
                     onClick={() => toggleSelect(inv.id)}>
-                    <td className="px-3 py-2.5 text-center">
+                    <td className="px-2 py-1.5 text-center">
                         <input type="checkbox" checked={selected.has(inv.id)} onChange={() => toggleSelect(inv.id)}
                             onClick={(e) => e.stopPropagation()} className="h-3.5 w-3.5 accent-[#C69A52] cursor-pointer" />
                     </td>
-                    <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorNo}</td>
-                    <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.vendorName}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorInvoiceNo}</td>
-                    <td className="px-3 py-2.5">{statusBadge(inv.status)}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.source}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.user}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
-                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[#A27B3A] font-semibold">{fmt(inv.furtherTax)}</td>
+                    <td className="px-2 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
+                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorNo}</td>
+                    <td className="px-2 py-1.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.vendorName}</td>
+                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorInvoiceNo}</td>
+                    <td className="px-2 py-1.5">{statusBadge(inv.status)}</td>
+                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.source}</td>
+                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.user}</td>
+                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
+                    <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.furtherTax)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtInclFT)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.advanceTax)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmtPercent(inv.advTaxPercent)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.total)}</td>
+                    <td className="px-2 py-1.5">
+                        <div className="flex items-center gap-1">
+                            <button
+                                type="button"
+                                title="Open vendor ledger"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/dashboard/transactions/ledger/vendor-ledger?purchaseUuid=${inv.uuid}`);
+                                }}
+                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                            >
+                                <BookOpen className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                                type="button"
+                                title="View purchase invoice"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/print/purchase/${inv.uuid}`);
+                                }}
+                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                            >
+                                <Eye className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+                    </td>
                 </tr>
             ))}
         </TransactionListShell>
