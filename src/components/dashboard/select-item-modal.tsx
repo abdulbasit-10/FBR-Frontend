@@ -17,6 +17,7 @@ export interface Item {
     saleType: string;
     tax: number;
     unitPrice: number;
+    uom: string;
 }
 
 interface SelectItemModalProps {
@@ -36,6 +37,7 @@ const toDisplayItem = (p: Product): Item => ({
     saleType: p.saleType,
     tax: Number(p.rateValue ?? 0),
     unitPrice: Number(p.unitPrice ?? 0),
+    uom: p.uom,
 });
 
 const TYPE_OPTIONS = ["All", "Goods", "Service", "Digital", "Raw Material", "Finished Goods"];

@@ -8,7 +8,7 @@ import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 
-export const DOC_TYPE_OPTIONS = ["All", "Sales Invoice", "Sales Return", "Purchase Invoice", "Purchase Return", "Credit Note", "Debit Note"];
+export const DOC_TYPE_OPTIONS = ["All", "Sales Invoice", "Sales Return", "Purchase Invoice", "Purchase Return", "Credit Note", "Debit Note", "Inventory Adjustment"];
 export const ROW_OPTIONS = [50, 100, 200];
 
 export const fmt = (n: number) =>

@@ -37,7 +37,7 @@ const toRow = (r: ApiItemLedgerRow, idx: number): ItemLedgerRow => ({
     hsCode: r.hsCode,
     itemMapping: "—",
     itemName: r.itemName,
-    itemType: r.documentType.startsWith("Purchase") ? "Purchase" : "Sale",
+    itemType: r.documentType.startsWith("Purchase") ? "Purchase" : r.documentType === "Inventory Adjustment" ? "Adjustment" : "Sale",
     quantity: r.quantity,
     uom: r.uom,
     unitCost: r.unitCost,
@@ -74,6 +74,7 @@ export default function ItemLedgerPage() {
             docType === "Sales Return" ? "Debit Note" :
             docType === "Purchase Invoice" ? "Purchase Invoice" :
             docType === "Purchase Return" ? "Purchase Return" :
+            docType === "Inventory Adjustment" ? "Inventory Adjustment" :
             undefined;
         ledgerService.items({
             from: dateFrom || undefined,

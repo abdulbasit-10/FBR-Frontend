@@ -6,7 +6,8 @@ export type LedgerDocumentType =
     | "Sales Invoice"
     | "Debit Note"
     | "Purchase Invoice"
-    | "Purchase Return";
+    | "Purchase Return"
+    | "Inventory Adjustment";
 
 export interface ItemLedgerRow {
     documentNo: string;
