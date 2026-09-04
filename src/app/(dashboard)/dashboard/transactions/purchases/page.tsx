@@ -119,7 +119,6 @@ function PurchaseInvoiceContent() {
         purchasesService.list({
             page,
             limit: rowsPerPage,
-            purchaseType: "Purchase Invoice",
             search: search.trim() || undefined,
             status: apiStatus(status),
             from: dateFrom || undefined,
