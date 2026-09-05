@@ -17,6 +17,7 @@ export interface SupportTicket {
     priority: SupportPriority;
     status: SupportStatus;
     resolvedAt: string | null;
+    attachmentUrl: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -49,4 +50,21 @@ export const supportService = {
     update: (uuid: string, data: UpdateTicketInput) =>
         api.put<SupportTicket>(`/support/${uuid}`, data),
     remove: (uuid: string) => api.delete<null>(`/support/${uuid}`),
+    /** Multipart upload — bypasses the JSON `api` client since this sends a File. */
+    uploadAttachment: async (uuid: string, file: File): Promise<SupportTicket> => {
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
+        const token = typeof window !== "undefined" ? localStorage.getItem("fbr_access_token") : null;
+        const form = new FormData();
+        form.append("file", file);
+        const res = await fetch(`${baseUrl}/support/${uuid}/attachment`, {
+            method: "POST",
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+            body: form,
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message ?? "Failed to upload attachment.");
+        }
+        return json.data;
+    },
 };
