@@ -7,6 +7,8 @@ export interface ApiLog {
     companyId: number | null;
     userId: number | null;
     invoiceId: number | null;
+    company?: { id: number; name: string } | null;
+    user?: { id: number; name: string; email: string } | null;
     direction: "inbound" | "outbound";
     method: string;
     endpoint: string;
