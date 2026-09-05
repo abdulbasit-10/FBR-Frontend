@@ -74,7 +74,7 @@ export default function SalesInvoicesImportExportPage() {
                 const res = await customersService.list({ search: customerNo, limit: 5 });
                 const match = res.data.rows.find(
                     (c) => c.customerNo?.toLowerCase() === customerNo.toLowerCase() ||
-                           c.businessName?.toLowerCase() === customerNo.toLowerCase(),
+                        c.businessName?.toLowerCase() === customerNo.toLowerCase(),
                 );
                 if (match) customerId = match.id;
             } catch { /* skip */ }
@@ -88,19 +88,19 @@ export default function SalesInvoicesImportExportPage() {
             // Build line items
             let totalValueExclST = 0;
             const items = await Promise.all(groupRows.map(async (r) => {
-                const qty         = parseFloat(r["Qty"] || "1") || 1;
-                const unitPrice   = parseFloat(r["Unit Price"] || "0") || 0;
+                const qty = parseFloat(r["Qty"] || "1") || 1;
+                const unitPrice = parseFloat(r["Unit Price"] || "0") || 0;
                 const retailPrice = parseFloat(r["Retail Price"] || "0") || 0;
-                const discPct     = parseFloat(r["Disc %"] || "0") || 0;
-                const stPct       = parseFloat(r["Sales Tax %"] || "0") || 0;
-                const ftPct       = parseFloat(r["Further Tax %"] || "0") || 0;
-                const itemNo      = r["Item No"] || r["Item no"] || "";
-                const itemName    = r["Item Name"] || r["Item name"] || "Imported Item";
+                const discPct = parseFloat(r["Disc %"] || "0") || 0;
+                const stPct = parseFloat(r["Sales Tax %"] || "0") || 0;
+                const ftPct = parseFloat(r["Further Tax %"] || "0") || 0;
+                const itemNo = r["Item No"] || r["Item no"] || "";
+                const itemName = r["Item Name"] || r["Item name"] || "Imported Item";
 
-                const discount           = parseFloat((qty * unitPrice * discPct / 100).toFixed(4));
-                const valueSalesExclST   = parseFloat((qty * unitPrice - discount).toFixed(4));
+                const discount = parseFloat((qty * unitPrice * discPct / 100).toFixed(4));
+                const valueSalesExclST = parseFloat((qty * unitPrice - discount).toFixed(4));
                 const salesTaxApplicable = parseFloat((valueSalesExclST * stPct / 100).toFixed(4));
-                const furtherTax         = parseFloat((valueSalesExclST * ftPct / 100).toFixed(4));
+                const furtherTax = parseFloat((valueSalesExclST * ftPct / 100).toFixed(4));
                 totalValueExclST += valueSalesExclST;
 
                 const product = await lookupProduct(itemNo, itemName);
@@ -134,6 +134,8 @@ export default function SalesInvoicesImportExportPage() {
                     postingDate,
                     advanceTax,
                     mappingId,
+                    environment: "sandbox",
+                    scenarioId: "SN001",
                     notes: `Imported from Excel — Sequence No: ${seq}`,
                     items,
                 });

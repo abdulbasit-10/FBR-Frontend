@@ -28,11 +28,11 @@ function toIso(date: string): string {
     return date;
 }
 
-/** Lookup or create customer. Returns numeric customer id or null on failure. */
-async function ensureCustomer(r: Record<string, string>): Promise<number | null> {
+/** Lookup or create customer. Returns numeric customer id, or an error message on failure. */
+async function ensureCustomer(r: Record<string, string>): Promise<{ id: number } | { error: string }> {
     const customerNo = r["Customer No"] || "";
     const name = r["Customer Name"] || "";
-    if (!name) return null;
+    if (!name) return { error: "\"Customer Name\" is required" };
 
     try {
         const res = await customersService.list({ search: customerNo || name, limit: 10 });
@@ -41,7 +41,7 @@ async function ensureCustomer(r: Record<string, string>): Promise<number | null>
                 (customerNo && c.customerNo?.toLowerCase() === customerNo.toLowerCase()) ||
                 c.businessName?.toLowerCase() === name.toLowerCase(),
         );
-        if (match) return match.id;
+        if (match) return { id: match.id };
     } catch { /* fall through to create */ }
 
     const province = r["NTN Province"] || "Islamabad";
@@ -61,29 +61,29 @@ async function ensureCustomer(r: Record<string, string>): Promise<number | null>
             phone: r["Customer Phone"] || null,
             isActive: true,
         });
-        return created.data.id;
-    } catch {
-        return null;
+        return { id: created.data.id };
+    } catch (err) {
+        return { error: err instanceof Error ? err.message : "Failed to create customer" };
     }
 }
 
-/** Lookup or create product. Returns Product or null on failure. */
-async function ensureProduct(r: Record<string, string>): Promise<Product | null> {
+/** Lookup or create product. Returns the Product, or an error message on failure. */
+async function ensureProduct(r: Record<string, string>): Promise<{ product: Product | null } | { error: string }> {
     const itemNo = r["Item No"] || "";
     const itemName = r["Item Name"] || "";
     const hsCode = r["HS Code"] || "";
-    if (!itemName) return null;
+    if (!itemName) return { product: null };
 
     try {
         const res = await productsService.list({ search: itemNo || itemName, limit: 10 });
         const rows = res.data.rows;
         const byMapping = rows.find((p) => itemNo && p.mappingId?.toLowerCase() === itemNo.toLowerCase());
-        if (byMapping) return byMapping;
+        if (byMapping) return { product: byMapping };
         const byName = rows.find((p) => p.name?.toLowerCase() === itemName.toLowerCase());
-        if (byName) return byName;
+        if (byName) return { product: byName };
     } catch { /* fall through to create */ }
 
-    if (!hsCode) return null; // hsCode required by backend
+    if (!hsCode) return { error: `Item "${itemName}" has no matching product and no HS Code to create one` };
 
     const taxRateVal = parseFloat(r["Tax Rate Value"] || "0") || 0;
 
@@ -103,9 +103,9 @@ async function ensureProduct(r: Record<string, string>): Promise<Product | null>
             unitPrice: 0,
             isActive: true,
         });
-        return created.data;
-    } catch {
-        return null;
+        return { product: created.data };
+    } catch (err) {
+        return { error: err instanceof Error ? err.message : "Failed to create product" };
     }
 }
 
@@ -132,34 +132,38 @@ export default function MasterImportPage() {
             const invoiceMappingId = firstRow["Invoice Mapping ID"] || null;
 
             // Ensure customer exists
-            const customerId = await ensureCustomer(firstRow);
-            if (!customerId) {
+            const customerResult = await ensureCustomer(firstRow);
+            if ("error" in customerResult) {
                 failed++;
-                toast.error(`Seq ${seq}: customer "${firstRow["Customer Name"] || firstRow["Customer No"]}" could not be found or created — skipped.`);
+                toast.error(`Seq ${seq}: customer "${firstRow["Customer Name"] || firstRow["Customer No"]}" — ${customerResult.error}`);
                 continue;
             }
+            const customerId = customerResult.id;
 
             // Build line items, creating products as needed
             let totalValueExclST = 0;
+            let lineError: string | null = null;
             const items = await Promise.all(groupRows.map(async (r) => {
-                const qty         = parseFloat(r["Quantity"] || "1") || 1;
-                const unitPrice   = parseFloat(r["Unit Cost"] || "0") || 0;
+                const qty = parseFloat(r["Quantity"] || "1") || 1;
+                const unitPrice = parseFloat(r["Unit Cost"] || "0") || 0;
                 const retailPrice = parseFloat(r["Retail Price"] || "0") || 0;
                 const assessedUnit = parseFloat(r["Assessed Unit"] || "0") || 0;
-                const discPct     = parseFloat(r["Disc %"] || "0") || 0;
-                const stPct       = parseFloat(r["Tax Rate Value"] || "0") || 0;
-                const fedPct      = parseFloat(r["FED %"] || "0") || 0;
-                const ftPct       = parseFloat(r["Further Tax %"] || "0") || 0;
-                const itemName    = r["Item Name"] || "Imported Item";
+                const discPct = parseFloat(r["Disc %"] || "0") || 0;
+                const stPct = parseFloat(r["Tax Rate Value"] || "0") || 0;
+                const fedPct = parseFloat(r["FED %"] || "0") || 0;
+                const ftPct = parseFloat(r["Further Tax %"] || "0") || 0;
+                const itemName = r["Item Name"] || "Imported Item";
 
-                const discount           = parseFloat((qty * unitPrice * discPct / 100).toFixed(4));
-                const valueSalesExclST   = parseFloat((qty * unitPrice - discount).toFixed(4));
+                const discount = parseFloat((qty * unitPrice * discPct / 100).toFixed(4));
+                const valueSalesExclST = parseFloat((qty * unitPrice - discount).toFixed(4));
                 const salesTaxApplicable = parseFloat((valueSalesExclST * stPct / 100).toFixed(4));
-                const extraTax           = parseFloat((valueSalesExclST * fedPct / 100).toFixed(4));
-                const furtherTax         = parseFloat((valueSalesExclST * ftPct / 100).toFixed(4));
+                const extraTax = parseFloat((valueSalesExclST * fedPct / 100).toFixed(4));
+                const furtherTax = parseFloat((valueSalesExclST * ftPct / 100).toFixed(4));
                 totalValueExclST += valueSalesExclST;
 
-                const product = await ensureProduct(r);
+                const productResult = await ensureProduct(r);
+                if ("error" in productResult) lineError ??= productResult.error;
+                const product = "product" in productResult ? productResult.product : null;
 
                 return {
                     productId: product?.id ?? null,
@@ -182,6 +186,12 @@ export default function MasterImportPage() {
                 };
             }));
 
+            if (lineError) {
+                failed++;
+                toast.error(`Seq ${seq}: ${lineError} — skipped.`);
+                continue;
+            }
+
             const advanceTax = parseFloat((totalValueExclST * advanceTaxPct / 100).toFixed(4));
 
             try {
@@ -191,6 +201,8 @@ export default function MasterImportPage() {
                     postingDate,
                     advanceTax,
                     mappingId: invoiceMappingId,
+                    environment: "sandbox",
+                    scenarioId: "SN001",
                     notes: `Imported via Master Import — Sequence No: ${seq}`,
                     items,
                 });
