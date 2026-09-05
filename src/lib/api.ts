@@ -1,9 +1,15 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
+export interface ApiFieldError {
+    field: string;
+    message: string;
+}
+
 export interface ApiResponse<T> {
     success: boolean;
     message: string;
     data: T;
+    errors?: ApiFieldError[];
 }
 
 async function doFetch(endpoint: string, token: string | null, options: RequestInit) {
@@ -44,7 +50,12 @@ async function request<T>(
     }
 
     if (!res.ok || !json.success) {
-        throw new Error(json.message ?? "Something went wrong. Please try again.");
+        // Surface field-level validation details (e.g. "ntnCnic is required") instead of
+        // just the generic top-level message like "Validation failed".
+        const detail = json.errors?.length
+            ? json.errors.map((e) => (e.field ? `${e.field}: ${e.message}` : e.message)).join("; ")
+            : null;
+        throw new Error(detail ? `${json.message ?? "Validation failed"} — ${detail}` : json.message ?? "Something went wrong. Please try again.");
     }
 
     return json;

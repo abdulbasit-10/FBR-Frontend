@@ -120,45 +120,45 @@ export default function CustomersPage() {
     );
 
     return (
-        <div className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="min-h-full space-y-2.5 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* Header */}
-            <div className="flex items-center justify-between pb-1">
+            <div className="flex items-center justify-between pb-0.5">
                 <div className="flex items-center gap-1.5">
                     <button type="button" onClick={() => router.back()} className="cursor-pointer text-[#A27B3A] hover:opacity-75 transition-opacity">
-                        <ChevronLeft className="h-5 w-5" />
+                        <ChevronLeft className="h-4.5 w-4.5" />
                     </button>
-                    <h1 className="text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">Customers</h1>
+                    <h1 className="text-[16px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">Customers</h1>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => load(true)} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
-                        <RefreshCw className="h-3.5 w-3.5 text-[#A27B3A]" /> Refresh
+                <div className="flex items-center gap-1.5">
+                    <button type="button" onClick={() => load(true)} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                        <RefreshCw className="h-3 w-3 text-[#A27B3A]" /> Refresh
                     </button>
-                    <button type="button" onClick={() => router.push("/dashboard/customers/new")} className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">
-                        <Plus className="h-3.5 w-3.5" /> New
+                    <button type="button" onClick={() => router.push("/dashboard/customers/new")} className="flex h-8 items-center gap-1 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs cursor-pointer">
+                        <Plus className="h-3 w-3" /> New
                     </button>
-                    <button type="button" onClick={toggleAll} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
-                        <CheckSquare className="h-3.5 w-3.5 text-[#A27B3A]" /> Select All
+                    <button type="button" onClick={toggleAll} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                        <CheckSquare className="h-3 w-3 text-[#A27B3A]" /> Select All
                     </button>
-                    <button type="button" onClick={handleDelete} disabled={selected.size === 0} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                        <Trash2 className="h-3.5 w-3.5 text-[#A27B3A]" /> Delete
+                    <button type="button" onClick={handleDelete} disabled={selected.size === 0} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                        <Trash2 className="h-3 w-3 text-[#A27B3A]" /> Delete
                     </button>
                 </div>
             </div>
 
             {/* Filter card */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3">
+            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 space-y-2">
                 <div className="flex items-center gap-2 max-w-2xl">
                     <div className="flex-1">
                         <Input type="text" placeholder="Name, customer no, mapping id, NTN, STRN,"
                             value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" />
+                            className="h-9 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" />
                     </div>
-                    <button type="button" onClick={() => setPage(1)} className="h-10 rounded-[6px] bg-[#C69A52] px-6 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors">
+                    <button type="button" onClick={() => setPage(1)} className="h-9 rounded-[6px] bg-[#C69A52] px-5 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors cursor-pointer">
                         Search
                     </button>
                 </div>
-                <div className="flex flex-wrap items-end gap-3 pt-1">
+                <div className="flex flex-wrap items-end gap-2 pt-0.5">
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Type</label>
                         <select value={type} onChange={(e) => { setType(e.target.value); setPage(1); }} className={cn(selectCls, "min-w-32")} style={selectArrow}>
@@ -175,10 +175,10 @@ export default function CustomersPage() {
             </div>
 
             {/* Table card */}
-            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
+            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                    <button type="button" onClick={() => toast.success("Exported successfully.")} className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
-                        <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
+                    <button type="button" onClick={() => toast.success("Exported successfully.")} className="flex h-7 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                        <Download className="h-3 w-3 text-[#A27B3A]" /> Export
                     </button>
                     <p className="text-[11px] text-[#9CA3AF] italic">Scroll right to view row actions</p>
                 </div>
@@ -187,27 +187,27 @@ export default function CustomersPage() {
                     <table className="w-full text-[12px] border-collapse min-w-[900px]">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
-                                <th className="w-10 px-3 py-2.5 text-center">
+                                <th className="w-10 px-2.5 py-1.5 text-center">
                                     <input type="checkbox"
                                         checked={paginated.length > 0 && selected.size === paginated.length}
                                         onChange={toggleAll}
-                                        className="h-4 w-4 rounded border-white/60 accent-white cursor-pointer" />
+                                        className="h-3.5 w-3.5 rounded border-white/60 accent-white cursor-pointer" />
                                 </th>
                                 {TABLE_COLS.map((col) => (
-                                    <th key={col} className="px-3 py-2.5 text-left font-semibold whitespace-nowrap">{col}</th>
+                                    <th key={col} className="px-2.5 py-1.5 text-left font-semibold whitespace-nowrap">{col}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 1} className="py-10 text-center bg-white dark:bg-[#242424]">
+                                    <td colSpan={TABLE_COLS.length + 1} className="py-8 text-center bg-white dark:bg-[#242424]">
                                         <LogoSpinner label="Loading Customers..." className="mx-auto" />
                                     </td>
                                 </tr>
                             ) : paginated.length === 0 ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 1} className="py-12 text-center bg-white dark:bg-[#242424]">
+                                    <td colSpan={TABLE_COLS.length + 1} className="py-10 text-center bg-white dark:bg-[#242424]">
                                         <div className="flex flex-col items-center gap-2">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6EE]">
                                                 <Users className="h-5 w-5 text-[#C69A52]" />
@@ -222,20 +222,20 @@ export default function CustomersPage() {
                                         className={cn("cursor-pointer transition-colors hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a]",
                                             selected.has(c.id) ? "bg-[#FDF3E3] dark:bg-[#3a2a10]" : i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]"
                                         )}>
-                                        <td className="px-3 py-2.5 text-center">
+                                        <td className="px-2.5 py-1.5 text-center">
                                             <input type="checkbox" checked={selected.has(c.id)} onChange={() => toggleSelect(c.id)}
-                                                onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer" />
+                                                onClick={(e) => e.stopPropagation()} className="h-3.5 w-3.5 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer" />
                                         </td>
-                                        <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{c.customerNo}</td>
-                                        <td className="px-3 py-2.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{c.name}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{c.province}</td>
-                                        <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af]">{c.type}</td>
-                                        <td className="px-3 py-2.5">{regBadge(c.registration)}</td>
-                                        <td className="px-3 py-2.5 font-mono text-[#4F5967] dark:text-[#9ca3af]">{c.ntn}</td>
-                                        <td className="px-3 py-2.5 font-mono text-[#4F5967] dark:text-[#9ca3af]">{c.strn}</td>
-                                        <td className="px-3 py-2.5">
+                                        <td className="px-2.5 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{c.customerNo}</td>
+                                        <td className="px-2.5 py-1.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{c.name}</td>
+                                        <td className="px-2.5 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{c.province}</td>
+                                        <td className="px-2.5 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{c.type}</td>
+                                        <td className="px-2.5 py-1.5">{regBadge(c.registration)}</td>
+                                        <td className="px-2.5 py-1.5 font-mono text-[#4F5967] dark:text-[#9ca3af]">{c.ntn}</td>
+                                        <td className="px-2.5 py-1.5 font-mono text-[#4F5967] dark:text-[#9ca3af]">{c.strn}</td>
+                                        <td className="px-2.5 py-1.5">
                                             <button type="button" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/customers/${c.uuid}`); }}
-                                                className="rounded-[5px] border border-[#C69A52] px-2.5 py-1 text-[11px] font-semibold text-[#C69A52] hover:bg-[#C69A52] hover:text-white transition-colors">
+                                                className="rounded-[5px] border border-[#C69A52] px-2.5 py-1 text-[11px] font-semibold text-[#C69A52] hover:bg-[#C69A52] hover:text-white transition-colors cursor-pointer">
                                                 Edit
                                             </button>
                                         </td>
