@@ -210,10 +210,10 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
           </nav>
         </div>
 
-        {/* Bottom logo â€” anchored to bottom with mt-auto */}
-        <div className="mt-auto shrink-0 border-t border-[#eeeeee] dark:border-[#2e2e2e] px-3 py-2.5">
+        {/* Bottom logo — anchored to bottom with mt-auto */}
+        <div className="mt-auto shrink-0 border-t border-[#eeeeee] dark:border-[#2e2e2e] px-3 pt-10 pb-2.5">
           <div className="relative h-9 w-full">
-            <Image src="/brand/lOGO.ai.svg" alt="Encova Solutions" fill sizes="180px" className="object-contain object-left" />
+            <Image src="/brand/lOGO.ai.svg" alt="Encova Solutions" fill sizes="180px" className="object-contain object-center" />
           </div>
         </div>
       </div>
