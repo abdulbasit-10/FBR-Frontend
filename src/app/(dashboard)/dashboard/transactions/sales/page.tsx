@@ -514,6 +514,7 @@ function SalesInvoicesContent() {
                                         <Square className="h-3 w-3 text-white fill-white/20" />
                                     </button>
                                 </th>
+                                <th className="px-2 py-1.5 text-left font-semibold whitespace-nowrap">S.No</th>
                                 {TABLE_COLS.map((col) => (
                                     <th key={col} className="px-2 py-1.5 text-left font-semibold whitespace-nowrap">
                                         {col}
@@ -525,13 +526,13 @@ function SalesInvoicesContent() {
                         <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 2} className="py-10 text-center bg-white dark:bg-[#242424]">
+                                    <td colSpan={TABLE_COLS.length + 3} className="py-10 text-center bg-white dark:bg-[#242424]">
                                         <LogoSpinner label="Loading Sales Invoices..." className="mx-auto" />
                                     </td>
                                 </tr>
                             ) : paginated.length === 0 ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 2} className="py-12 text-center bg-white dark:bg-[#242424]">
+                                    <td colSpan={TABLE_COLS.length + 3} className="py-12 text-center bg-white dark:bg-[#242424]">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6EE]">
                                                 <FileText className="h-5 w-5 text-[#C69A52]" />
@@ -560,6 +561,9 @@ function SalesInvoicesContent() {
                                                 onClick={(e) => e.stopPropagation()}
                                                 className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer"
                                             />
+                                        </td>
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">
+                                            {(page - 1) * rowsPerPage + i + 1}
                                         </td>
                                         <td className="px-2 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">
                                             <button
