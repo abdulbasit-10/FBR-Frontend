@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronDown, Menu } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -136,13 +136,21 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
   const pathname = usePathname();
 
   // Accordion: only one top-level dropdown open at a time
-  const initialOpen = primaryNav.find(item =>
-    item.children?.length && item.children.some(c =>
-      pathname === c.href || pathname.startsWith(c.href + "/") ||
-      c.children?.some(cc => pathname === cc.href || pathname.startsWith(cc.href + "/"))
-    )
-  )?.href ?? null;
-  const [openTopLevel, setOpenTopLevel] = useState<string | null>(initialOpen);
+  const matchingTopLevel = (path: string): string | null =>
+    primaryNav.find(item =>
+      item.children?.length && item.children.some(c =>
+        path === c.href || path.startsWith(c.href + "/") ||
+        c.children?.some(cc => path === cc.href || path.startsWith(cc.href + "/"))
+      )
+    )?.href ?? null;
+  const [openTopLevel, setOpenTopLevel] = useState<string | null>(() => matchingTopLevel(pathname));
+
+  // Re-derive which dropdown should be open whenever the route changes, so navigating to a
+  // page outside any submenu (e.g. Dashboard) collapses whatever was previously expanded.
+  useEffect(() => {
+    setOpenTopLevel(matchingTopLevel(pathname));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const handleTopLevelToggle = (href: string) => {
     setOpenTopLevel(prev => prev === href ? null : href);
@@ -202,10 +210,10 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
           </nav>
         </div>
 
-        {/* Bottom logo â€” anchored to bottom with mt-auto */}
-        <div className="mt-auto shrink-0 border-t border-[#eeeeee] dark:border-[#2e2e2e] px-3 py-2.5">
+        {/* Bottom logo — anchored to bottom with mt-auto */}
+        <div className="mt-auto shrink-0 border-t border-[#eeeeee] dark:border-[#2e2e2e] px-3 pt-10 pb-2.5">
           <div className="relative h-9 w-full">
-            <Image src="/brand/lOGO.ai.svg" alt="Encova Solutions" fill sizes="180px" className="object-contain object-left" />
+            <Image src="/brand/lOGO.ai.svg" alt="Encova Solutions" fill sizes="180px" className="object-contain object-center" />
           </div>
         </div>
       </div>

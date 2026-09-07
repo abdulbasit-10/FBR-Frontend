@@ -15,6 +15,7 @@ import {
     Square,
     Eye,
     BookOpen,
+    Send,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
@@ -144,6 +145,7 @@ function SalesInvoicesContent() {
     const [page, setPage] = useState(1);
     const [copying, setCopying] = useState(false);
     const [copyTargetUuid, setCopyTargetUuid] = useState<string | null>(null);
+    const [posting, setPosting] = useState(false);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -193,6 +195,10 @@ function SalesInvoicesContent() {
     const toggleAll = () => {
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((i) => i.id)));
     };
+
+    // Only enable Post when the selection actually contains an UnPosted row — not just "something"
+    // is checked (e.g. an already-Posted invoice can't be posted again).
+    const hasPostableSelection = paginated.some((i) => selected.has(i.id) && i.status === "UnPosted");
 
     const printInvoices = (uuids: string[]) => {
         // Print via a hidden iframe so the browser's print dialog opens directly
@@ -291,6 +297,29 @@ function SalesInvoicesContent() {
         setCopyTargetUuid(row.uuid);
     };
 
+    const handlePost = async () => {
+        const targets = paginated.filter((i) => selected.has(i.id) && i.status === "UnPosted");
+        if (targets.length === 0) {
+            toast.error("Select at least one unposted invoice to post.");
+            return;
+        }
+        setPosting(true);
+        let ok = 0, failed = 0;
+        for (const i of targets) {
+            try {
+                const res = await invoicesService.submit(i.uuid, "post");
+                if (res.data.status === "posted") ok++; else failed++;
+            } catch {
+                failed++;
+            }
+        }
+        setPosting(false);
+        setSelected(new Set());
+        if (ok > 0) toast.success(`${ok} invoice${ok > 1 ? "s" : ""} posted to FBR.`);
+        if (failed > 0) toast.error(`${failed} invoice${failed > 1 ? "s" : ""} failed to post.`);
+        load(false);
+    };
+
     const handleExport = () => {
         if (paginated.length === 0) {
             toast.error("No invoices to export.");
@@ -359,6 +388,14 @@ function SalesInvoicesContent() {
                         className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
                     >
                         <CheckSquare className="h-3 w-3 text-[#A27B3A]" /> Select All
+                    </button>
+                    <button
+                        type="button"
+                        disabled={!hasPostableSelection || posting}
+                        onClick={handlePost}
+                        className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        <Send className="h-3 w-3 text-[#A27B3A]" /> {posting ? "Posting..." : "Post"}
                     </button>
                     <button
                         type="button"

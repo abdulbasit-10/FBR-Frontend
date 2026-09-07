@@ -29,16 +29,32 @@ export default function PurchaseSummaryReportPage() {
     const [hasData, setHasData] = useState(false);
     const [rows, setRows] = useState<Row[]>([]);
 
+    // PURCHASE_ACTIONS = ["All", "Purchase Invoice", "Purchase Return", "Debit Note"] — Debit Note
+    // has no backing document type on the purchase side, so it always yields an empty result.
+    const toPurchaseType = (a: string): "Purchase Invoice" | "Purchase Return" | null | undefined => {
+        if (a === "Purchase Invoice") return "Purchase Invoice";
+        if (a === "Purchase Return") return "Purchase Return";
+        if (a === "Debit Note") return null;
+        return undefined;
+    };
+
     // No dedicated backend aggregation endpoint for purchases exists yet, so this groups
     // the posted purchase list client-side by vendor (dataset sizes here are small).
     const handleApply = useCallback(async () => {
         setIsLoading(true);
+        const wantedType = toPurchaseType(action);
+        if (wantedType === null) {
+            setRows([]);
+            setHasData(true);
+            setIsLoading(false);
+            return;
+        }
         try {
             const res = await purchasesService.list({
                 page: 1,
                 limit: 200,
                 status: "posted",
-                purchaseType: action === "Purchase Return" ? "Purchase Return" : "Purchase Invoice",
+                purchaseType: wantedType,
                 from: dateFrom || undefined,
                 to: dateTo || undefined,
             });

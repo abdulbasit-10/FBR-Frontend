@@ -169,6 +169,11 @@ function SalesReturnContent() {
     const toggleAll = () =>
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((r) => r.id)));
 
+    // Buttons should only be clickable when the selection actually contains an eligible row —
+    // not just "something" is checked (e.g. an already-Posted return can't be posted again).
+    const hasPostableSelection = paginated.some((r) => selected.has(r.id) && r.status === "UnPosted");
+    const hasDeletableSelection = paginated.some((r) => selected.has(r.id) && r.status !== "Posted");
+
     const handleInvoiceSelect = (inv: SaleInvoiceForReturn) => {
         // Pass only the uuid — the create page fetches the full invoice (with items) fresh from the backend.
         router.push(`/dashboard/transactions/sales/returns/create?originalUuid=${inv.uuid}`);
@@ -263,10 +268,10 @@ function SalesReturnContent() {
                     <button type="button" onClick={toggleAll} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer">
                         <CheckSquare className="h-3 w-3 text-[#A27B3A]" /> Select All
                     </button>
-                    <button type="button" disabled={selected.size === 0 || posting} onClick={handlePost} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                    <button type="button" disabled={!hasPostableSelection || posting} onClick={handlePost} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                         <Send className="h-3 w-3 text-[#A27B3A]" /> {posting ? "Posting..." : "Post"}
                     </button>
-                    <button type="button" disabled={selected.size === 0 || deleting} onClick={() => setShowDeleteConfirm(true)} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                    <button type="button" disabled={!hasDeletableSelection || deleting} onClick={() => setShowDeleteConfirm(true)} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                         <Trash2 className="h-3 w-3 text-[#A27B3A]" /> {deleting ? "Deleting..." : "Delete"}
                     </button>
                 </div>
