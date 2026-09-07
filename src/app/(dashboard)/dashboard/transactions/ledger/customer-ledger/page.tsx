@@ -78,8 +78,9 @@ const fmtPercent = (n: number) => `${n.toLocaleString("en-PK", { minimumFraction
 const CUSTOMER_TYPE_OPTIONS = ["All", "Registered", "Unregistered", "AOP", "Company"];
 const DOC_TYPE_OPTIONS = ["All", "Sales Invoice", "Debit Note"];
 
-const SUMMARY_COLUMNS = ["Customer No", "Customer Name", "Customer Type", "Invoices", "Assessed Value", "Sales Tax", "Total (Incl. ST)"];
+const SUMMARY_COLUMNS = ["S.No", "Customer No", "Customer Name", "Customer Type", "Invoices", "Assessed Value", "Sales Tax", "Total (Incl. ST)"];
 const DETAIL_COLUMNS = [
+    "S.No",
     "Invoice No", "Posting Date", "Document Type", "Customer No", "Customer Name", "Customer Type",
     "Assessed Value", "FED", "Amount Excl. Discount", "Discount", "Amount Excl. ST", "Sales Tax",
     "Amount Incl. ST", "Further Tax", "Amount Incl. FT", "Advance Tax", "Adv Tax %", "Total",
@@ -203,7 +204,7 @@ function CustomerLedgerContent() {
         if (summaries.length === 0) { toast.error("No data to export."); return; }
         exportRowsToExcel(
             "Customer_Ledger_Summary",
-            SUMMARY_COLUMNS,
+            SUMMARY_COLUMNS.filter((c) => c !== "S.No"),
             summaries.map((s) => [s.customerNo, s.customerName, s.customerType, s.invoiceCount, s.assessedValue, s.salesTax, s.total]),
         );
     };
@@ -222,7 +223,7 @@ function CustomerLedgerContent() {
             subtotal.amtInclST, subtotal.furtherTax, subtotal.amtInclFT, subtotal.advanceTax, "", subtotal.total,
             "", "", "", "",
         ]);
-        exportRowsToExcel(`Customer_Ledger_${selectedCustomerName || "Statement"}`, DETAIL_COLUMNS, rowsOut);
+        exportRowsToExcel(`Customer_Ledger_${selectedCustomerName || "Statement"}`, DETAIL_COLUMNS.filter((c) => c !== "S.No"), rowsOut);
     };
 
     const handlePrint = () => {
@@ -244,7 +245,7 @@ function CustomerLedgerContent() {
             sessionStorage.setItem("printReportPayload", JSON.stringify({
                 title: "Customer Ledger Summary",
                 filtersSummary: `Posting date: ${dateFrom || "—"} to ${dateTo || "—"} · Document type: ${docType} · Customer type: ${customerType}`,
-                columns: SUMMARY_COLUMNS,
+                columns: SUMMARY_COLUMNS.filter((c) => c !== "S.No"),
                 rows: summaries.map((s) => [s.customerNo, s.customerName, s.customerType, s.invoiceCount, s.assessedValue, s.salesTax, s.total]),
             }));
         }
@@ -425,6 +426,7 @@ function CustomerLedgerContent() {
                                     <>
                                         {paginatedDetail.map((row, i) => (
                                             <tr key={row.id} className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors")}>
+                                                <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{(page - 1) * rowsPerPage + i + 1}</td>
                                                 <td className="px-2.5 py-2 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{row.invoiceNo}</td>
                                                 <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.postingDate}</td>
                                                 <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.documentType}</td>
@@ -464,6 +466,7 @@ function CustomerLedgerContent() {
                                         onClick={() => setSelectedCustomerNo(s.customerNo)}
                                         className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer")}
                                     >
+                                        <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{(page - 1) * rowsPerPage + i + 1}</td>
                                         <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af]">{s.customerNo}</td>
                                         <td className="px-2.5 py-2 font-semibold text-[#A27B3A] hover:underline whitespace-nowrap">{s.customerName}</td>
                                         <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af]">{s.customerType}</td>

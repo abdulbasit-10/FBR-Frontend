@@ -44,7 +44,7 @@ const toRow = (p: ApiPurchase): VendorLedgerRow => ({
 const VENDOR_TYPE_OPTIONS = ["All", "Registered", "Unregistered", "AOP", "Company"];
 
 const COLUMNS = [
-    "Invoice No", "Posting Date", "Document Type", "Vendor No", "Vendor Name",
+    "S.No", "Invoice No", "Posting Date", "Document Type", "Vendor No", "Vendor Name",
     "Vendor Type", "FED", "Amount Excl. Discount", "Discount", "Amount Excl. Sales Tax", "Sales Tax",
 ];
 
@@ -106,7 +106,7 @@ function VendorLedgerContent() {
         if (paginated.length === 0) { toast.error("No rows to export."); return; }
         exportRowsToExcel(
             "Vendor_Ledger",
-            COLUMNS,
+            COLUMNS.filter((c) => c !== "S.No"),
             paginated.map((r) => [r.invoiceNo, r.postingDate, r.documentType, r.vendorNo, r.vendorName, r.vendorType, r.fed, r.amtExclDiscount, r.discount, r.amtExclSalesTax, r.salesTax]),
         );
         toast.success("Vendor ledger exported.");
@@ -148,6 +148,7 @@ function VendorLedgerContent() {
         >
             {paginated.map((row, i) => (
                 <tr key={row.id} className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors")}>
+                    <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{(page - 1) * rowsPerPage + i + 1}</td>
                     <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{row.invoiceNo}</td>
                     <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.postingDate}</td>
                     <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.documentType}</td>

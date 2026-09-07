@@ -83,7 +83,7 @@ const toRow = (p: ApiPurchase): PurchaseInvoice => ({
 const fmtPercent = (n: number) => `${n.toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 
 const COLUMNS = [
-    "Invoice No", "Vendor No", "Vendor Name", "Vendor Invoice No",
+    "S.No", "Invoice No", "Vendor No", "Vendor Name", "Vendor Invoice No",
     "Status", "Source", "User", "Doc Date", "Posting Date",
     "Assessed Value", "Discount", "Amt Excl ST", "Sales Tax", "Amt Incl ST",
     "Further Tax", "Amt Incl FT", "Advance Tax", "Adv Tax %", "Total", "Actions",
@@ -168,7 +168,7 @@ function PurchaseInvoiceContent() {
             toast.error("No purchase invoices to export.");
             return;
         }
-        const exportCols = COLUMNS.filter((c) => c !== "Actions");
+        const exportCols = COLUMNS.filter((c) => c !== "Actions" && c !== "S.No");
         const rows = paginated.map((inv) => [
             inv.invoiceNo, inv.vendorNo, inv.vendorName, inv.vendorInvoiceNo,
             inv.status, inv.source, inv.user, inv.docDate, inv.postingDate,
@@ -275,6 +275,7 @@ function PurchaseInvoiceContent() {
                             <input type="checkbox" checked={selected.has(inv.id)} onChange={() => toggleSelect(inv.id)}
                                 onClick={(e) => e.stopPropagation()} className="h-3.5 w-3.5 accent-[#C69A52] cursor-pointer" />
                         </td>
+                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{(page - 1) * rowsPerPage + i + 1}</td>
                         <td className="px-2 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.invoiceNo}</td>
                         <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af]">{inv.vendorNo}</td>
                         <td className="px-2 py-1.5 font-semibold text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{inv.vendorName}</td>
