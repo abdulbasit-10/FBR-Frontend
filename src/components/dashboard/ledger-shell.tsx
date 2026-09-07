@@ -118,7 +118,7 @@ export function LedgerShell({
             )}
 
             {/* ── Filters ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3">
+            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2">
                 <div className="flex items-center gap-2 max-w-2xl">
                     <div className="flex-1">
                         <Input
@@ -126,41 +126,41 @@ export function LedgerShell({
                             placeholder="Name, customer no, mapping id, NTN, STRN"
                             value={search}
                             onChange={(e) => { onSearchChange(e.target.value); onPageChange(1); }}
-                            className="h-10 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
+                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
                         />
                     </div>
                     <button
                         type="button"
                         onClick={() => onPageChange(1)}
-                        className="h-10 rounded-[6px] bg-[#C69A52] px-6 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors shadow-xs"
+                        className="h-8 rounded-[6px] bg-[#C69A52] px-5 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors shadow-xs"
                     >
                         Search
                     </button>
                 </div>
-                <div className="flex flex-wrap items-end gap-3 pt-1">
+                <div className="flex flex-wrap items-end gap-2 pt-0.5">
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">{dateFromLabel}</label>
                         <input type="date" value={dateFrom}
                             onChange={(e) => { onDateFromChange(e.target.value); onPageChange(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
+                            className="h-8 w-40 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2.5 focus:outline-none focus:border-[#C69A52] scheme-light" />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">{dateToLabel}</label>
                         <input type="date" value={dateTo}
                             onChange={(e) => { onDateToChange(e.target.value); onPageChange(1); }}
-                            className="h-10 w-44 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52] scheme-light" />
+                            className="h-8 w-40 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2.5 focus:outline-none focus:border-[#C69A52] scheme-light" />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Document type</label>
                         <select value={docType} onChange={(e) => { onDocTypeChange(e.target.value); onPageChange(1); }}
-                            className={cn(selectCls, "min-w-35")} style={selectArrow}>
+                            className={cn(selectCls, "min-w-35", "h-8")} style={selectArrow}>
                             {DOC_TYPE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
                     <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">{entityTypeLabel}</label>
                         <select value={entityType} onChange={(e) => { onEntityTypeChange(e.target.value); onPageChange(1); }}
-                            className={cn(selectCls, "min-w-35")} style={selectArrow}>
+                            className={cn(selectCls, "min-w-35", "h-8")} style={selectArrow}>
                             {entityTypeOptions.map((o) => <option key={o}>{o}</option>)}
                         </select>
                     </div>
