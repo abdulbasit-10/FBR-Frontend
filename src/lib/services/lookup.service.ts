@@ -61,6 +61,17 @@ export const lookupService = {
         api.get<{ statuscode?: string; REGISTRATION_TYPE?: string; message?: string }>(
             `/lookup/registration-type?registrationNo=${encodeURIComponent(registrationNo)}`,
         ),
+    /** Live proxy: FBR Active Taxpayer List (STATL) status for an NTN/CNIC as of a date (defaults to today). */
+    activeTaxpayerStatus: (regno: string, date?: string) =>
+        api.get<{ "status code"?: string; status?: string }>(
+            `/lookup/active-taxpayer-status?regno=${encodeURIComponent(regno)}${date ? `&date=${encodeURIComponent(date)}` : ""}`,
+        ),
+    /** Combined "Verify with FBR" check — registration type + active-taxpayer status in one call. */
+    verifyRegistration: (regno: string, date?: string) =>
+        api.get<{
+            registrationType: { statuscode?: string; REGISTRATION_TYPE?: string; message?: string };
+            taxpayerStatus: { "status code"?: string; status?: string };
+        }>(`/lookup/verify-registration?regno=${encodeURIComponent(regno)}${date ? `&date=${encodeURIComponent(date)}` : ""}`),
     /** Admin: sync all reference tables from FBR. */
     syncAll: () => api.post<{ synced: Record<string, number> }>("/lookup/sync", {}),
     syncOne: (kind: LookupKind) => api.post<{ synced: number }>(`/lookup/sync/${kind}`, {}),
