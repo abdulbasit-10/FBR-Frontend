@@ -53,6 +53,7 @@ export interface LedgerShellProps {
     dateToLabel?: string;
     filterHint?: string;
     banner?: React.ReactNode;
+    onExport?: () => void;
     children: React.ReactNode; // rendered <tr> rows
 }
 
@@ -77,9 +78,15 @@ export function LedgerShell({
     dateToLabel = "Posting date to",
     filterHint,
     banner,
+    onExport,
     children,
 }: LedgerShellProps) {
     const router = useRouter();
+
+    const handleExport = () => {
+        if (onExport) onExport();
+        else toast.error("Nothing to export yet — apply filters and load data first.");
+    };
 
     return (
         <div className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -103,7 +110,7 @@ export function LedgerShell({
                     </button>
                     <button
                         type="button"
-                        onClick={() => toast.success("Exported successfully.")}
+                        onClick={handleExport}
                         className="flex h-8 items-center gap-1 rounded-[6px] bg-[#C69A52] px-3 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs"
                     >
                         <Download className="h-3 w-3" /> Export
@@ -171,7 +178,7 @@ export function LedgerShell({
             {/* ── Table container ── */}
             <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
-                    <button type="button" onClick={() => toast.success("Exported successfully.")}
+                    <button type="button" onClick={handleExport}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
                     </button>

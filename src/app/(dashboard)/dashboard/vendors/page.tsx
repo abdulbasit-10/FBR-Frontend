@@ -17,6 +17,7 @@ import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 import { vendorsService, type Vendor as ApiVendor } from "@/lib/services";
+import { exportRowsToExcel } from "@/lib/export";
 
 interface VendorRow {
     id: number;
@@ -106,6 +107,16 @@ export default function VendorsPage() {
     const paginated = vendors;
     const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
 
+    const handleExport = () => {
+        if (paginated.length === 0) { toast.error("No vendors to export."); return; }
+        exportRowsToExcel(
+            "Vendors",
+            TABLE_COLS.slice(0, -1),
+            paginated.map((v) => [v.vendorNo, v.name, v.province, v.type, v.registration, v.ntn, v.strn]),
+        );
+        toast.success("Vendors exported.");
+    };
+
     const handleDelete = async () => {
         if (selected.size === 0) return;
         const rowsToDelete = vendors.filter((v) => selected.has(v.id));
@@ -190,7 +201,7 @@ export default function VendorsPage() {
             {/* Table */}
             <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                    <button type="button" onClick={() => toast.success("Exported successfully.")} className="flex h-7 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                    <button type="button" onClick={handleExport} className="flex h-7 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
                         <Download className="h-3 w-3 text-[#A27B3A]" /> Export
                     </button>
                 </div>

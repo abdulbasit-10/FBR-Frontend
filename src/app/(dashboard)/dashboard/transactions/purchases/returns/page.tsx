@@ -16,6 +16,7 @@ import {
     type PurchaseInvoiceForReturn,
 } from "@/components/dashboard/select-purchase-invoice-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { exportRowsToExcel } from "@/lib/export";
 import {
     purchasesService,
     type Purchase as ApiPurchase,
@@ -150,6 +151,16 @@ function PurchaseReturnContent() {
     const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
     const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
+    const handleExport = () => {
+        if (paginated.length === 0) { toast.error("No returns to export."); return; }
+        exportRowsToExcel(
+            "Purchase_Returns",
+            COLUMNS,
+            paginated.map((r) => [r.returnNo, r.originalPI, r.vendorNo, r.vendorName, r.status, r.source, r.user, r.docDate, r.postingDate, r.assessedValue, r.discount, r.salesTax, r.furtherTax, r.advanceTax]),
+        );
+        toast.success("Purchase returns exported.");
+    };
+
     const toggleSelect = (id: number) =>
         setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
     const toggleAll = () =>
@@ -243,6 +254,7 @@ function PurchaseReturnContent() {
                 source={source} onSourceChange={setSource}
                 rowsPerPage={rowsPerPage} onRowsPerPageChange={setRowsPerPage}
                 page={page} totalPages={totalPages} onPageChange={setPage}
+                onExport={handleExport}
             >
                 {paginated.map((r, i) => {
                     const isSelected = selected.has(r.id);

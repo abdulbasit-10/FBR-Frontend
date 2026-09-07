@@ -4,6 +4,7 @@ import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LedgerShell, fmt } from "@/components/dashboard/ledger-shell";
+import { exportRowsToExcel } from "@/lib/export";
 import {
     purchasesService,
     type Purchase as ApiPurchase,
@@ -101,6 +102,16 @@ function VendorLedgerContent() {
     const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
     const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
+    const handleExport = () => {
+        if (paginated.length === 0) { toast.error("No rows to export."); return; }
+        exportRowsToExcel(
+            "Vendor_Ledger",
+            COLUMNS,
+            paginated.map((r) => [r.invoiceNo, r.postingDate, r.documentType, r.vendorNo, r.vendorName, r.vendorType, r.fed, r.amtExclDiscount, r.discount, r.amtExclSalesTax, r.salesTax]),
+        );
+        toast.success("Vendor ledger exported.");
+    };
+
     return (
         <LedgerShell
             title="Vendor Ledger"
@@ -133,6 +144,7 @@ function VendorLedgerContent() {
             rowsPerPage={rowsPerPage} onRowsPerPageChange={setRowsPerPage}
             page={page} totalPages={totalPages} onPageChange={setPage}
             onRefresh={load}
+            onExport={handleExport}
         >
             {paginated.map((row, i) => (
                 <tr key={row.id} className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors")}>

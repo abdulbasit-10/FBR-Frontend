@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { LedgerShell, fmt } from "@/components/dashboard/ledger-shell";
+import { exportRowsToExcel } from "@/lib/export";
 import {
     ledgerService,
     type ItemLedgerRow as ApiItemLedgerRow,
@@ -96,6 +97,16 @@ export default function ItemLedgerPage() {
     const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
     const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
+    const handleExport = () => {
+        if (paginated.length === 0) { toast.error("No rows to export."); return; }
+        exportRowsToExcel(
+            "Item_Ledger",
+            COLUMNS,
+            paginated.map((r) => [r.documentNo, r.documentDate, r.postingDate, r.documentType, r.itemNo, r.hsCode, r.itemMapping, r.itemName, r.itemType, r.quantity, r.uom, r.unitCost, r.unitPrice]),
+        );
+        toast.success("Item ledger exported.");
+    };
+
     return (
         <LedgerShell
             title="Item Ledger"
@@ -117,6 +128,7 @@ export default function ItemLedgerPage() {
             rowsPerPage={rowsPerPage} onRowsPerPageChange={setRowsPerPage}
             page={page} totalPages={totalPages} onPageChange={setPage}
             onRefresh={load}
+            onExport={handleExport}
         >
             {paginated.map((row, i) => (
                 <tr key={row.id} className={cn(i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]", "hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors")}>
