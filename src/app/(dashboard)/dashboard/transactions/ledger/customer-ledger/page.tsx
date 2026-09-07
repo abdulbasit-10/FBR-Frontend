@@ -87,6 +87,12 @@ const DETAIL_COLUMNS = [
 ];
 
 const btnOutline = "flex items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors";
+const SummaryField = ({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
+    <div>
+        <p className="text-[10px] uppercase tracking-wider text-[#8a5f24] dark:text-[#c99d54]">{label}</p>
+        <p className={cn("font-mono font-semibold", highlight ? "text-[#A27B3A] text-[13px]" : "text-[#1E293B] dark:text-[#f0f0f0]")}>{value}</p>
+    </div>
+);
 
 function CustomerLedgerContent() {
     const router = useRouter();
@@ -245,6 +251,30 @@ function CustomerLedgerContent() {
         window.open("/print/report", "_blank");
     };
 
+    /** Prints just the totals panel (not the itemized rows) — a quick one-page summary. */
+    const handlePrintSummary = () => {
+        if (detailRows.length === 0) { toast.error("No data to print."); return; }
+        sessionStorage.setItem("printReportPayload", JSON.stringify({
+            title: `Statement Summary — ${selectedCustomerName || "Customer"}`,
+            filtersSummary: `Posting date: ${dateFrom || "—"} to ${dateTo || "—"} · Document type: ${docType} · ${detailRows.length} document${detailRows.length === 1 ? "" : "s"}`,
+            columns: ["Field", "Amount"],
+            rows: [
+                ["Assessed Value", subtotal.assessedValue],
+                ["FED", subtotal.fed],
+                ["Amount Excl. Discount", subtotal.amtExclDiscount],
+                ["Discount", subtotal.discount],
+                ["Amount Excl. ST", subtotal.amtExclSalesTax],
+                ["Sales Tax", subtotal.salesTax],
+                ["Further Tax", subtotal.furtherTax],
+                ["Amount Incl. FT", subtotal.amtInclFT],
+                ["Advance Tax", subtotal.advanceTax],
+                ["Amount Incl. ST", subtotal.amtInclST],
+                ["Total", subtotal.total],
+            ],
+        }));
+        window.open("/print/report", "_blank");
+    };
+
     return (
         <div className="min-h-full space-y-2.5 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
             {/* ── Header ── */}
@@ -286,61 +316,94 @@ function CustomerLedgerContent() {
                 </div>
             )}
 
-            {/* ── Filters ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2">
-                <div className="flex items-center gap-2 max-w-2xl">
-                    <div className="flex-1">
-                        <Input
-                            type="text"
-                            placeholder="Name, customer no, mapping id, NTN, STRN"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
-                        />
+            {/* ── Filters (+ Statement Summary side panel in detail view) ── */}
+            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 flex flex-col lg:flex-row lg:items-start gap-3">
+                <div className="lg:shrink-0 space-y-2">
+                    <div className="flex items-center gap-2 max-w-2xl">
+                        <div className="flex-1">
+                            <Input
+                                type="text"
+                                placeholder="Name, customer no, mapping id, NTN, STRN"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] placeholder:text-[#9CA3AF] px-3 focus:outline-none focus:ring-0 focus:border-[#C69A52] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#C69A52] shadow-none"
+                            />
+                        </div>
+                        <button type="button" onClick={load} className="h-8 rounded-[6px] bg-[#C69A52] px-5 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors shadow-xs">
+                            Search
+                        </button>
                     </div>
-                    <button type="button" onClick={load} className="h-8 rounded-[6px] bg-[#C69A52] px-5 text-[12px] font-semibold text-white hover:bg-[#b58b44] transition-colors shadow-xs">
-                        Search
-                    </button>
+                    <div className="flex flex-wrap items-end gap-2 pt-0.5">
+                        <div className="space-y-1">
+                            <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Posting date from</label>
+                            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+                                className="h-8 w-40 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2.5 focus:outline-none focus:border-[#C69A52] scheme-light" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Posting date to</label>
+                            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+                                className="h-8 w-40 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2.5 focus:outline-none focus:border-[#C69A52] scheme-light" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Document type</label>
+                            <select value={docType} onChange={(e) => setDocType(e.target.value)} className={cn(selectCls, "min-w-35", "h-8")} style={selectArrow}>
+                                {DOC_TYPE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
+                            </select>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Customer type</label>
+                            <select value={customerType} onChange={(e) => setCustomerType(e.target.value)} className={cn(selectCls, "min-w-35", "h-8")} style={selectArrow}>
+                                {CUSTOMER_TYPE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                    <p className="text-[11px] text-[#9CA3AF] pt-0.5">
+                        {isDetailView
+                            ? "Showing every document for this customer within the selected range."
+                            : "Each customer appears once. Click a row to see all of their invoices with subtotals."}
+                    </p>
                 </div>
-                <div className="flex flex-wrap items-end gap-2 pt-0.5">
-                    <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Posting date from</label>
-                        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
-                            className="h-8 w-40 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2.5 focus:outline-none focus:border-[#C69A52] scheme-light" />
+
+                {isDetailView && !isLoading && detailRows.length > 0 && (
+                    <div className="lg:flex-1 rounded-[8px] border-2 border-[#C69A52] bg-[#FAF6EE] dark:bg-[#2a2210] p-2.5">
+                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#A27B3A]">
+                            Summary — {detailRows.length} document{detailRows.length === 1 ? "" : "s"}
+                        </p>
+                        <div className="grid grid-cols-4 gap-x-3 gap-y-1.5 text-[12px]">
+                            <SummaryField label="Assessed Value" value={fmt(subtotal.assessedValue)} />
+                            <SummaryField label="FED" value={fmt(subtotal.fed)} />
+                            <SummaryField label="Amt Excl. Discount" value={fmt(subtotal.amtExclDiscount)} />
+                            <SummaryField label="Discount" value={fmt(subtotal.discount)} />
+                            <SummaryField label="Amt Excl. ST" value={fmt(subtotal.amtExclSalesTax)} />
+                            <SummaryField label="Sales Tax" value={fmt(subtotal.salesTax)} />
+                            <SummaryField label="Further Tax" value={fmt(subtotal.furtherTax)} />
+                            <SummaryField label="Amt Incl. FT" value={fmt(subtotal.amtInclFT)} />
+                            <SummaryField label="Advance Tax" value={fmt(subtotal.advanceTax)} />
+                            <SummaryField label="Amt Incl. ST" value={fmt(subtotal.amtInclST)} highlight />
+                            <SummaryField label="Total" value={fmt(subtotal.total)} highlight />
+                            <div className="flex items-end justify-start">
+                                <button
+                                    type="button"
+                                    onClick={handlePrintSummary}
+                                    title="Print just this summary"
+                                    className="flex h-7 items-center gap-1 rounded-[5px] border border-[#C69A52]/50 bg-white/60 dark:bg-black/20 px-2.5 text-[11px] font-semibold text-[#A27B3A] hover:bg-white dark:hover:bg-black/30 transition-colors"
+                                >
+                                    <Printer className="h-3 w-3" /> Print
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Posting date to</label>
-                        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
-                            className="h-8 w-40 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white! dark:bg-[#2a2a2a]! text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2.5 focus:outline-none focus:border-[#C69A52] scheme-light" />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Document type</label>
-                        <select value={docType} onChange={(e) => setDocType(e.target.value)} className={cn(selectCls, "min-w-35", "h-8")} style={selectArrow}>
-                            {DOC_TYPE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
-                        </select>
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#4F5967] dark:text-[#9ca3af] block">Customer type</label>
-                        <select value={customerType} onChange={(e) => setCustomerType(e.target.value)} className={cn(selectCls, "min-w-35", "h-8")} style={selectArrow}>
-                            {CUSTOMER_TYPE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <p className="text-[11px] text-[#9CA3AF] pt-0.5">
-                    {isDetailView
-                        ? "Showing every document for this customer within the selected range, with a subtotal below."
-                        : "Each customer appears once. Click a row to see all of their invoices with subtotals."}
-                </p>
+                )}
             </div>
 
             {/* ── Table container ── */}
             <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2.5">
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="overflow-auto max-h-[60vh] rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                     <table className="w-full text-[12px] border-collapse">
                         <thead>
-                            <tr className="bg-[#C69A52] text-white">
+                            <tr>
                                 {(isDetailView ? DETAIL_COLUMNS : SUMMARY_COLUMNS).map((col) => (
-                                    <th key={col} className="px-2.5 py-2 text-left font-semibold whitespace-nowrap">{col}</th>
+                                    <th key={col} className="sticky top-0 z-10 bg-[#C69A52] text-white px-2.5 py-2 text-left font-semibold whitespace-nowrap">{col}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -386,22 +449,6 @@ function CustomerLedgerContent() {
                                                 <td className="px-2.5 py-2 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{row.mappingId}</td>
                                             </tr>
                                         ))}
-                                        <tr className="bg-[#FAF6EE] dark:bg-[#2a2210] font-bold border-t-2 border-[#C69A52]">
-                                            <td colSpan={6} className="px-2.5 py-2 text-[#1E293B] dark:text-[#f0f0f0]">Subtotal ({detailRows.length} document{detailRows.length === 1 ? "" : "s"})</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.assessedValue)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.fed)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.amtExclDiscount)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.discount)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.amtExclSalesTax)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.salesTax)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#A27B3A]">{fmt(subtotal.amtInclST)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.furtherTax)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.amtInclFT)}</td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.advanceTax)}</td>
-                                            <td className="px-2.5 py-2"></td>
-                                            <td className="px-2.5 py-2 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(subtotal.total)}</td>
-                                            <td colSpan={4} className="px-2.5 py-2"></td>
-                                        </tr>
                                     </>
                                 )
                             ) : paginatedSummaries.length === 0 ? (
