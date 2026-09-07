@@ -196,6 +196,10 @@ function SalesInvoicesContent() {
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((i) => i.id)));
     };
 
+    // Only enable Post when the selection actually contains an UnPosted row — not just "something"
+    // is checked (e.g. an already-Posted invoice can't be posted again).
+    const hasPostableSelection = paginated.some((i) => selected.has(i.id) && i.status === "UnPosted");
+
     const printInvoices = (uuids: string[]) => {
         // Print via a hidden iframe so the browser's print dialog opens directly
         // over the current page instead of navigating to a new tab.
@@ -387,7 +391,7 @@ function SalesInvoicesContent() {
                     </button>
                     <button
                         type="button"
-                        disabled={selected.size === 0 || posting}
+                        disabled={!hasPostableSelection || posting}
                         onClick={handlePost}
                         className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     >
