@@ -24,6 +24,7 @@ export interface Purchase {
     purchaseNo: string | null;
     purchaseType: PurchaseType;
     originalPurchaseId: number | null;
+    originalPurchase?: { id: number; uuid: string; purchaseNo: string | null } | null;
     vendorInvoiceNo: string | null;
     docDate: string;
     postingDate: string | null;

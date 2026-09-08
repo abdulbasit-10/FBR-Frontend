@@ -171,10 +171,10 @@ function CustomerLedgerContent() {
         return Array.from(map.values()).sort((a, b) => b.total - a.total);
     }, [filtered]);
 
-    // ── Level 2: every document for the selected customer, plus a subtotal ──
+    // ── Level 2: every document for the selected customer (or the single filtered invoice), plus a subtotal ──
     const detailRows = useMemo(
-        () => (selectedCustomerNo ? filtered.filter((r) => r.customerNo === selectedCustomerNo) : []),
-        [filtered, selectedCustomerNo],
+        () => (invoiceUuid ? filtered : selectedCustomerNo ? filtered.filter((r) => r.customerNo === selectedCustomerNo) : []),
+        [filtered, selectedCustomerNo, invoiceUuid],
     );
     const selectedCustomerName = detailRows[0]?.customerName ?? "";
     const subtotal = useMemo(
