@@ -133,10 +133,10 @@ export default function ItemsPage() {
     const fmt = (n: number) => n.toFixed(2);
 
     return (
-        <div className="min-h-full space-y-2.5 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-2.5 overflow-hidden text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* Header */}
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex shrink-0 items-center justify-between pb-0.5">
                 <div className="flex items-center gap-1.5">
                     <button type="button" onClick={() => router.back()} className="cursor-pointer text-[#A27B3A] hover:opacity-75 transition-opacity">
                         <ChevronLeft className="h-4.5 w-4.5" />
@@ -164,7 +164,7 @@ export default function ItemsPage() {
             </div>
 
             {/* Filter card */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 space-y-2">
+            <div className="shrink-0 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 space-y-2">
                 <div className="flex items-center gap-2 max-w-2xl">
                     <div className="flex-1">
                         <Input
@@ -186,8 +186,8 @@ export default function ItemsPage() {
             </div>
 
             {/* Table card */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2">
-                <div className="flex items-center justify-between">
+            <div className="flex min-h-0 flex-col gap-2 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs">
+                <div className="flex shrink-0 items-center justify-between">
                     <button type="button" onClick={handleExport}
                         className="flex h-7 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
                         <Download className="h-3 w-3 text-[#A27B3A]" /> Export
@@ -195,9 +195,9 @@ export default function ItemsPage() {
                     <p className="text-[11px] text-[#9CA3AF] italic">Scroll right to view row actions</p>
                 </div>
 
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
+                <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                     <table className="w-full text-[12px] border-collapse min-w-[1100px]">
-                        <thead>
+                        <thead className="sticky top-0 z-10">
                             <tr className="bg-[#C69A52] text-white">
                                 <th className="w-10 px-2.5 py-1.5 text-center">
                                     <input
@@ -284,13 +284,13 @@ export default function ItemsPage() {
                 </div>
 
                 {/* Footer */}
-                {!isLoading && paginated.length > 0 && (<div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                {!isLoading && paginated.length > 0 && (<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 pt-1">
                     <div className="flex items-center gap-2 text-[12px] text-[#6B7280] dark:text-[#9ca3af]">
                         <span>Rows per page:</span>
                         <select
                             value={rowsPerPage}
                             onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] px-2 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
+                            className="h-7 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] px-2 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
                             style={selectArrow}
                         >
                             {ROW_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
@@ -302,9 +302,9 @@ export default function ItemsPage() {
                             type="button"
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#6B7280] hover:bg-[#F9FAFB] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                            className="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#6B7280] hover:bg-[#F9FAFB] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
-                            <ChevronLeft className="h-4 w-4" />
+                            <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
                         <span className="text-[12px] text-[#6B7280] dark:text-[#9ca3af] px-2">
                             Page {page} of {totalPages}
@@ -313,9 +313,9 @@ export default function ItemsPage() {
                             type="button"
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#6B7280] hover:bg-[#F9FAFB] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                            className="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#6B7280] hover:bg-[#F9FAFB] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
-                            <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                     </div>
                 </div>

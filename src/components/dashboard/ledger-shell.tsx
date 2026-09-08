@@ -89,10 +89,10 @@ export function LedgerShell({
     };
 
     return (
-        <div className="min-h-full space-y-4 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-4 overflow-hidden text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Header ── */}
-            <div className="flex items-center justify-between pb-1">
+            <div className="flex shrink-0 items-center justify-between pb-1">
                 <button
                     onClick={() => router.push("/dashboard")}
                     className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity"
@@ -119,13 +119,13 @@ export function LedgerShell({
             </div>
 
             {banner && (
-                <div className="rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-[#FAF6F0] dark:bg-[#241d10] px-4 py-2.5 text-[12px] text-[#8a5f24] dark:text-[#c99d54]">
+                <div className="shrink-0 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-[#FAF6F0] dark:bg-[#241d10] px-4 py-2.5 text-[12px] text-[#8a5f24] dark:text-[#c99d54]">
                     {banner}
                 </div>
             )}
 
             {/* ── Filters ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2">
+            <div className="shrink-0 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2">
                 <div className="flex items-center gap-2 max-w-2xl">
                     <div className="flex-1">
                         <Input
@@ -176,8 +176,8 @@ export function LedgerShell({
             </div>
 
             {/* ── Table container ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
+            <div className="flex min-h-0 flex-col gap-3 rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 shadow-xs">
+                <div className="flex shrink-0 items-center justify-between">
                     <button type="button" onClick={handleExport}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
@@ -185,9 +185,9 @@ export function LedgerShell({
                     <p className="text-[11px] text-[#9CA3AF] italic">Scroll right to view row actions</p>
                 </div>
 
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                     <table className="w-full text-[12px] border-collapse">
-                        <thead>
+                        <thead className="sticky top-0 z-10">
                             <tr className="bg-[#C69A52] text-white">
                                 {columns.map((col) => (
                                     <th key={col} className="px-2.5 py-2 text-left font-semibold whitespace-nowrap">{col}</th>
@@ -218,18 +218,18 @@ export function LedgerShell({
                 </div>
 
                 {/* ── Pagination ── */}
-                <div className="flex items-center justify-between pt-1">
+                <div className="flex shrink-0 items-center justify-between pt-1">
                     <div className="flex items-center gap-2">
                         <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">Row</span>
                         <select value={rowsPerPage} onChange={(e) => { onRowsPerPageChange(Number(e.target.value)); onPageChange(1); }}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
+                            className="h-7 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
                             style={selectArrow}>
                             {ROW_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                         </select>
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            className="flex h-6 w-6 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                             <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
                         <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">
@@ -237,7 +237,7 @@ export function LedgerShell({
                             <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{totalPages}</span>
                         </span>
                         <button onClick={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page === totalPages}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            className="flex h-6 w-6 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                             <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                     </div>

@@ -101,10 +101,10 @@ export function TransactionListShell({
     const colSpan = columns.length + (withCheckbox ? 1 : 0);
 
     return (
-        <div className="min-h-full space-y-2.5 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-2.5 overflow-hidden text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Header ── */}
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex shrink-0 items-center justify-between pb-0.5">
                 <div className="flex items-center gap-1.5">
                     {backHref && (
                         <button type="button" onClick={() => router.back()}
@@ -118,7 +118,7 @@ export function TransactionListShell({
             </div>
 
             {/* ── Filter card ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2">
+            <div className="shrink-0 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2">
                 <div className="flex items-center gap-2 max-w-2xl">
                     <div className="flex-1">
                         <Input
@@ -166,8 +166,8 @@ export function TransactionListShell({
             </div>
 
             {/* ── Table card ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 shadow-xs space-y-2">
-                <div className="flex items-center justify-between">
+            <div className="flex min-h-0 flex-col gap-2 rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 shadow-xs">
+                <div className="flex shrink-0 items-center justify-between">
                     <button type="button" onClick={() => (onExport ? onExport() : toast.success("Exported successfully."))}
                         className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
                         <Download className="h-3.5 w-3.5 text-[#A27B3A]" /> Export
@@ -175,9 +175,9 @@ export function TransactionListShell({
                     <p className="text-[11px] text-[#9CA3AF] italic">Scroll right to view row actions</p>
                 </div>
 
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                     <table className="w-full text-[12px] border-collapse">
-                        <thead>
+                        <thead className="sticky top-0 z-10">
                             <tr className="bg-[#C69A52] text-white">
                                 {withCheckbox && (
                                     <th className="w-8 px-2 py-1.5 text-center">
@@ -214,27 +214,27 @@ export function TransactionListShell({
                 </div>
 
                 {/* ── Pagination ── */}
-                <div className="flex items-center justify-between pt-1">
+                <div className="flex shrink-0 items-center justify-between pt-1">
                     <div className="flex items-center gap-2">
                         <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">Row</span>
                         <select value={rowsPerPage} onChange={(e) => { onRowsPerPageChange(Number(e.target.value)); onPageChange(1); }}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
+                            className="h-7 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
                             style={selectArrow}>
                             {ROW_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                         </select>
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
-                            <ChevronLeft className="h-4 w-4" />
+                            className="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                            <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
                         <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">
                             Page <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{page}</span> of{" "}
                             <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{totalPages}</span>
                         </span>
                         <button onClick={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page === totalPages}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
-                            <ChevronRight className="h-4 w-4" />
+                            className="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                            <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                     </div>
                 </div>

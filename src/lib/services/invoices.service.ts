@@ -143,7 +143,8 @@ export interface CreateInvoiceInput {
 export interface InvoiceListQuery {
     page?: number;
     limit?: number;
-    status?: InvoiceStatus;
+    /** "unposted" is a virtual backend filter meaning not-posted-and-not-cancelled. */
+    status?: InvoiceStatus | "unposted";
     customerId?: number;
     from?: string;
     to?: string;

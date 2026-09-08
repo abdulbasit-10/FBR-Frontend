@@ -179,10 +179,10 @@ export default function AuditLogsPage() {
     };
 
     return (
-        <div className="min-h-full space-y-2.5 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-2.5 overflow-hidden text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Header ── */}
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex shrink-0 items-center justify-between pb-0.5">
                 <button onClick={() => router.push("/dashboard")}
                     className="flex items-center gap-1.5 text-[17px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity">
                     <ChevronLeft className="h-4.5 w-4.5 text-[#A27B3A]" />
@@ -205,7 +205,7 @@ export default function AuditLogsPage() {
 
             {/* ── FILTERS card (toggleable) ── */}
             {showFilters && (
-                <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2.5">
+                <div className="shrink-0 rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2.5">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Filters</p>
                     <div className="flex flex-wrap items-end gap-2.5">
                         <div className="space-y-1">
@@ -248,19 +248,19 @@ export default function AuditLogsPage() {
 
             {/* ── Restricted-access banner ── */}
             {canView === false && (
-                <div className="flex items-center gap-2 rounded-[8px] border border-[#FCA5A5] dark:border-[#7f1d1d] bg-[#FEF2F2] dark:bg-[#2a0a0a] px-3 py-2 text-[12px] text-[#B91C1C] dark:text-[#FCA5A5]">
+                <div className="flex shrink-0 items-center gap-2 rounded-[8px] border border-[#FCA5A5] dark:border-[#7f1d1d] bg-[#FEF2F2] dark:bg-[#2a0a0a] px-3 py-2 text-[12px] text-[#B91C1C] dark:text-[#FCA5A5]">
                     <ShieldAlert className="h-4 w-4 shrink-0" />
                     <span>Only company admin can view audit logs.</span>
                 </div>
             )}
 
             {/* ── ACTIVITY card ── */}
-            <div className="rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] shadow-xs">
-                <div className="p-3 space-y-2.5">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Activity</p>
+            <div className="flex min-h-0 flex-col rounded-[11px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] shadow-xs">
+                <div className="flex min-h-0 flex-col gap-2.5 p-3">
+                    <p className="shrink-0 text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Activity</p>
 
                     {/* Search row */}
-                    <div className="flex items-center gap-2 max-w-2xl">
+                    <div className="flex shrink-0 items-center gap-2 max-w-2xl">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
                             <Input type="text" value={search}
@@ -284,9 +284,9 @@ export default function AuditLogsPage() {
                     </div>
 
                     {/* Table */}
-                    <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+                    <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                         <table className="w-full text-[12px] border-collapse">
-                            <thead>
+                            <thead className="sticky top-0 z-10">
                                 <tr className="bg-[#C69A52] text-white">
                                     {TABLE_COLS.map((col) => (
                                         <th key={col} className="px-2.5 py-1.5 text-left font-semibold whitespace-nowrap">{col}</th>
@@ -331,7 +331,7 @@ export default function AuditLogsPage() {
                 </div>
 
                 {/* ── Footer ── */}
-                <div className="flex items-center justify-between border-t border-[#F3F4F6] dark:border-[#2e2e2e] px-3 py-2">
+                <div className="flex shrink-0 items-center justify-between border-t border-[#F3F4F6] dark:border-[#2e2e2e] px-3 py-2">
                     <span className="text-[12px] text-[#9CA3AF]">
                         {isLoading ? "—" : total} logs total
                     </span>

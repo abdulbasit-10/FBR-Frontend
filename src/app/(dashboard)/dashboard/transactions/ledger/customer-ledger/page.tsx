@@ -277,9 +277,9 @@ function CustomerLedgerContent() {
     };
 
     return (
-        <div className="min-h-full space-y-2.5 text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-2.5 overflow-hidden text-[#4f5967] dark:text-[#9ca3af]" style={{ fontFamily: "'Inter', sans-serif" }}>
             {/* ── Header ── */}
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex shrink-0 items-center justify-between pb-0.5">
                 {selectedCustomerNo && !invoiceUuid ? (
                     <button onClick={() => setSelectedCustomerNo(null)} className="flex items-center gap-1.5 text-[18px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity">
                         <ArrowLeft className="h-5 w-5 text-[#A27B3A]" />
@@ -309,7 +309,7 @@ function CustomerLedgerContent() {
             </div>
 
             {invoiceUuid && (
-                <div className="rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-[#FAF6F0] dark:bg-[#241d10] px-4 py-2.5 text-[12px] text-[#8a5f24] dark:text-[#c99d54] flex items-center justify-between">
+                <div className="shrink-0 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-[#FAF6F0] dark:bg-[#241d10] px-4 py-2.5 text-[12px] text-[#8a5f24] dark:text-[#c99d54] flex items-center justify-between">
                     <span>Filtered to one document. Sales Invoice · ID {invoiceUuid}</span>
                     <button type="button" onClick={() => router.push("/dashboard/transactions/ledger/customer-ledger")} className="font-semibold underline hover:opacity-75">
                         Clear filter
@@ -318,7 +318,7 @@ function CustomerLedgerContent() {
             )}
 
             {/* ── Filters (+ Statement Summary side panel in detail view) ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 flex flex-col lg:flex-row lg:items-start gap-3">
+            <div className="shrink-0 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 flex flex-col lg:flex-row lg:items-start gap-3">
                 <div className="lg:shrink-0 space-y-2">
                     <div className="flex items-center gap-2 max-w-2xl">
                         <div className="flex-1">
@@ -398,8 +398,8 @@ function CustomerLedgerContent() {
             </div>
 
             {/* ── Table container ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2.5">
-                <div className="overflow-auto max-h-[60vh] rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="flex min-h-0 flex-col gap-2.5 rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs">
+                <div className="flex-1 min-h-0 overflow-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                     <table className="w-full text-[12px] border-collapse">
                         <thead>
                             <tr>
@@ -482,11 +482,11 @@ function CustomerLedgerContent() {
                 </div>
 
                 {/* ── Pagination ── */}
-                <div className="flex items-center justify-between pt-1">
+                <div className="flex shrink-0 items-center justify-between pt-1">
                     <div className="flex items-center gap-2">
                         <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">Row</span>
                         <select value={rowsPerPage} onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
+                            className="h-7 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none"
                             style={selectArrow}>
                             {ROW_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                         </select>
@@ -497,11 +497,11 @@ function CustomerLedgerContent() {
                             <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{totalPages}</span>
                         </span>
                         <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            className="flex h-6 w-6 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                             <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
                         <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            className="flex h-6 w-6 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                             <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                     </div>
