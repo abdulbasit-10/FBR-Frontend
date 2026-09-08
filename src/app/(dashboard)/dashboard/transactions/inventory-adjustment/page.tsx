@@ -12,6 +12,7 @@ import {
     btnOutline,
 } from "@/components/dashboard/transaction-list-shell";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { exportRowsToExcel } from "@/lib/export";
 import {
     inventoryAdjustmentsService,
     type InventoryAdjustment as ApiAdjustment,
@@ -131,6 +132,16 @@ function InventoryAdjustmentContent() {
     const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
     const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
+    const handleExport = () => {
+        if (paginated.length === 0) { toast.error("No adjustments to export."); return; }
+        exportRowsToExcel(
+            "Inventory_Adjustments",
+            COLUMNS.slice(0, -1),
+            paginated.map((a) => [a.adjustmentNo, a.status, a.source, a.user, a.docDate, a.postingDate, a.lines, a.lineTotal]),
+        );
+        toast.success("Inventory adjustments exported.");
+    };
+
     const toggleSelect = (id: number) =>
         setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
     const toggleAll = () =>
@@ -220,6 +231,7 @@ function InventoryAdjustmentContent() {
                 source={source} onSourceChange={setSource}
                 rowsPerPage={rowsPerPage} onRowsPerPageChange={setRowsPerPage}
                 page={page} totalPages={totalPages} onPageChange={setPage}
+                onExport={handleExport}
             >
                 {paginated.map((a, i) => (
                     <tr key={a.id}

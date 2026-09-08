@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, use as usePromise } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, RefreshCw, Save, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, Save, Search, X, ShieldCheck } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +40,7 @@ export default function EditCustomerPage({ params }: { params: Promise<{ uuid: s
 
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [verifying, setVerifying] = useState(false);
     const [customerNo, setCustomerNo] = useState("");
     const [mappingId, setMappingId] = useState("");
 
@@ -107,6 +108,31 @@ export default function EditCustomerPage({ params }: { params: Promise<{ uuid: s
     ], [customerType, ntn, strn, ntnProvince, address, contactPerson, phoneNumber, whatsapp, email, website]);
 
     const progressPct = Math.round((requiredChecks.filter((r) => r.done).length / requiredChecks.length) * 100);
+
+    const handleVerifyFbr = async () => {
+        if (!ntn.trim()) {
+            toast.error("Enter NTN/CNIC first.");
+            return;
+        }
+        if (ntn.trim().length !== 7 && ntn.trim().length !== 13) {
+            toast.error("NTN/CNIC must be 7 digits (NTN) or 13 digits (CNIC).");
+            return;
+        }
+        setVerifying(true);
+        try {
+            const res = await lookupService.verifyRegistration(ntn.trim());
+            const regType = res.data.registrationType?.REGISTRATION_TYPE;
+            const taxStatus = res.data.taxpayerStatus?.status;
+            if (regType) {
+                setRegistrationStatus(regType.toLowerCase() === "registered" ? "Registered" : "Unregistered");
+            }
+            toast.success(`FBR: ${regType ?? "Unknown"} \u00b7 ${taxStatus ?? "status unavailable"}`);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "FBR verification failed.");
+        } finally {
+            setVerifying(false);
+        }
+    };
 
     const handleSave = async () => {
         if (!customerName.trim() || ntnProvince === "Select" || !address.trim()) {
@@ -220,7 +246,14 @@ export default function EditCustomerPage({ params }: { params: Promise<{ uuid: s
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1">
                                 <Label className={labelCls}>NTN / CNIC {registrationStatus === "Registered" && <span className="text-red-500">*</span>}</Label>
-                                <Input value={ntn} onChange={(e) => setNtn(e.target.value)} className={inputCls} />
+                                <div className="flex items-center gap-1.5">
+                                    <Input value={ntn} onChange={(e) => setNtn(e.target.value.replace(/\D/g, "").slice(0, 13))} maxLength={13} placeholder="7 or 13 digit NTN/CNIC" className={inputCls} />
+                                    <button type="button" onClick={handleVerifyFbr} disabled={verifying}
+                                        title="Verify NTN/CNIC with FBR"
+                                        className="flex h-9 shrink-0 items-center gap-1 rounded-[6px] border border-[#D4B88A] dark:border-[#4a3a20] bg-[#FBF7F0] dark:bg-[#1e1a10] px-2.5 text-[11px] font-medium text-[#A27B3A] hover:bg-[#F5EDD8] dark:hover:bg-[#2a2010] transition-colors disabled:opacity-60 cursor-pointer">
+                                        <ShieldCheck className="h-3.5 w-3.5" /> {verifying ? "…" : "Verify"}
+                                    </button>
+                                </div>
                             </div>
                             <div className="space-y-1">
                                 <Label className={labelCls}>STRN</Label>

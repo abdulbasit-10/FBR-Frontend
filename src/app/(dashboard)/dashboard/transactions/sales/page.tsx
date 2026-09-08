@@ -73,10 +73,10 @@ const uiStatus = (s: InvoiceStatus): SalesInvoice["status"] => {
     return "UnPosted";
 };
 
-const apiStatus = (s: string): InvoiceStatus | undefined => {
+const apiStatus = (s: string): InvoiceStatus | "unposted" | undefined => {
     if (s === "Posted") return "posted";
     if (s === "Cancelled") return "cancelled";
-    if (s === "UnPosted") return "draft";
+    if (s === "UnPosted") return "unposted";
     return undefined;
 };
 
@@ -357,10 +357,10 @@ function SalesInvoicesContent() {
     };
 
     return (
-        <div className="min-h-full space-y-2.5 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-2.5 overflow-hidden text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Page Level Header Bar ── */}
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex shrink-0 items-center justify-between pb-0.5">
                 <div className="flex items-center gap-1.5">
                     <button type="button" onClick={() => router.back()} className="cursor-pointer text-[#A27B3A] hover:opacity-75 transition-opacity">
                         <ChevronLeft className="h-5 w-5" />
@@ -416,14 +416,14 @@ function SalesInvoicesContent() {
             </div>
 
             {/* ── SMTP warning banner ── */}
-            <div className="rounded-[6px] border border-[#F3D89A] dark:border-[#4a3010] bg-[#FFFBEB] dark:bg-[#1e1a08] px-3 py-1.5">
+            <div className="shrink-0 rounded-[6px] border border-[#F3D89A] dark:border-[#4a3010] bg-[#FFFBEB] dark:bg-[#1e1a08] px-3 py-1.5">
                 <p className="text-[11px] text-[#92590A] italic">
                     Email filter is hidden until SMTP is configured on the company profile.
                 </p>
             </div>
 
             {/* ── SECTION 1: FILTER CONTAINER ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2 min-h-38">
+            <div className="shrink-0 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 space-y-2 min-h-38">
                 {/* Search Input Row */}
                 <div className="flex items-center gap-2">
                     <div className="flex-1 relative">
@@ -486,10 +486,10 @@ function SalesInvoicesContent() {
 
 
             {/* ── SECTION 2: TABLE & ACTIONS CONTAINER ── */}
-            <div className="rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 shadow-xs space-y-2">
+            <div className="flex min-h-0 flex-col gap-2 rounded-[16px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-2.5 shadow-xs">
 
                 {/* Export & Row Info Bar */}
-                <div className="flex items-center justify-between">
+                <div className="flex shrink-0 items-center justify-between">
                     <button
                         type="button"
                         onClick={handleExport}
@@ -501,9 +501,9 @@ function SalesInvoicesContent() {
                 </div>
 
                 {/* Data Table */}
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
+                <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                     <table className="w-full text-[12px] min-w-275 border-collapse">
-                        <thead>
+                        <thead className="sticky top-0 z-10">
                             <tr className="bg-[#C69A52] text-white">
                                 <th className="w-8 px-2 py-1.5 text-center">
                                     <button
@@ -514,6 +514,7 @@ function SalesInvoicesContent() {
                                         <Square className="h-3 w-3 text-white fill-white/20" />
                                     </button>
                                 </th>
+                                <th className="px-2 py-1.5 text-left font-semibold whitespace-nowrap">S.No</th>
                                 {TABLE_COLS.map((col) => (
                                     <th key={col} className="px-2 py-1.5 text-left font-semibold whitespace-nowrap">
                                         {col}
@@ -525,13 +526,13 @@ function SalesInvoicesContent() {
                         <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 2} className="py-10 text-center bg-white dark:bg-[#242424]">
+                                    <td colSpan={TABLE_COLS.length + 3} className="py-10 text-center bg-white dark:bg-[#242424]">
                                         <LogoSpinner label="Loading Sales Invoices..." className="mx-auto" />
                                     </td>
                                 </tr>
                             ) : paginated.length === 0 ? (
                                 <tr>
-                                    <td colSpan={TABLE_COLS.length + 2} className="py-12 text-center bg-white dark:bg-[#242424]">
+                                    <td colSpan={TABLE_COLS.length + 3} className="py-12 text-center bg-white dark:bg-[#242424]">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FAF6EE]">
                                                 <FileText className="h-5 w-5 text-[#C69A52]" />
@@ -561,6 +562,9 @@ function SalesInvoicesContent() {
                                                 className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer"
                                             />
                                         </td>
+                                        <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">
+                                            {(page - 1) * rowsPerPage + i + 1}
+                                        </td>
                                         <td className="px-2 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">
                                             <button
                                                 type="button"
@@ -578,14 +582,14 @@ function SalesInvoicesContent() {
                                         <td className="px-2 py-1.5">{statusBadge(inv.status)}</td>
                                         <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.docDate}</td>
                                         <td className="px-2 py-1.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{inv.postingDate}</td>
-                                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
-                                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclDisc)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono font-medium text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.assessedValue)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono font-medium text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclDisc)}</td>
                                         <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.discount)}</td>
-                                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono font-medium text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtExclST)}</td>
                                         <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.salesTax)}</td>
                                         <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#A27B3A]">{fmt(inv.amtInclST)}</td>
                                         <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.furtherTax)}</td>
-                                        <td className="px-2 py-1.5 text-right font-mono text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtInclFT)}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono font-medium text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.amtInclFT)}</td>
                                         <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmt(inv.advanceTax)}</td>
                                         <td className="px-2 py-1.5 text-right font-mono text-[#4F5967] dark:text-[#9ca3af]">{fmtPercent(inv.advTaxPercent)}</td>
                                         <td className="px-2 py-1.5 text-right font-mono font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(inv.total)}</td>
@@ -639,13 +643,13 @@ function SalesInvoicesContent() {
                 </div>
 
                 {/* Footer / Pagination Controls — Positioned directly below table */}
-                <div className="flex items-center justify-between pt-1">
+                <div className="flex shrink-0 items-center justify-between pt-1">
                     <div className="flex items-center gap-2">
                         <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">Row</span>
                         <select
                             value={rowsPerPage}
                             onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
-                            className="h-8 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
+                            className="h-7 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-2 focus:outline-none focus:border-[#C69A52] appearance-none cursor-pointer"
                             style={selectArrow}
                         >
                             {ROW_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -655,9 +659,9 @@ function SalesInvoicesContent() {
                         <button
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                            className="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
-                            <ChevronLeft className="h-4 w-4" />
+                            <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
                         <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">
                             Page <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{page}</span> of{" "}
@@ -666,9 +670,9 @@ function SalesInvoicesContent() {
                         <button
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                            className="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
-                            <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                     </div>
                 </div>

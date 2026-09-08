@@ -74,10 +74,10 @@ export default function SupportPage() {
     const paginated = filtered;
 
     return (
-        <div className="min-h-full space-y-2.5 text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-2.5 overflow-hidden text-[#4f5967]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Header ── */}
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex shrink-0 items-center justify-between pb-0.5">
                 <button onClick={() => router.push("/dashboard")}
                     className="flex items-center gap-1.5 text-[16px] font-bold text-[#1E293B] dark:text-[#f0f0f0] hover:opacity-75 transition-opacity cursor-pointer">
                     <ChevronLeft className="h-4.5 w-4.5 text-[#A27B3A]" />
@@ -90,7 +90,7 @@ export default function SupportPage() {
             </div>
 
             {/* ── Filters card ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2">
+            <div className="shrink-0 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-3 shadow-xs space-y-2">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Filters</p>
                 <div className="flex flex-wrap items-end gap-2">
                     <div className="space-y-1 flex-1 min-w-60">
@@ -124,13 +124,13 @@ export default function SupportPage() {
             </div>
 
             {/* ── Requests card ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] shadow-xs">
-                <div className="p-3 space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Requests</p>
+            <div className="flex min-h-0 flex-col rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] shadow-xs">
+                <div className="flex min-h-0 flex-col gap-2 p-3">
+                    <p className="shrink-0 text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Requests</p>
 
-                    <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e]">
+                    <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                         <table className="w-full text-[12px] border-collapse">
-                            <thead>
+                            <thead className="sticky top-0 z-10">
                                 <tr className="bg-[#C69A52] text-white">
                                     {["No", "Title", "Status", "Created"].map((col) => (
                                         <th key={col} className="px-2.5 py-1.5 text-left font-semibold whitespace-nowrap">{col}</th>
@@ -169,9 +169,9 @@ export default function SupportPage() {
                 </div>
 
                 {/* ── Pagination (centered per Figma) ── */}
-                <div className="flex items-center justify-center border-t border-[#F3F4F6] dark:border-[#2e2e2e] py-2.5 gap-2">
+                <div className="flex shrink-0 items-center justify-center border-t border-[#F3F4F6] dark:border-[#2e2e2e] py-2 gap-2">
                     <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                        className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                        className="flex h-6 w-6 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
                         <ChevronLeft className="h-3.5 w-3.5" />
                     </button>
                     <span className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">
@@ -179,7 +179,7 @@ export default function SupportPage() {
                         <span className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{totalPages}</span>
                     </span>
                     <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                        className="flex h-7 w-7 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                        className="flex h-6 w-6 items-center justify-center rounded border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
                         <ChevronRight className="h-3.5 w-3.5" />
                     </button>
                 </div>

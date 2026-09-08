@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import { toQuery, type ListQuery, type Paginated } from "./_types";
+import { triggerNotificationsRefresh } from "./notifications.service";
 
 // Mirrors backend model FBR-Backend/src/models/SupportTicket.ts
 export type SupportStatus = "Open" | "In Progress" | "Resolved" | "Closed";
@@ -48,7 +49,10 @@ export const supportService = {
     getOne: (uuid: string) => api.get<SupportTicket>(`/support/${uuid}`),
     create: (data: CreateTicketInput) => api.post<SupportTicket>("/support", data),
     update: (uuid: string, data: UpdateTicketInput) =>
-        api.put<SupportTicket>(`/support/${uuid}`, data),
+        api.put<SupportTicket>(`/support/${uuid}`, data).then((res) => {
+            triggerNotificationsRefresh();
+            return res;
+        }),
     remove: (uuid: string) => api.delete<null>(`/support/${uuid}`),
     /** Multipart upload — bypasses the JSON `api` client since this sends a File. */
     uploadAttachment: async (uuid: string, file: File): Promise<SupportTicket> => {

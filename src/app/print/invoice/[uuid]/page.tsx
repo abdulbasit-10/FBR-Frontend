@@ -102,10 +102,10 @@ function PrintInvoiceContent(
                     {/* FBR Digital Invoicing System logo (mandatory, spec §6). */}
                     <div className="flex flex-col items-end gap-1.5">
                         <Image
-                            src="/brand/fbr-di-logo.svg"
-                            alt="FBR Digital Invoicing System"
+                            src="/brand/fbr-official-logo.jpg"
+                            alt="FBR Pakistan"
                             width={140}
-                            height={56}
+                            height={75}
                             priority
                         />
                         <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-500">
@@ -243,8 +243,8 @@ function PrintInvoiceContent(
                                     fgColor="#000000"
                                 />
                             </div>
-                            <div className="text-[10px] text-neutral-500 pt-1 max-w-[140px]">
-                                Scan to verify this invoice on the FBR portal.
+                            <div className="text-[10px] text-neutral-500 pt-1 max-w-35">
+                                Scan to view invoice details.
                             </div>
                         </div>
                     </div>

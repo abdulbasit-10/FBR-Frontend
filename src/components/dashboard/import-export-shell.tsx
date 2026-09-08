@@ -151,10 +151,10 @@ export function ImportExportShell({
     };
 
     return (
-        <div className="min-h-full space-y-2.5" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-2.5 overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Header ── */}
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex shrink-0 items-center justify-between pb-0.5">
                 <button onClick={() => router.back()}
                     className="flex items-center gap-1.5 text-[16px] font-bold text-[#1E293B] dark:text-white hover:opacity-75 transition-opacity cursor-pointer">
                     <ChevronLeft className="h-4.5 w-4.5 text-[#A27B3A]" />
@@ -179,7 +179,7 @@ export function ImportExportShell({
             {/* ── FBR environment banner ── */}
             {fbrEnv && (
                 <div className={cn(
-                    "flex items-center gap-2 rounded-[8px] border px-3 py-2 text-[12px]",
+                    "flex shrink-0 items-center gap-2 rounded-[8px] border px-3 py-2 text-[12px]",
                     fbrEnv === "sandbox"
                         ? "border-[#93C5FD] dark:border-[#1d4a8a] bg-[#EFF6FF] dark:bg-[#0d1f3c] text-[#1E40AF] dark:text-[#93C5FD]"
                         : "border-[#FCA5A5] dark:border-[#7f1d1d] bg-[#FEF2F2] dark:bg-[#2a0a0a] text-[#B91C1C] dark:text-[#FCA5A5]",
@@ -197,7 +197,7 @@ export function ImportExportShell({
 
             {/* ── Loaded file banner ── */}
             {fileName && (
-                <div className="flex items-center justify-between rounded-[8px] border border-[#B8E0C5] dark:border-[#2a4a35] bg-[#F0FDF4] dark:bg-[#0d1f14] px-3 py-2">
+                <div className="flex shrink-0 items-center justify-between rounded-[8px] border border-[#B8E0C5] dark:border-[#2a4a35] bg-[#F0FDF4] dark:bg-[#0d1f14] px-3 py-2">
                     <span className="text-[12px] text-[#166534] dark:text-[#4ade80]">
                         <span className="font-semibold">{fileName}</span> — {rows.length} row(s) ready to review
                     </span>
@@ -210,13 +210,13 @@ export function ImportExportShell({
             )}
 
             {/* ── Preview & Edit card ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] p-3 shadow-xs space-y-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Preview &amp; Edit</p>
-                <p className="text-[12px] text-[#9CA3AF]">{note}</p>
+            <div className="flex min-h-0 flex-col gap-2 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] p-3 shadow-xs">
+                <p className="shrink-0 text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Preview &amp; Edit</p>
+                <p className="shrink-0 text-[12px] text-[#9CA3AF]">{note}</p>
 
-                <div className="overflow-x-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-[8px] border border-[#E5E7EB] dark:border-[#2e2e2e] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                     <table className="w-full text-[12px] border-collapse">
-                        <thead>
+                        <thead className="sticky top-0 z-10">
                             <tr className="bg-[#C69A52] text-white">
                                 {columns.map((col) => (
                                     <th key={col} className="px-2.5 py-1.5 text-left font-semibold whitespace-nowrap">{col}</th>
@@ -260,7 +260,7 @@ export function ImportExportShell({
                 </div>
 
                 {rows.length > 0 && (
-                    <p className="text-[11px] text-[#9CA3AF] text-right">{rows.length} row(s) loaded</p>
+                    <p className="shrink-0 text-[11px] text-[#9CA3AF] text-right">{rows.length} row(s) loaded</p>
                 )}
             </div>
 

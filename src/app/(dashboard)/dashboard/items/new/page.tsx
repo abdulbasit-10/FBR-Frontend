@@ -301,6 +301,9 @@ export default function NewItemPage() {
     const [sros, setSros] = useState<SroSchedule[]>([]);
     const [rates, setRates] = useState<TaxRate[]>([]);
     const [lookupLoading, setLookupLoading] = useState(false);
+    // SRO Schedule (§5.7) is rate-dependent — fetched live per selected Tax Rate, not cached like `sros` (Item Serial No / sroitemcode).
+    const [sroSchedules, setSroSchedules] = useState<SroSchedule[]>([]);
+    const [sroSchedulesLoading, setSroSchedulesLoading] = useState(false);
 
     useEffect(() => {
         setLookupLoading(true);
@@ -327,7 +330,19 @@ export default function NewItemPage() {
     // Derive SaleTypes from rates (unique rate descriptions as sale types)
     const saleTypes = useMemo<SaleType[]>(() =>
         rates.map((r) => ({ id: r.id, saleType: `${r.name} (${r.rate})` }))
-    , [rates]);
+        , [rates]);
+
+    // Fetch the rate-dependent SRO Schedule list whenever the Tax Rate changes.
+    useEffect(() => {
+        if (!taxRate) { setSroSchedules([]); return; }
+        const rateId = Number(taxRate.id);
+        if (!Number.isFinite(rateId)) { setSroSchedules([]); return; }
+        setSroSchedulesLoading(true);
+        lookupService.sroSchedules(rateId)
+            .then((res) => setSroSchedules(res.data.map((s) => ({ id: String(s.sroId), name: s.sroDesc }))))
+            .catch(() => { setSroSchedules([]); toast.error("Failed to load SRO schedules for this tax rate."); })
+            .finally(() => setSroSchedulesLoading(false));
+    }, [taxRate]);
 
     // ── Required field checks ──────────────────────────────────────────────────
     const requiredChecks = useMemo(() => [
@@ -553,7 +568,7 @@ export default function NewItemPage() {
                                 </Label>
                                 <SelectButton
                                     icon={Package}
-                                    label="Select SRO schedule"
+                                    label="Select item serial"
                                     helperText={taxRate ? "Select item serial" : "Select tax rate first"}
                                     selectedLabel={itemSerial ? itemSerial.name : undefined}
                                     selectedSub={itemSerial ? itemSerial.id : undefined}
@@ -799,12 +814,12 @@ export default function NewItemPage() {
             <SearchModal<SroSchedule>
                 isOpen={showSroModal}
                 title="Select SRO Schedule"
-                subtitle="Select the SRO schedule applicable to this item."
+                subtitle={sroSchedulesLoading ? "Loading schedules for the selected tax rate…" : "Select the SRO schedule applicable to this item."}
                 columns={[
                     { key: "id", label: "ID" },
                     { key: "name", label: "Schedule Name" },
                 ]}
-                rows={sros}
+                rows={sroSchedules}
                 filterFn={(r, q) => r.id.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)}
                 onSelect={(r) => setSroSchedule(r)}
                 onClose={() => setShowSroModal(false)}

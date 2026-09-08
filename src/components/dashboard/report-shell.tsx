@@ -79,10 +79,10 @@ export function ReportShell({
     };
 
     return (
-        <div className="min-h-full space-y-2.5" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-full flex flex-col gap-2.5 overflow-hidden print:h-auto print:overflow-visible" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* ── Header ── */}
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex shrink-0 items-center justify-between pb-0.5">
                 <button onClick={() => router.back()}
                     className="flex items-center gap-1.5 text-[16px] font-bold text-[#1E293B] dark:text-white hover:opacity-75 transition-opacity print:hover:opacity-100">
                     <ChevronLeft className="h-4.5 w-4.5 text-[#A27B3A] print:hidden" />
@@ -105,7 +105,7 @@ export function ReportShell({
             </div>
 
             {/* ── Filters card ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] p-3 shadow-xs space-y-2 print:hidden">
+            <div className="shrink-0 rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] p-3 shadow-xs space-y-2 print:hidden">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#A27B3A]">Filters</p>
                 <div className="flex flex-wrap items-end gap-2">
                     <div className="space-y-1">
@@ -163,7 +163,7 @@ export function ReportShell({
             </div>
 
             {/* ── Report content area ── */}
-            <div className="rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] shadow-xs overflow-hidden print:rounded-none print:border-0 print:shadow-none">
+            <div className="flex min-h-0 flex-col rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#1a1a1a] shadow-xs overflow-hidden print:rounded-none print:border-0 print:shadow-none print:h-auto print:overflow-visible">
                 {isLoading ? (
                     <div className="py-16 text-center">
                         <LogoSpinner label="Loading report…" className="mx-auto" />
@@ -183,7 +183,7 @@ export function ReportShell({
                         </p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
+                    <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto print:overflow-visible print:h-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#FAF6F0] dark:[&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#D1B88A] [&::-webkit-scrollbar-thumb]:rounded-full">
                         <table className="w-full text-[12px] border-collapse">
                             {children}
                         </table>

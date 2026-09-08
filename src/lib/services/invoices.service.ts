@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import { toQuery, type Paginated } from "./_types";
+import { triggerNotificationsRefresh } from "./notifications.service";
 
 // Mirrors backend model FBR-Backend/src/models/Invoice.ts
 export type InvoiceType = "Sale Invoice" | "Debit Note";
@@ -142,7 +143,8 @@ export interface CreateInvoiceInput {
 export interface InvoiceListQuery {
     page?: number;
     limit?: number;
-    status?: InvoiceStatus;
+    /** "unposted" is a virtual backend filter meaning not-posted-and-not-cancelled. */
+    status?: InvoiceStatus | "unposted";
     customerId?: number;
     from?: string;
     to?: string;
@@ -159,9 +161,17 @@ export const invoicesService = {
     update: (uuid: string, data: Partial<CreateInvoiceInput>) =>
         api.put<Invoice>(`/invoices/${uuid}`, data),
     remove: (uuid: string) => api.delete<null>(`/invoices/${uuid}`),
+    /** Scenario IDs valid for this company's Business Activity/Sector (null = not restricted, show all). */
+    applicableScenarios: () =>
+        api.get<{ businessActivity: string | null; sector: string | null; scenarioIds: string[] | null }>(
+            "/invoices/applicable-scenarios",
+        ),
     /** Synchronous submit to FBR — mode: 'validate' (dry run) or 'post' (final). */
     submit: (uuid: string, mode: "validate" | "post" = "post") =>
-        api.post<Invoice>(`/invoices/${uuid}/submit`, { mode }),
+        api.post<Invoice>(`/invoices/${uuid}/submit`, { mode }).then((res) => {
+            triggerNotificationsRefresh();
+            return res;
+        }),
     /** Queue-backed submit (returns immediately, worker processes it). */
     enqueue: (uuid: string, mode: "validate" | "post" = "post") =>
         api.post<{ jobId: string }>(`/invoices/${uuid}/enqueue`, { mode }),

@@ -138,7 +138,7 @@ export default function SalesDetailReportPage() {
                 isLoading={isLoading}
                 hasData={hasData && rows.length > 0}
             >
-                <thead>
+                <thead className="sticky top-0 z-10">
                     <tr className="bg-[#C69A52] text-white">
                         {COLUMNS.map((col) => <th key={col} className="px-2.5 py-1.5 text-left font-semibold whitespace-nowrap">{col}</th>)}
                     </tr>

@@ -7,7 +7,7 @@ export interface Notification {
     userId: number;
     type: string;
     title: string;
-    body?: string | null;
+    message: string;
     isRead: boolean;
     readAt: string | null;
     link?: string | null;
@@ -18,6 +18,13 @@ export interface Notification {
 export interface NotificationListQuery extends ListQuery {
     unreadOnly?: boolean;
 }
+
+/** Fired whenever an action that can create a notification server-side succeeds, so
+ * the navbar bell doesn't have to wait for its next poll tick to pick it up. */
+export const NOTIF_REFRESH_EVENT = "fbr:notifications-refresh";
+export const triggerNotificationsRefresh = () => {
+    if (typeof window !== "undefined") window.dispatchEvent(new Event(NOTIF_REFRESH_EVENT));
+};
 
 export const notificationsService = {
     list: (q?: NotificationListQuery) =>

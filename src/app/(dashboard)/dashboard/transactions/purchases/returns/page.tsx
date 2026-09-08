@@ -16,6 +16,7 @@ import {
     type PurchaseInvoiceForReturn,
 } from "@/components/dashboard/select-purchase-invoice-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { exportRowsToExcel } from "@/lib/export";
 import {
     purchasesService,
     type Purchase as ApiPurchase,
@@ -76,7 +77,7 @@ const toRow = (p: ApiPurchase): PurchaseReturn => ({
 });
 
 const COLUMNS = [
-    "Return No", "Original PI", "Vendor No", "Vendor Name",
+    "S.No", "Return No", "Original PI", "Vendor No", "Vendor Name",
     "Status", "Source", "User", "Doc Date", "Posting Date",
     "Assessed Value", "Discount", "Sales Tax", "Further Tax", "Advance Tax",
 ];
@@ -149,6 +150,16 @@ function PurchaseReturnContent() {
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
     const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+    const handleExport = () => {
+        if (paginated.length === 0) { toast.error("No returns to export."); return; }
+        exportRowsToExcel(
+            "Purchase_Returns",
+            COLUMNS.filter((c) => c !== "S.No"),
+            paginated.map((r) => [r.returnNo, r.originalPI, r.vendorNo, r.vendorName, r.status, r.source, r.user, r.docDate, r.postingDate, r.assessedValue, r.discount, r.salesTax, r.furtherTax, r.advanceTax]),
+        );
+        toast.success("Purchase returns exported.");
+    };
 
     const toggleSelect = (id: number) =>
         setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -243,6 +254,7 @@ function PurchaseReturnContent() {
                 source={source} onSourceChange={setSource}
                 rowsPerPage={rowsPerPage} onRowsPerPageChange={setRowsPerPage}
                 page={page} totalPages={totalPages} onPageChange={setPage}
+                onExport={handleExport}
             >
                 {paginated.map((r, i) => {
                     const isSelected = selected.has(r.id);
@@ -254,6 +266,7 @@ function PurchaseReturnContent() {
                                 <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(r.id)}
                                     onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded border-[#D1D5DB] accent-[#C69A52] cursor-pointer" />
                             </td>
+                            <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{(page - 1) * rowsPerPage + i + 1}</td>
                             <td className="px-3 py-2.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{r.returnNo}</td>
                             <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.originalPI}</td>
                             <td className="px-3 py-2.5 text-[#4F5967] dark:text-[#9ca3af] whitespace-nowrap">{r.vendorNo}</td>

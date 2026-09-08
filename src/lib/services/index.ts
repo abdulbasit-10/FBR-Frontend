@@ -26,7 +26,7 @@ export { reportsService } from "./reports.service";
 export { lookupService } from "./lookup.service";
 export { usersService } from "./users.service";
 export { settingsService } from "./settings.service";
-export { notificationsService } from "./notifications.service";
+export { notificationsService, NOTIF_REFRESH_EVENT, triggerNotificationsRefresh } from "./notifications.service";
 export { apiLogsService } from "./apiLogs.service";
 export { fbrTokensService } from "./fbrTokens.service";
 
@@ -115,4 +115,7 @@ export type {
     TaxReportRow,
     SalesReportRow,
     SalesReportQuery,
+    ScenarioStatus,
+    ScenarioProgressRow,
+    ScenarioProgressResult,
 } from "./reports.service";
