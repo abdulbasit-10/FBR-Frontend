@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import { toQuery, type Paginated } from "./_types";
+import { triggerNotificationsRefresh } from "./notifications.service";
 
 // Mirrors backend model FBR-Backend/src/models/Invoice.ts
 export type InvoiceType = "Sale Invoice" | "Debit Note";
@@ -161,7 +162,10 @@ export const invoicesService = {
     remove: (uuid: string) => api.delete<null>(`/invoices/${uuid}`),
     /** Synchronous submit to FBR — mode: 'validate' (dry run) or 'post' (final). */
     submit: (uuid: string, mode: "validate" | "post" = "post") =>
-        api.post<Invoice>(`/invoices/${uuid}/submit`, { mode }),
+        api.post<Invoice>(`/invoices/${uuid}/submit`, { mode }).then((res) => {
+            triggerNotificationsRefresh();
+            return res;
+        }),
     /** Queue-backed submit (returns immediately, worker processes it). */
     enqueue: (uuid: string, mode: "validate" | "post" = "post") =>
         api.post<{ jobId: string }>(`/invoices/${uuid}/enqueue`, { mode }),

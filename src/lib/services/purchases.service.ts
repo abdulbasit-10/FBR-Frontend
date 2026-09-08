@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import { toQuery, type Paginated } from "./_types";
+import { triggerNotificationsRefresh } from "./notifications.service";
 
 // Mirrors backend model FBR-Backend/src/models/Purchase.ts
 export type PurchaseType = "Purchase Invoice" | "Purchase Return";
@@ -126,7 +127,10 @@ export const purchasesService = {
     create: (data: CreatePurchaseInput) => api.post<Purchase>("/purchases", data),
     update: (uuid: string, data: Partial<CreatePurchaseInput>) =>
         api.put<Purchase>(`/purchases/${uuid}`, data),
-    post: (uuid: string) => api.post<Purchase>(`/purchases/${uuid}/post`, {}),
+    post: (uuid: string) => api.post<Purchase>(`/purchases/${uuid}/post`, {}).then((res) => {
+        triggerNotificationsRefresh();
+        return res;
+    }),
     cancel: (uuid: string) => api.post<Purchase>(`/purchases/${uuid}/cancel`, {}),
     remove: (uuid: string) => api.delete<null>(`/purchases/${uuid}`),
 };
