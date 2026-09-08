@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { RefreshCw, Plus, Send, Trash2, BookOpen, Eye } from "lucide-react";
+import { RefreshCw, Plus, Send, Trash2, BookOpen, Eye, Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 import {
@@ -184,6 +184,45 @@ function PurchaseReturnContent() {
         router.push(`/dashboard/transactions/purchases/returns/create?${params.toString()}`);
     };
 
+    const printReturns = (uuids: string[]) => {
+        // Print via a hidden iframe so the browser's print dialog opens directly
+        // over the current page instead of navigating to a new tab.
+        uuids.forEach((uuid, idx) => {
+            setTimeout(() => {
+                const iframe = document.createElement("iframe");
+                iframe.style.position = "fixed";
+                iframe.style.left = "-10000px";
+                iframe.style.top = "0";
+                iframe.style.width = "800px";
+                iframe.style.height = "1100px";
+                iframe.style.border = "0";
+                iframe.src = `/print/purchase/${uuid}`;
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                    const cleanup = () => {
+                        if (iframe.parentNode) document.body.removeChild(iframe);
+                    };
+                    try {
+                        iframe.contentWindow?.addEventListener("afterprint", cleanup);
+                    } catch {
+                        // ignore — worst case iframe stays until navigation
+                    }
+                    setTimeout(cleanup, 15000); // safety fallback
+                };
+            }, idx * 800);
+        });
+    };
+
+    const handlePrint = () => {
+        if (selected.size !== 1) {
+            toast.error("Select exactly one return to print.");
+            return;
+        }
+        const row = paginated.find((r) => selected.has(r.id));
+        if (!row) return;
+        printReturns([row.uuid]);
+    };
+
     const handlePost = async () => {
         const targets = paginated.filter((r) => selected.has(r.id) && r.status === "UnPosted");
         if (targets.length === 0) {
@@ -245,6 +284,9 @@ function PurchaseReturnContent() {
                     </button>
                     <button type="button" disabled={selected.size === 0 || deleting} onClick={() => setShowDeleteConfirm(true)} className={`h-9 ${btnOutline} disabled:opacity-40 disabled:cursor-not-allowed`}>
                         <Trash2 className="h-3.5 w-3.5 text-[#A27B3A]" /> {deleting ? "Deleting..." : "Delete"}
+                    </button>
+                    <button type="button" onClick={handlePrint} className={`h-9 ${btnOutline}`}>
+                        <Printer className="h-3.5 w-3.5 text-[#A27B3A]" /> Print
                     </button>
                     <button type="button" onClick={() => setShowModal(true)}
                         className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors shadow-xs">

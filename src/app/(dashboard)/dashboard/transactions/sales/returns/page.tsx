@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState, useEffect, useCallback } from "react";
 import {
-    RefreshCw, Plus, CheckSquare, Send, Trash2,
+    RefreshCw, Plus, CheckSquare, Send, Trash2, Printer,
     Download, ChevronLeft, ChevronRight, FileText, BookOpen, Eye,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -179,6 +179,45 @@ function SalesReturnContent() {
         router.push(`/dashboard/transactions/sales/returns/create?originalUuid=${inv.uuid}`);
     };
 
+    const printReturns = (uuids: string[]) => {
+        // Print via a hidden iframe so the browser's print dialog opens directly
+        // over the current page instead of navigating to a new tab.
+        uuids.forEach((uuid, idx) => {
+            setTimeout(() => {
+                const iframe = document.createElement("iframe");
+                iframe.style.position = "fixed";
+                iframe.style.left = "-10000px";
+                iframe.style.top = "0";
+                iframe.style.width = "800px";
+                iframe.style.height = "1100px";
+                iframe.style.border = "0";
+                iframe.src = `/print/invoice/${uuid}`;
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                    const cleanup = () => {
+                        if (iframe.parentNode) document.body.removeChild(iframe);
+                    };
+                    try {
+                        iframe.contentWindow?.addEventListener("afterprint", cleanup);
+                    } catch {
+                        // ignore — worst case iframe stays until navigation
+                    }
+                    setTimeout(cleanup, 15000); // safety fallback
+                };
+            }, idx * 800);
+        });
+    };
+
+    const handlePrint = () => {
+        if (selected.size !== 1) {
+            toast.error("Select exactly one return to print.");
+            return;
+        }
+        const row = paginated.find((r) => selected.has(r.id));
+        if (!row) return;
+        printReturns([row.uuid]);
+    };
+
     const handleExport = () => {
         if (paginated.length === 0) {
             toast.error("No sales returns to export.");
@@ -273,6 +312,9 @@ function SalesReturnContent() {
                     </button>
                     <button type="button" disabled={!hasDeletableSelection || deleting} onClick={() => setShowDeleteConfirm(true)} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                         <Trash2 className="h-3 w-3 text-[#A27B3A]" /> {deleting ? "Deleting..." : "Delete"}
+                    </button>
+                    <button type="button" onClick={handlePrint} className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer">
+                        <Printer className="h-3 w-3 text-[#A27B3A]" /> Print
                     </button>
                 </div>
             </div>
