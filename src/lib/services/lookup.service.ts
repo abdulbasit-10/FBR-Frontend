@@ -72,6 +72,11 @@ export const lookupService = {
             registrationType: { statuscode?: string; REGISTRATION_TYPE?: string; message?: string };
             taxpayerStatus: { "status code"?: string; status?: string };
         }>(`/lookup/verify-registration?regno=${encodeURIComponent(regno)}${date ? `&date=${encodeURIComponent(date)}` : ""}`),
+    /** Live proxy: FBR SRO Schedule (\u00a75.7) applicable to a given tax rate \u2014 distinct from `sros` (Item Serial No / sroitemcode). */
+    sroSchedules: (rateId: number, date?: string, originationSupplier?: number) =>
+        api.get<Sro[]>(
+            `/lookup/sro-schedules?rateId=${rateId}${date ? `&date=${encodeURIComponent(date)}` : ""}${originationSupplier !== undefined ? `&originationSupplier=${originationSupplier}` : ""}`,
+        ),
     /** Admin: sync all reference tables from FBR. */
     syncAll: () => api.post<{ synced: Record<string, number> }>("/lookup/sync", {}),
     syncOne: (kind: LookupKind) => api.post<{ synced: number }>(`/lookup/sync/${kind}`, {}),

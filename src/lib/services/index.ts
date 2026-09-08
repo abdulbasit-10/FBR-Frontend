@@ -115,4 +115,7 @@ export type {
     TaxReportRow,
     SalesReportRow,
     SalesReportQuery,
+    ScenarioStatus,
+    ScenarioProgressRow,
+    ScenarioProgressResult,
 } from "./reports.service";

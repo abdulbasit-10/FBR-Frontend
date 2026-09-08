@@ -48,6 +48,26 @@ export interface SalesReportQuery extends DateRangeQuery {
     groupBy?: "customer" | "product";
 }
 
+export type ScenarioStatus = "Successful" | "Attempted" | "Not Started";
+
+export interface ScenarioProgressRow {
+    scenarioId: string;
+    description: string;
+    status: ScenarioStatus;
+    attempts: number;
+    lastAttemptAt: string | null;
+}
+
+export interface ScenarioProgressResult {
+    businessActivity: string | null;
+    sector: string | null;
+    environment: string;
+    completed: number;
+    total: number;
+    productionReady: boolean;
+    rows: ScenarioProgressRow[];
+}
+
 export const reportsService = {
     daily: (q?: DateRangeQuery) =>
         api.get<DailyReportRow[]>(`/reports/daily${toQuery(q as Record<string, unknown>)}`),
@@ -57,4 +77,6 @@ export const reportsService = {
         api.get<TaxReportRow[]>(`/reports/tax${toQuery(q as Record<string, unknown>)}`),
     sales: (q?: SalesReportQuery) =>
         api.get<SalesReportRow[]>(`/reports/sales${toQuery(q as Record<string, unknown>)}`),
+    /** FBR sandbox certification checklist — which scenarios have a successful test invoice. */
+    scenarioProgress: () => api.get<ScenarioProgressResult>("/reports/scenario-progress"),
 };

@@ -1,16 +1,18 @@
 "use client";
 
-import { ArrowLeft, Building2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Building2, RefreshCw, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { companiesService, type Company } from "@/lib/services";
+import { companiesService, reportsService, type Company, type ScenarioProgressResult } from "@/lib/services";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 
 export default function CompanyProfilePage() {
     const [company, setCompany] = useState<Company | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [progress, setProgress] = useState<ScenarioProgressResult | null>(null);
+    const [progressLoading, setProgressLoading] = useState(true);
 
     const load = useCallback(async (showToast = false) => {
         try {
@@ -29,6 +31,13 @@ export default function CompanyProfilePage() {
     }, []);
 
     useEffect(() => { load(); }, [load]);
+
+    useEffect(() => {
+        reportsService.scenarioProgress()
+            .then((res) => setProgress(res.data))
+            .catch(() => { /* company may have no business activity/sector set yet — leave section hidden */ })
+            .finally(() => setProgressLoading(false));
+    }, []);
 
     const handleRefresh = () => { if (!refreshing) { setRefreshing(true); load(true); } };
 
@@ -159,6 +168,62 @@ export default function CompanyProfilePage() {
                         <Field label="FED mode" value={isSandbox ? "Disabled" : "Enabled"} />
                     </ProfileSection>
 
+                    {/* FBR Sandbox Certification */}
+                    {!progressLoading && progress && progress.total > 0 && (
+                        <ProfileSection
+                            title="FBR sandbox certification"
+                            subtitle="FBR auto-issues your Production Token once every scenario below has at least one successful sandbox invoice."
+                        >
+                            <div className="mb-4 flex items-center gap-3">
+                                <div className="h-2 flex-1 rounded-full bg-[#f3f4f6] dark:bg-[#1c1c1c] overflow-hidden">
+                                    <div
+                                        className={`h-full rounded-full ${progress.productionReady ? "bg-green-500" : "bg-[#c99d54]"}`}
+                                        style={{ width: `${Math.round((progress.completed / progress.total) * 100)}%` }}
+                                    />
+                                </div>
+                                <span className="shrink-0 text-[12px] font-semibold text-[#111827] dark:text-[#f0f0f0]">
+                                    {progress.completed} / {progress.total} scenarios
+                                </span>
+                            </div>
+                            {progress.productionReady && (
+                                <div className="mb-4 flex items-center gap-1.5 text-[12px] font-medium text-green-600 dark:text-green-400">
+                                    <ShieldCheck className="h-3.5 w-3.5" /> All required scenarios passed — eligible for a Production Token.
+                                </div>
+                            )}
+                            <div className="overflow-hidden rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a]">
+                                <table className="w-full text-[12px]">
+                                    <thead>
+                                        <tr className="bg-[#f9fafb] dark:bg-[#1c1c1c] text-left text-[#6b7280] dark:text-[#9ca3af]">
+                                            <th className="px-3 py-2 font-medium">Scenario</th>
+                                            <th className="px-3 py-2 font-medium">Description</th>
+                                            <th className="px-3 py-2 font-medium">Attempts</th>
+                                            <th className="px-3 py-2 font-medium">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-[#e8e9eb] dark:divide-[#3a3a3a]">
+                                        {progress.rows.map((r) => (
+                                            <tr key={r.scenarioId}>
+                                                <td className="px-3 py-2 font-semibold text-[#111827] dark:text-[#f0f0f0]">{r.scenarioId}</td>
+                                                <td className="px-3 py-2 text-[#374151] dark:text-[#d1d5db]">{r.description}</td>
+                                                <td className="px-3 py-2 text-[#6b7280] dark:text-[#9ca3af]">{r.attempts}</td>
+                                                <td className="px-3 py-2">
+                                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${r.status === "Successful"
+                                                            ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400"
+                                                            : r.status === "Attempted"
+                                                                ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                                                                : "bg-[#f3f4f6] text-[#6b7280] dark:bg-[#2a2a2a] dark:text-[#9ca3af]"
+                                                        }`}>
+                                                        {r.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </ProfileSection>
+                    )}
+
                 </div>{/* end detail card */}
             </div>{/* end constrained content */}
         </div>
@@ -168,8 +233,8 @@ export default function CompanyProfilePage() {
 function HeroBadge({ children, active }: { children: React.ReactNode; active?: boolean }) {
     return (
         <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${active
-                ? "border-green-400/60 bg-green-400/20 text-green-300"
-                : "border-white/40 bg-white/10 text-white"
+            ? "border-green-400/60 bg-green-400/20 text-green-300"
+            : "border-white/40 bg-white/10 text-white"
             }`}>
             {children}
         </span>
