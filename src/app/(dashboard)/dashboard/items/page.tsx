@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 import { productsService, type Product } from "@/lib/services";
@@ -65,6 +66,8 @@ export default function ItemsPage() {
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [rowsPerPage, setRowsPerPage] = useState(200);
     const [page, setPage] = useState(1);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const load = useCallback(
         async (showToast = false) => {
@@ -110,12 +113,15 @@ export default function ItemsPage() {
 
     const handleDelete = async () => {
         if (selected.size === 0) return;
+        setIsDeleting(true);
         const rowsToDelete = items.filter((it) => selected.has(it.id));
         const results = await Promise.allSettled(rowsToDelete.map((it) => productsService.remove(it.uuid)));
         const failed = results.filter((r) => r.status === "rejected").length;
         if (failed === 0) toast.success(`${rowsToDelete.length} item(s) deleted.`);
         else toast.error(`${failed} of ${rowsToDelete.length} deletions failed.`);
         setSelected(new Set());
+        setIsDeleting(false);
+        setShowDeleteConfirm(false);
         load();
     };
 
@@ -150,7 +156,7 @@ export default function ItemsPage() {
                         className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
                         <CheckSquare className="h-3 w-3 text-[#A27B3A]" /> Select All
                     </button>
-                    <button type="button" onClick={handleDelete} disabled={selected.size === 0}
+                    <button type="button" onClick={() => setShowDeleteConfirm(true)} disabled={selected.size === 0}
                         className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
                         <Trash2 className="h-3 w-3 text-[#A27B3A]" /> Delete
                     </button>
@@ -315,6 +321,18 @@ export default function ItemsPage() {
                 </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                title="Delete items"
+                message={`Are you sure you want to delete ${selected.size} item${selected.size === 1 ? "" : "s"}? This cannot be undone.`}
+                confirmLabel="Delete"
+                cancelLabel="Cancel"
+                isLoading={isDeleting}
+                loadingLabel="Deleting…"
+            />
         </div>
     );
 }
