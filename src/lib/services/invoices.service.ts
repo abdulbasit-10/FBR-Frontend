@@ -160,6 +160,11 @@ export const invoicesService = {
     update: (uuid: string, data: Partial<CreateInvoiceInput>) =>
         api.put<Invoice>(`/invoices/${uuid}`, data),
     remove: (uuid: string) => api.delete<null>(`/invoices/${uuid}`),
+    /** Scenario IDs valid for this company's Business Activity/Sector (null = not restricted, show all). */
+    applicableScenarios: () =>
+        api.get<{ businessActivity: string | null; sector: string | null; scenarioIds: string[] | null }>(
+            "/invoices/applicable-scenarios",
+        ),
     /** Synchronous submit to FBR — mode: 'validate' (dry run) or 'post' (final). */
     submit: (uuid: string, mode: "validate" | "post" = "post") =>
         api.post<Invoice>(`/invoices/${uuid}/submit`, { mode }).then((res) => {

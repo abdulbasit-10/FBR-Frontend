@@ -116,6 +116,8 @@ export default function CreateSalesInvoicePage() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [showCustomerModal, setShowCustomerModal] = useState(false);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    // Scenario IDs valid for this company's Business Activity/Sector — null means not restricted (show all).
+    const [applicableScenarioIds, setApplicableScenarioIds] = useState<string[] | null>(null);
 
     // Line items + reference data
     const [items, setItems] = useState<LineItem[]>([emptyLine()]);
@@ -132,7 +134,34 @@ export default function CreateSalesInvoicePage() {
             .uoms()
             .then((res) => setUoms(res.data))
             .catch(() => { });
+        invoicesService
+            .applicableScenarios()
+            .then((res) => setApplicableScenarioIds(res.data.scenarioIds))
+            .catch(() => { });
     }, []);
+
+    // Only the scenarios valid for this company (falls back to all 28 if not restricted/unset).
+    const availableScenarios = useMemo(
+        () => (applicableScenarioIds ? FBR_SANDBOX_SCENARIOS.filter((s) => applicableScenarioIds.includes(s.id)) : FBR_SANDBOX_SCENARIOS),
+        [applicableScenarioIds],
+    );
+
+    // If the currently-selected scenario isn't actually valid for this company, snap to the first one that is.
+    useEffect(() => {
+        if (availableScenarios.length && !availableScenarios.some((s) => s.id === scenarioId)) {
+            setScenarioId(availableScenarios[0].id);
+        }
+    }, [availableScenarios, scenarioId]);
+
+    // Sandbox certification requires the line item's Sale Type to match the selected scenario
+    // (e.g. SN003 → "Steel Melting and re-rolling") — keep every item's Sale Type in sync.
+    useEffect(() => {
+        if (environment !== "sandbox") return;
+        const match = FBR_SANDBOX_SCENARIOS.find((s) => s.id === scenarioId);
+        if (!match) return;
+        setItems((xs) => xs.map((i) => recompute({ ...i, saleType: match.saleType })));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scenarioId, environment]);
 
     // â”€â”€â”€ Line-item helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -569,12 +598,17 @@ export default function CreateSalesInvoicePage() {
                                         onChange={(e) => setScenarioId(e.target.value)}
                                         className={selectStyleClass + " pr-8 truncate"}
                                     >
-                                        {FBR_SANDBOX_SCENARIOS.map((s) => (
+                                        {availableScenarios.map((s) => (
                                             <option key={s.id} value={s.id}>
                                                 {s.id} &mdash; {s.description}
                                             </option>
                                         ))}
                                     </select>
+                                    {applicableScenarioIds && (
+                                        <p className="text-[10px] text-[#9CA3AF]">
+                                            Filtered to scenarios valid for this company&apos;s Business Activity/Sector. Selecting one auto-sets the matching Sale Type on all line items.
+                                        </p>
+                                    )}
                                 </div>
                             )}
 
