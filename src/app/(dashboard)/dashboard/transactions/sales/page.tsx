@@ -8,6 +8,7 @@ import {
     CheckSquare,
     Printer,
     Copy,
+    Trash2,
     Download,
     ChevronLeft,
     ChevronRight,
@@ -146,6 +147,8 @@ function SalesInvoicesContent() {
     const [copying, setCopying] = useState(false);
     const [copyTargetUuid, setCopyTargetUuid] = useState<string | null>(null);
     const [posting, setPosting] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -230,11 +233,13 @@ function SalesInvoicesContent() {
     };
 
     const handlePrint = () => {
-        if (selected.size === 0) {
-            toast.error("Select at least one invoice to print.");
+        if (selected.size !== 1) {
+            toast.error("Select exactly one invoice to print.");
             return;
         }
-        printInvoices(paginated.filter((i) => selected.has(i.id)).map((i) => i.uuid));
+        const row = paginated.find((i) => selected.has(i.id));
+        if (!row) return;
+        printInvoices([row.uuid]);
     };
 
     const copyInvoice = async (uuid: string) => {
@@ -317,6 +322,30 @@ function SalesInvoicesContent() {
         setSelected(new Set());
         if (ok > 0) toast.success(`${ok} invoice${ok > 1 ? "s" : ""} posted to FBR.`);
         if (failed > 0) toast.error(`${failed} invoice${failed > 1 ? "s" : ""} failed to post.`);
+        load(false);
+    };
+
+    const handleDelete = async () => {
+        const targets = paginated.filter((i) => selected.has(i.id) && i.status !== "Posted");
+        setShowDeleteConfirm(false);
+        if (targets.length === 0) {
+            toast.error("Posted invoices cannot be deleted.");
+            return;
+        }
+        setDeleting(true);
+        let ok = 0, failed = 0;
+        for (const i of targets) {
+            try {
+                await invoicesService.remove(i.uuid);
+                ok++;
+            } catch {
+                failed++;
+            }
+        }
+        setDeleting(false);
+        setSelected(new Set());
+        if (ok > 0) toast.success(`${ok} invoice${ok > 1 ? "s" : ""} deleted.`);
+        if (failed > 0) toast.error(`${failed} invoice${failed > 1 ? "s" : ""} failed to delete.`);
         load(false);
     };
 
@@ -411,6 +440,14 @@ function SalesInvoicesContent() {
                         className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-50"
                     >
                         <Copy className="h-3 w-3 text-[#A27B3A]" /> {copying ? "Copying..." : "Copy"}
+                    </button>
+                    <button
+                        type="button"
+                        disabled={selected.size === 0 || deleting}
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="flex h-8 items-center gap-1 rounded-[6px] border border-[#E3D2BA] bg-white px-2.5 text-[12px] font-medium text-[#424B56] hover:bg-[#FAF6F0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        <Trash2 className="h-3 w-3 text-[#A27B3A]" /> {deleting ? "Deleting..." : "Delete"}
                     </button>
                 </div>
             </div>
@@ -689,6 +726,18 @@ function SalesInvoicesContent() {
                 confirmLabel="Copy"
                 isLoading={copying}
                 loadingLabel="Copying..."
+            />
+
+            {/* ── Delete confirmation dialog ── */}
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                title="Delete selected invoices?"
+                message="Unposted invoices in the selection will be permanently removed. Posted invoices will be skipped."
+                confirmLabel="Delete"
+                isLoading={deleting}
+                loadingLabel="Deleting..."
             />
         </div>
     );

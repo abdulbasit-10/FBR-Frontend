@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { RefreshCw, Plus, CheckSquare, Send, Trash2, BookOpen, Eye } from "lucide-react";
+import { RefreshCw, Plus, CheckSquare, Send, Trash2, BookOpen, Eye, Printer, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 import {
@@ -107,6 +107,8 @@ function PurchaseInvoiceContent() {
     const [posting, setPosting] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [copying, setCopying] = useState(false);
+    const [copyTargetUuid, setCopyTargetUuid] = useState<string | null>(null);
 
     useEffect(() => {
         setStatus(searchParams.get("status") ?? "All");
@@ -162,6 +164,102 @@ function PurchaseInvoiceContent() {
         setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
     const toggleAll = () =>
         setSelected(selected.size === paginated.length ? new Set() : new Set(paginated.map((i) => i.id)));
+
+    const printPurchases = (uuids: string[]) => {
+        // Print via a hidden iframe so the browser's print dialog opens directly
+        // over the current page instead of navigating to a new tab.
+        uuids.forEach((uuid, idx) => {
+            setTimeout(() => {
+                const iframe = document.createElement("iframe");
+                iframe.style.position = "fixed";
+                iframe.style.left = "-10000px";
+                iframe.style.top = "0";
+                iframe.style.width = "800px";
+                iframe.style.height = "1100px";
+                iframe.style.border = "0";
+                iframe.src = `/print/purchase/${uuid}`;
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                    const cleanup = () => {
+                        if (iframe.parentNode) document.body.removeChild(iframe);
+                    };
+                    try {
+                        iframe.contentWindow?.addEventListener("afterprint", cleanup);
+                    } catch {
+                        // ignore — worst case iframe stays until navigation
+                    }
+                    setTimeout(cleanup, 15000); // safety fallback
+                };
+            }, idx * 800);
+        });
+    };
+
+    const handlePrint = () => {
+        if (selected.size !== 1) {
+            toast.error("Select exactly one invoice to print.");
+            return;
+        }
+        const row = paginated.find((i) => selected.has(i.id));
+        if (!row) return;
+        printPurchases([row.uuid]);
+    };
+
+    const copyPurchase = async (uuid: string) => {
+        setCopying(true);
+        try {
+            const full = await purchasesService.getOne(uuid);
+            const src = full.data;
+            const today = new Date().toISOString().slice(0, 10);
+            const created = await purchasesService.create({
+                vendorId: src.vendorId,
+                purchaseType: src.purchaseType,
+                vendorInvoiceNo: src.vendorInvoiceNo,
+                docDate: today,
+                postingDate: null,
+                poDate: src.poDate,
+                poNumber: src.poNumber,
+                advanceTax: src.advanceTax,
+                notes: src.notes,
+                items: (src.items ?? []).map((it) => ({
+                    productId: it.productId,
+                    hsCode: it.hsCode,
+                    productDescription: it.productDescription,
+                    uom: it.uom,
+                    quantity: it.quantity,
+                    unitPrice: it.unitPrice,
+                    assessedPerUnit: it.assessedPerUnit,
+                    retailPrice: it.retailPrice,
+                    discountPercent: it.discountPercent,
+                    taxPercent: it.taxPercent,
+                })),
+            });
+            toast.success("Purchase invoice copied as a new draft.");
+            setSelected(new Set());
+            router.refresh(); // bust Next.js router cache so returning to this list shows fresh data
+            router.push(`/print/purchase/${created.data.uuid}`);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to copy purchase invoice.");
+        } finally {
+            setCopying(false);
+        }
+    };
+
+    const handleCopy = () => {
+        if (selected.size !== 1) {
+            toast.error("Select exactly one invoice to copy.");
+            return;
+        }
+        const row = paginated.find((i) => selected.has(i.id));
+        if (!row) return;
+        setCopyTargetUuid(row.uuid);
+    };
+
+    const confirmCopy = () => {
+        if (!copyTargetUuid) return;
+        const uuid = copyTargetUuid;
+        setCopyTargetUuid(null);
+        copyPurchase(uuid);
+    };
 
     const handleExport = () => {
         if (paginated.length === 0) {
@@ -247,6 +345,12 @@ function PurchaseInvoiceContent() {
                     </button>
                     <button type="button" disabled={selected.size === 0 || deleting} onClick={() => setShowDeleteConfirm(true)} className={`h-8 ${btnOutline} disabled:opacity-40 disabled:cursor-not-allowed`}>
                         <Trash2 className="h-3.5 w-3.5 text-[#A27B3A]" /> {deleting ? "Deleting..." : "Delete"}
+                    </button>
+                    <button type="button" onClick={handlePrint} className={`h-8 ${btnOutline}`}>
+                        <Printer className="h-3.5 w-3.5 text-[#A27B3A]" /> Print
+                    </button>
+                    <button type="button" onClick={handleCopy} disabled={copying} className={`h-8 ${btnOutline} disabled:opacity-50`}>
+                        <Copy className="h-3.5 w-3.5 text-[#A27B3A]" /> {copying ? "Copying..." : "Copy"}
                     </button>
                 </>}
                 columns={COLUMNS}
@@ -334,6 +438,17 @@ function PurchaseInvoiceContent() {
                 confirmLabel="Delete"
                 isLoading={deleting}
                 loadingLabel="Deleting..."
+            />
+
+            <ConfirmDialog
+                isOpen={copyTargetUuid !== null}
+                onClose={() => setCopyTargetUuid(null)}
+                onConfirm={confirmCopy}
+                title="Copy purchase invoice?"
+                message="Create a new unposted purchase invoice with the same vendor and lines (today's document date)?"
+                confirmLabel="Copy"
+                isLoading={copying}
+                loadingLabel="Copying..."
             />
         </>
     );
