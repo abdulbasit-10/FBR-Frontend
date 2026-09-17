@@ -2,11 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, RefreshCw, ShieldAlert, X, Save, Power, UserPlus, Download } from "lucide-react";
+import { ChevronLeft, Plus, RefreshCw, ShieldAlert, X, Save, Power, UserPlus, Download, Eye, KeyRound } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
-import { companiesService, usersService, type Company, type CompanyCreateInput, type Role, type CreateUserInput } from "@/lib/services";
+import { companiesService, usersService, type Company, type CompanyCreateInput, type Role, type CreateUserInput, type AdminUser } from "@/lib/services";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { FBR_BUSINESS_ACTIVITIES, FBR_SECTORS } from "@/lib/constants/fbr";
 
@@ -44,6 +44,13 @@ export default function CompaniesPage() {
     const [userTargetCompany, setUserTargetCompany] = useState<Company | null>(null);
     const [userForm, setUserForm] = useState(emptyUserForm);
     const [creatingUser, setCreatingUser] = useState(false);
+
+    const [viewTargetCompany, setViewTargetCompany] = useState<Company | null>(null);
+    const [companyAdmins, setCompanyAdmins] = useState<AdminUser[]>([]);
+    const [adminsLoading, setAdminsLoading] = useState(false);
+    const [resetTarget, setResetTarget] = useState<AdminUser | null>(null);
+    const [newPassword, setNewPassword] = useState("");
+    const [resetting, setResetting] = useState(false);
 
     const load = useCallback((showToast = false) => {
         if (!canManage) { setIsLoading(false); return; }
@@ -120,6 +127,42 @@ export default function CompaniesPage() {
             toast.error(err instanceof Error ? err.message : "Failed to export company data.");
         } finally {
             setExportingId(null);
+        }
+    };
+
+    const handleViewAdmins = async (c: Company) => {
+        setViewTargetCompany(c);
+        setCompanyAdmins([]);
+        setAdminsLoading(true);
+        try {
+            const query = { companyId: c.id, limit: 100 };
+            const res = await usersService.listUsers(query);
+            const all = res.data.rows;
+            const admins = all.filter((u) => u.role?.name === "CompanyAdmin");
+            setCompanyAdmins(admins.length > 0 ? admins : all);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to load company admins.");
+        } finally {
+            setAdminsLoading(false);
+        }
+    };
+
+    const handleResetPassword = async () => {
+        if (!resetTarget) return;
+        if (newPassword.length < 8) {
+            toast.error("Password must be at least 8 characters.");
+            return;
+        }
+        setResetting(true);
+        try {
+            await usersService.resetPassword(resetTarget.uuid, newPassword);
+            toast.success(`Password reset for ${resetTarget.name}.`);
+            setResetTarget(null);
+            setNewPassword("");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to reset password.");
+        } finally {
+            setResetting(false);
         }
     };
 
@@ -248,7 +291,7 @@ export default function CompaniesPage() {
                     <table className="w-full text-[12px] border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
-                                {["ID", "Company Name", "Business Name", "NTN", "Province", "Environment", "Status", "Actions"].map((c) => (
+                                {["S.No", "Company Name", "Business Name", "NTN", "Province", "Environment", "Status", "Actions"].map((c) => (
                                     <th key={c} className="px-2.5 py-1.5 text-left font-semibold whitespace-nowrap">{c}</th>
                                 ))}
                             </tr>
@@ -260,7 +303,7 @@ export default function CompaniesPage() {
                                 <tr><td colSpan={8} className="py-10 text-center text-[12px] text-[#9CA3AF] italic bg-white dark:bg-[#242424]">No companies yet.</td></tr>
                             ) : companies.map((c, i) => (
                                 <tr key={c.id} className={i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]"}>
-                                    <td className="px-2.5 py-1.5 whitespace-nowrap">{String(c.id).padStart(5, "0")}</td>
+                                    <td className="px-2.5 py-1.5 whitespace-nowrap">{i + 1}</td>
                                     <td className="px-2.5 py-1.5 font-medium text-[#1E293B] dark:text-[#f0f0f0] whitespace-nowrap">{c.name}</td>
                                     <td className="px-2.5 py-1.5 whitespace-nowrap">{c.businessName}</td>
                                     <td className="px-2.5 py-1.5 whitespace-nowrap">{c.ntn}</td>
@@ -298,6 +341,14 @@ export default function CompaniesPage() {
                                             >
                                                 <Download className="h-3.5 w-3.5" />
                                             </button>
+                                            <button
+                                                type="button"
+                                                title="View this company's admin(s)"
+                                                onClick={() => handleViewAdmins(c)}
+                                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                                            >
+                                                <Eye className="h-3.5 w-3.5" />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -332,6 +383,66 @@ export default function CompaniesPage() {
                             </button>
                             <button type="button" onClick={handleCreateUser} disabled={creatingUser} className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer disabled:opacity-50">
                                 <Save className="h-3.5 w-3.5" /> {creatingUser ? "Creating..." : "Create User"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {viewTargetCompany && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setViewTargetCompany(null)}>
+                    <div className="w-full max-w-lg rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between">
+                            <p className="text-[13px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">Admin(s) — {viewTargetCompany.businessName}</p>
+                            <button type="button" onClick={() => setViewTargetCompany(null)} className="text-[#9CA3AF] hover:text-[#4F5967] cursor-pointer"><X className="h-4 w-4" /></button>
+                        </div>
+                        <p className="text-[11px] text-[#9CA3AF] italic">
+                            Passwords are one-way hashed and can never be retrieved. Use &quot;Reset&quot; to set a new one you can hand over.
+                        </p>
+                        {adminsLoading ? (
+                            <div className="py-6"><LogoSpinner label="Loading..." className="mx-auto" /></div>
+                        ) : companyAdmins.length === 0 ? (
+                            <p className="py-4 text-center text-[12px] text-[#9CA3AF] italic">No users found for this company.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {companyAdmins.map((u) => (
+                                    <div key={u.id} className="flex items-center justify-between rounded-[8px] border border-[#E5E7EB] dark:border-[#3a3a3a] px-3 py-2">
+                                        <div>
+                                            <p className="text-[13px] font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{u.name} <span className="ml-1 text-[10px] font-normal text-[#A27B3A]">{u.role?.name}</span></p>
+                                            <p className="text-[12px] text-[#4F5967] dark:text-[#9ca3af]">{u.email}</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setResetTarget(u); setNewPassword(""); }}
+                                            className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer"
+                                        >
+                                            <KeyRound className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {resetTarget && (
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 px-4" onClick={() => setResetTarget(null)}>
+                    <div className="w-full max-w-sm rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between">
+                            <p className="text-[13px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">Reset password — {resetTarget.name}</p>
+                            <button type="button" onClick={() => setResetTarget(null)} className="text-[#9CA3AF] hover:text-[#4F5967] cursor-pointer"><X className="h-4 w-4" /></button>
+                        </div>
+                        <div>
+                            <label className={labelCls}>New Password *</label>
+                            <input type="text" className={cn(inputCls, "w-full")} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min. 8 characters" />
+                        </div>
+                        <div className="flex justify-end gap-2 pt-1">
+                            <button type="button" onClick={() => setResetTarget(null)} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={handleResetPassword} disabled={resetting} className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer disabled:opacity-50">
+                                <KeyRound className="h-3.5 w-3.5" /> {resetting ? "Resetting..." : "Reset Password"}
                             </button>
                         </div>
                     </div>
