@@ -47,6 +47,8 @@ export const companiesService = {
     list: (q?: ListQuery) => api.get<Paginated<Company>>(`/companies${toQuery(q as Record<string, unknown>)}`),
     /** SuperAdmin-only: platform-wide counts for the dashboard. */
     stats: () => api.get<PlatformStats>(`/companies/stats/overview`),
+    /** SuperAdmin-only: byte size of this company's exportable data (without downloading it). */
+    dataSize: (uuid: string) => api.get<{ bytes: number }>(`/companies/${uuid}/export/size`),
     getOne: (uuid: string) => api.get<Company>(`/companies/${uuid}`),
     create: (data: CompanyCreateInput) => api.post<Company>("/companies", data),
     update: (uuid: string, data: CompanyUpdateInput) => api.put<Company>(`/companies/${uuid}`, data),

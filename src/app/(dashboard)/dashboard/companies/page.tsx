@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, RefreshCw, ShieldAlert, X, Save, Power, UserPlus, Download, Eye, KeyRound } from "lucide-react";
+import { ChevronLeft, Plus, RefreshCw, ShieldAlert, X, Save, Power, UserPlus, Download, Eye, Pencil, HardDrive } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
@@ -15,6 +15,13 @@ const ENVIRONMENTS = ["sandbox", "production"] as const;
 
 const inputCls = "h-9 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52]";
 const labelCls = "text-[12px] font-medium text-[#374151] dark:text-[#9ca3af] block mb-1";
+
+const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+};
 
 const emptyForm: CompanyCreateInput = {
     name: "",
@@ -48,15 +55,26 @@ export default function CompaniesPage() {
     const [viewTargetCompany, setViewTargetCompany] = useState<Company | null>(null);
     const [companyAdmins, setCompanyAdmins] = useState<AdminUser[]>([]);
     const [adminsLoading, setAdminsLoading] = useState(false);
-    const [resetTarget, setResetTarget] = useState<AdminUser | null>(null);
-    const [newPassword, setNewPassword] = useState("");
-    const [resetting, setResetting] = useState(false);
+    const [editTarget, setEditTarget] = useState<AdminUser | null>(null);
+    const [editForm, setEditForm] = useState({ name: "", email: "", newPassword: "" });
+    const [savingEdit, setSavingEdit] = useState(false);
+    const [dataSizes, setDataSizes] = useState<Record<number, number | null>>({});
 
     const load = useCallback((showToast = false) => {
         if (!canManage) { setIsLoading(false); return; }
         setIsLoading(true);
         companiesService.list({ limit: 200 })
-            .then((res) => setCompanies(res.data.rows))
+            .then((res) => {
+                setCompanies(res.data.rows);
+                // Fetch each company's exportable data size independently so one slow/failed
+                // lookup doesn't block the others — table shows a spinner per-row until resolved.
+                setDataSizes({});
+                res.data.rows.forEach((c) => {
+                    companiesService.dataSize(c.uuid)
+                        .then((r) => setDataSizes((prev) => ({ ...prev, [c.id]: r.data.bytes })))
+                        .catch(() => setDataSizes((prev) => ({ ...prev, [c.id]: null })));
+                });
+            })
             .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load companies."))
             .finally(() => setIsLoading(false));
         if (showToast) toast.success("Companies refreshed.");
@@ -147,22 +165,32 @@ export default function CompaniesPage() {
         }
     };
 
-    const handleResetPassword = async () => {
-        if (!resetTarget) return;
-        if (newPassword.length < 8) {
+    const handleSaveAdminEdit = async () => {
+        if (!editTarget) return;
+        if (!editForm.name.trim() || !editForm.email.trim()) {
+            toast.error("Name and email are required.");
+            return;
+        }
+        if (editForm.newPassword && editForm.newPassword.length < 8) {
             toast.error("Password must be at least 8 characters.");
             return;
         }
-        setResetting(true);
+        setSavingEdit(true);
         try {
-            await usersService.resetPassword(resetTarget.uuid, newPassword);
-            toast.success(`Password reset for ${resetTarget.name}.`);
-            setResetTarget(null);
-            setNewPassword("");
+            if (editForm.name !== editTarget.name || editForm.email !== editTarget.email) {
+                await usersService.updateUser(editTarget.uuid, { name: editForm.name, email: editForm.email });
+            }
+            if (editForm.newPassword) {
+                await usersService.resetPassword(editTarget.uuid, editForm.newPassword);
+            }
+            toast.success(`${editForm.name} updated.`);
+            setEditTarget(null);
+            setEditForm({ name: "", email: "", newPassword: "" });
+            if (viewTargetCompany) handleViewAdmins(viewTargetCompany);
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Failed to reset password.");
+            toast.error(err instanceof Error ? err.message : "Failed to update admin.");
         } finally {
-            setResetting(false);
+            setSavingEdit(false);
         }
     };
 
@@ -291,16 +319,16 @@ export default function CompaniesPage() {
                     <table className="w-full text-[12px] border-collapse">
                         <thead>
                             <tr className="bg-[#C69A52] text-white">
-                                {["S.No", "Company Name", "Business Name", "NTN", "Province", "Environment", "Status", "Actions"].map((c) => (
+                                {["S.No", "Company Name", "Business Name", "NTN", "Province", "Environment", "Status", "Data Size", "Actions"].map((c) => (
                                     <th key={c} className="px-2.5 py-1.5 text-left font-semibold whitespace-nowrap">{c}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F4F6] dark:divide-[#2e2e2e]">
                             {isLoading ? (
-                                <tr><td colSpan={8} className="py-10 text-center bg-white dark:bg-[#242424]"><LogoSpinner label="Loading companies..." className="mx-auto" /></td></tr>
+                                <tr><td colSpan={9} className="py-10 text-center bg-white dark:bg-[#242424]"><LogoSpinner label="Loading companies..." className="mx-auto" /></td></tr>
                             ) : companies.length === 0 ? (
-                                <tr><td colSpan={8} className="py-10 text-center text-[12px] text-[#9CA3AF] italic bg-white dark:bg-[#242424]">No companies yet.</td></tr>
+                                <tr><td colSpan={9} className="py-10 text-center text-[12px] text-[#9CA3AF] italic bg-white dark:bg-[#242424]">No companies yet.</td></tr>
                             ) : companies.map((c, i) => (
                                 <tr key={c.id} className={i % 2 === 0 ? "bg-white dark:bg-[#242424]" : "bg-[#FAF6F0]/30 dark:bg-[#282828]"}>
                                     <td className="px-2.5 py-1.5 whitespace-nowrap">{i + 1}</td>
@@ -313,6 +341,15 @@ export default function CompaniesPage() {
                                         <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold", c.isActive ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200")}>
                                             {c.isActive ? "Active" : "Inactive"}
                                         </span>
+                                    </td>
+                                    <td className="px-2.5 py-1.5 whitespace-nowrap">
+                                        {dataSizes[c.id] === undefined ? (
+                                            <span className="inline-flex items-center gap-1 text-[#9CA3AF]"><HardDrive className="h-3 w-3 animate-pulse" /> …</span>
+                                        ) : dataSizes[c.id] === null ? (
+                                            <span className="text-[#9CA3AF]">—</span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 text-[#4F5967] dark:text-[#9ca3af]"><HardDrive className="h-3 w-3 text-[#A27B3A]" /> {formatBytes(dataSizes[c.id]!)}</span>
+                                        )}
                                     </td>
                                     <td className="px-2.5 py-1.5">
                                         <div className="flex items-center gap-1">
@@ -397,7 +434,7 @@ export default function CompaniesPage() {
                             <button type="button" onClick={() => setViewTargetCompany(null)} className="text-[#9CA3AF] hover:text-[#4F5967] cursor-pointer"><X className="h-4 w-4" /></button>
                         </div>
                         <p className="text-[11px] text-[#9CA3AF] italic">
-                            Passwords are one-way hashed and can never be retrieved. Use &quot;Reset&quot; to set a new one you can hand over.
+                            Passwords are one-way hashed and can never be retrieved. Use &quot;Edit&quot; to update their name, email, or set a new password.
                         </p>
                         {adminsLoading ? (
                             <div className="py-6"><LogoSpinner label="Loading..." className="mx-auto" /></div>
@@ -413,10 +450,10 @@ export default function CompaniesPage() {
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => { setResetTarget(u); setNewPassword(""); }}
+                                            onClick={() => { setEditTarget(u); setEditForm({ name: u.name, email: u.email, newPassword: "" }); }}
                                             className="flex h-8 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer"
                                         >
-                                            <KeyRound className="h-3.5 w-3.5 text-[#A27B3A]" /> Reset
+                                            <Pencil className="h-3.5 w-3.5 text-[#A27B3A]" /> Edit
                                         </button>
                                     </div>
                                 ))}
@@ -426,23 +463,33 @@ export default function CompaniesPage() {
                 </div>
             )}
 
-            {resetTarget && (
-                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 px-4" onClick={() => setResetTarget(null)}>
+            {editTarget && (
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 px-4" onClick={() => setEditTarget(null)}>
                     <div className="w-full max-w-sm rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between">
-                            <p className="text-[13px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">Reset password — {resetTarget.name}</p>
-                            <button type="button" onClick={() => setResetTarget(null)} className="text-[#9CA3AF] hover:text-[#4F5967] cursor-pointer"><X className="h-4 w-4" /></button>
+                            <p className="text-[13px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">Edit admin — {editTarget.name}</p>
+                            <button type="button" onClick={() => setEditTarget(null)} className="text-[#9CA3AF] hover:text-[#4F5967] cursor-pointer"><X className="h-4 w-4" /></button>
                         </div>
-                        <div>
-                            <label className={labelCls}>New Password *</label>
-                            <input type="text" className={cn(inputCls, "w-full")} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min. 8 characters" />
+                        <div className="space-y-3">
+                            <div>
+                                <label className={labelCls}>Full Name *</label>
+                                <input type="text" className={cn(inputCls, "w-full")} value={editForm.name} onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Email *</label>
+                                <input type="email" className={cn(inputCls, "w-full")} value={editForm.email} onChange={(e) => setEditForm((prev) => ({ ...prev, email: e.target.value }))} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>New Password</label>
+                                <input type="text" className={cn(inputCls, "w-full")} value={editForm.newPassword} onChange={(e) => setEditForm((prev) => ({ ...prev, newPassword: e.target.value }))} placeholder="Leave blank to keep current password" />
+                            </div>
                         </div>
                         <div className="flex justify-end gap-2 pt-1">
-                            <button type="button" onClick={() => setResetTarget(null)} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                            <button type="button" onClick={() => setEditTarget(null)} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
                                 Cancel
                             </button>
-                            <button type="button" onClick={handleResetPassword} disabled={resetting} className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer disabled:opacity-50">
-                                <KeyRound className="h-3.5 w-3.5" /> {resetting ? "Resetting..." : "Reset Password"}
+                            <button type="button" onClick={handleSaveAdminEdit} disabled={savingEdit} className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer disabled:opacity-50">
+                                <Save className="h-3.5 w-3.5" /> {savingEdit ? "Saving..." : "Save Changes"}
                             </button>
                         </div>
                     </div>
