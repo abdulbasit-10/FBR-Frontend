@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   Bell,
@@ -15,16 +14,19 @@ import {
   MapPin,
   Package,
   RefreshCw,
+  ShieldCheck,
   Shield,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { auth, type AuthUser } from "@/lib/auth";
 import {
+  companiesService,
   customersService,
   dashboardService,
   productsService,
   vendorsService,
   type DashboardResponse,
+  type PlatformStats,
 } from "@/lib/services";
 
 const gold = "#c99d54";
@@ -36,7 +38,6 @@ interface SideCounts {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [side, setSide] = useState<SideCounts>({ customers: null, items: null, vendors: null });
@@ -44,13 +45,11 @@ export default function DashboardPage() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const user = auth.getUser();
-    setAuthUser(user);
-    // SuperAdmin is a platform-level account (companyId: null) — every dashboard widget below
-    // is company-scoped and would otherwise fail with "No company linked to account".
-    if (user && !user.companyId) router.replace("/dashboard/companies");
-    else setAuthChecked(true);
-  }, [router]);
+    setAuthUser(auth.getUser());
+    setAuthChecked(true);
+  }, []);
+
+  const isSuperAdmin = authChecked && !authUser?.companyId;
 
   const load = useCallback(async (showToast = false) => {
     try {
@@ -70,9 +69,11 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (!authChecked) return;
+    // SuperAdmin is a platform-level account (companyId: null) — every widget below
+    // is company-scoped, so it gets its own dashboard instead (see SuperAdminDashboard).
+    if (!authChecked || isSuperAdmin) return;
     load();
-  }, [load, authChecked]);
+  }, [load, authChecked, isSuperAdmin]);
 
   const handleRefresh = async () => {
     if (isRefreshing) return;
@@ -80,6 +81,8 @@ export default function DashboardPage() {
     await load(true);
     setIsRefreshing(false);
   };
+
+  if (isSuperAdmin) return <SuperAdminDashboard authUser={authUser} />;
 
   const cards = data?.cards;
   const totalDocs = cards?.totalInvoices ?? 0;
@@ -191,6 +194,95 @@ export default function DashboardPage() {
           <MasterData customers={side.customers ?? 0} vendors={side.vendors ?? 0} items={side.items ?? 0} />
           <Tips />
         </aside>
+      </div>
+    </div>
+  );
+}
+
+/* ── SUPERADMIN (PLATFORM) DASHBOARD ── */
+function SuperAdminDashboard({ authUser }: { authUser: AuthUser | null }) {
+  const [stats, setStats] = useState<PlatformStats | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const load = useCallback(async (showToast = false) => {
+    try {
+      const res = await companiesService.stats();
+      setStats(res.data);
+      if (showToast) toast.success("Dashboard refreshed.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to load dashboard.");
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    await load(true);
+    setIsRefreshing(false);
+  };
+
+  const c = stats?.companies;
+  const u = stats?.users;
+  const today = new Date().toLocaleDateString("en-US", { weekday: "short", day: "2-digit", month: "long", year: "numeric" });
+
+  return (
+    <div
+      className="mx-auto max-w-[1440px] antialiased font-sans text-[#4f5967]"
+      style={{ fontFamily: 'var(--font-inter), sans-serif' }}
+    >
+      <section className="relative overflow-hidden rounded-lg bg-[linear-gradient(110deg,#c99d54,#a6782d)] px-6 py-3.5 text-white">
+        <div className="absolute -right-6 top-1/2 h-32 w-32 -translate-y-1/2 rounded-full bg-white/10" />
+        <p className="relative text-[10px] font-medium uppercase tracking-widest text-white/65">{today}</p>
+        <h1 className="relative mt-1 text-[21px] font-semibold leading-snug tracking-tight">Welcome Back{authUser?.name ? `, ${authUser.name.split(" ")[0]}` : ""}!</h1>
+        <p className="relative mt-1 text-[11px] text-white/70">{c?.total ?? 0} companies · {u?.total ?? 0} platform users</p>
+        <div className="relative mt-4 flex flex-wrap gap-1.5 md:absolute md:right-5 md:top-1/2 md:mt-0 md:-translate-y-1/2">
+          <Link href="/dashboard/companies" className="flex h-[28px] items-center gap-1 rounded-md bg-white/95 px-3 text-[12px] font-medium text-[#5d5750] hover:bg-white transition-colors">
+            Manage Companies <ArrowUpRight className="inline h-3 w-3" />
+          </Link>
+          <button onClick={handleRefresh} disabled={isRefreshing} className="flex h-[28px] items-center gap-1 rounded-md bg-white/95 px-3 text-[12px] font-medium text-[#5d5750] hover:bg-white transition-colors disabled:opacity-60 cursor-pointer">
+            <RefreshCw className={`inline h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} /> {isRefreshing ? "Refreshing..." : "Refresh data"}
+          </button>
+        </div>
+      </section>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <SideStat title="Total Companies" value={String(c?.total ?? "—")} label={`${c?.active ?? 0} active · ${c?.inactive ?? 0} inactive`} href="/dashboard/companies" />
+        <SideStat title="Sandbox / Production" value={`${c?.sandbox ?? 0} / ${c?.production ?? 0}`} label="FBR environment split" href="/dashboard/companies" />
+        <SideStat title="Platform Users" value={String(u?.total ?? "—")} label={`${u?.active ?? 0} active · ${u?.inactive ?? 0} inactive`} />
+        <SideStat title="Active Rate" value={c?.total ? `${Math.round(((c.active ?? 0) / c.total) * 100)}%` : "—"} label="Companies currently active" />
+      </div>
+
+      <div className="mt-4">
+        <DashboardSection title="Recently Added Companies">
+          <div className="rounded-xl border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] overflow-hidden">
+            {stats?.recentCompanies.length ? (
+              <ul className="divide-y divide-[#e8e9eb] dark:divide-[#3a3a3a]">
+                {stats.recentCompanies.map((rc) => (
+                  <li key={rc.id}>
+                    <Link href="/dashboard/companies" className="flex items-center justify-between px-4 py-3 hover:bg-[#FAF6F0] dark:hover:bg-[#2a2a2a] transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#a37934] text-[11px] font-bold text-white">
+                          {rc.businessName.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-[12.5px] font-semibold text-[#1f2937] dark:text-[#f0f0f0]">{rc.businessName}</p>
+                          <p className="text-[10.5px] text-[#9ca3af]">{rc.name} · {rc.fbrEnvironment}</p>
+                        </div>
+                      </div>
+                      <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-medium ${rc.isActive ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
+                        <ShieldCheck className="h-3 w-3" /> {rc.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="px-4 py-6 text-center text-[12px] text-[#9ca3af]">No companies yet.</p>
+            )}
+          </div>
+        </DashboardSection>
       </div>
     </div>
   );

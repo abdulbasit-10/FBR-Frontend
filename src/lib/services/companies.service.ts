@@ -29,8 +29,24 @@ export type CompanyCreateInput = Omit<
 
 export type CompanyUpdateInput = Partial<CompanyCreateInput>;
 
+export interface PlatformStats {
+    companies: { total: number; active: number; inactive: number; sandbox: number; production: number };
+    users: { total: number; active: number; inactive: number };
+    recentCompanies: {
+        id: number;
+        uuid: string;
+        name: string;
+        businessName: string;
+        fbrEnvironment: "sandbox" | "production" | "both";
+        isActive: boolean;
+        createdAt: string;
+    }[];
+}
+
 export const companiesService = {
     list: (q?: ListQuery) => api.get<Paginated<Company>>(`/companies${toQuery(q as Record<string, unknown>)}`),
+    /** SuperAdmin-only: platform-wide counts for the dashboard. */
+    stats: () => api.get<PlatformStats>(`/companies/stats/overview`),
     getOne: (uuid: string) => api.get<Company>(`/companies/${uuid}`),
     create: (data: CompanyCreateInput) => api.post<Company>("/companies", data),
     update: (uuid: string, data: CompanyUpdateInput) => api.put<Company>(`/companies/${uuid}`, data),

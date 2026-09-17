@@ -97,7 +97,7 @@ export type { Notification, NotificationListQuery } from "./notifications.servic
 export type { Setting, UpsertSettingInput } from "./settings.service";
 export type { FbrToken, UpsertFbrTokenInput } from "./fbrTokens.service";
 export type { AdminUser, Role, Permission, CreateUserInput } from "./users.service";
-export type { Company, CompanyCreateInput, CompanyUpdateInput } from "./companies.service";
+export type { Company, CompanyCreateInput, CompanyUpdateInput, PlatformStats } from "./companies.service";
 export type {
     Province,
     DocType,

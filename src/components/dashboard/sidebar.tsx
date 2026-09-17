@@ -134,12 +134,25 @@ function NavItemComponent({
   );
 }
 
+// SuperAdmin is a platform-level account (no companyId) — every other section is
+// company-scoped and meaningless for them, so the sidebar only offers these two.
+const SUPER_ADMIN_HREFS = new Set(["/dashboard", "/dashboard/companies"]);
+
 export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) {
   const pathname = usePathname();
   const [companyName, setCompanyName] = useState("");
+  // Starts false on the server (no localStorage there) and is corrected client-side in the
+  // effect below — same SSR-safe pattern as companyName just below.
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const navItems = isSuperAdmin ? primaryNav.filter((item) => SUPER_ADMIN_HREFS.has(item.href)) : primaryNav;
 
   useEffect(() => {
-    if (!auth.getUser()?.companyId) { setCompanyName("Platform Admin"); return; }
+    const user = auth.getUser();
+    if (!user?.companyId) {
+      setIsSuperAdmin(true);
+      setCompanyName("Platform Admin");
+      return;
+    }
     companiesService.list({ limit: 1 })
       .then((res) => {
         const payload = res.data as unknown as Record<string, unknown>;
@@ -152,7 +165,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
 
   // Accordion: only one top-level dropdown open at a time
   const matchingTopLevel = (path: string): string | null =>
-    primaryNav.find(item =>
+    navItems.find(item =>
       item.children?.length && item.children.some(c =>
         path === c.href || path.startsWith(c.href + "/") ||
         c.children?.some(cc => path === cc.href || path.startsWith(cc.href + "/"))
@@ -212,7 +225,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
         <div className="py-2.5">
           <p className={cn("px-4 pb-1.5 text-[10px] font-medium tracking-wide text-[#9aa2ac] dark:text-[#555]", collapsed && "sr-only")}>MENU</p>
           <nav className={cn("flex flex-col gap-1 px-3", collapsed && "px-2")}>
-            {primaryNav.map((item) => (
+            {navItems.map((item) => (
               <NavItemComponent
                 key={item.href}
                 item={item}
