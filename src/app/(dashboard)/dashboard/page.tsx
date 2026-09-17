@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   Bell,
@@ -35,14 +36,21 @@ interface SideCounts {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [side, setSide] = useState<SideCounts>({ customers: null, items: null, vendors: null });
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    setAuthUser(auth.getUser());
-  }, []);
+    const user = auth.getUser();
+    setAuthUser(user);
+    // SuperAdmin is a platform-level account (companyId: null) — every dashboard widget below
+    // is company-scoped and would otherwise fail with "No company linked to account".
+    if (user && !user.companyId) router.replace("/dashboard/companies");
+    else setAuthChecked(true);
+  }, [router]);
 
   const load = useCallback(async (showToast = false) => {
     try {
@@ -62,8 +70,9 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (!authChecked) return;
     load();
-  }, [load]);
+  }, [load, authChecked]);
 
   const handleRefresh = async () => {
     if (isRefreshing) return;

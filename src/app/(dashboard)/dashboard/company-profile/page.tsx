@@ -1,11 +1,39 @@
 "use client";
 
-import { ArrowLeft, Building2, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Building2, RefreshCw, ShieldCheck, Pencil, X, Save } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { companiesService, reportsService, type Company, type ScenarioProgressResult } from "@/lib/services";
+import { companiesService, reportsService, type Company, type CompanyUpdateInput, type ScenarioProgressResult } from "@/lib/services";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { auth } from "@/lib/auth";
+import { FBR_BUSINESS_ACTIVITIES, FBR_SECTORS } from "@/lib/constants/fbr";
+
+const PROVINCES = ["Khyber Pakhtunkhwa", "Punjab", "Sindh", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir", "Islamabad"];
+
+type EditForm = {
+    businessName: string;
+    ntn: string;
+    salesTaxRegNo: string;
+    businessActivity: string;
+    sector: string;
+    province: string;
+    address: string;
+    phone: string;
+    email: string;
+};
+
+const toForm = (c: Company): EditForm => ({
+    businessName: c.businessName ?? "",
+    ntn: c.ntn ?? "",
+    salesTaxRegNo: c.salesTaxRegNo ?? c.strn ?? "",
+    businessActivity: c.businessActivity ?? "",
+    sector: c.sector ?? "",
+    province: c.province ?? "",
+    address: c.address ?? "",
+    phone: c.phone ?? "",
+    email: c.email ?? "",
+});
 
 export default function CompanyProfilePage() {
     const [company, setCompany] = useState<Company | null>(null);
@@ -13,6 +41,12 @@ export default function CompanyProfilePage() {
     const [refreshing, setRefreshing] = useState(false);
     const [progress, setProgress] = useState<ScenarioProgressResult | null>(null);
     const [progressLoading, setProgressLoading] = useState(true);
+    const [canEdit, setCanEdit] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [form, setForm] = useState<EditForm | null>(null);
+
+    useEffect(() => { setCanEdit(auth.hasPermission("company.update")); }, []);
 
     const load = useCallback(async (showToast = false) => {
         try {
@@ -40,6 +74,42 @@ export default function CompanyProfilePage() {
     }, []);
 
     const handleRefresh = () => { if (!refreshing) { setRefreshing(true); load(true); } };
+
+    const handleEditStart = () => { if (company) { setForm(toForm(company)); setIsEditing(true); } };
+    const handleEditCancel = () => { setIsEditing(false); setForm(null); };
+    const handleFieldChange = (field: keyof EditForm, value: string) =>
+        setForm((prev) => (prev ? { ...prev, [field]: value } : prev));
+
+    const handleSave = async () => {
+        if (!company || !form) return;
+        if (!form.businessName.trim() || !form.ntn.trim() || !form.province.trim() || !form.address.trim()) {
+            toast.error("Business name, NTN, province, and address are required.");
+            return;
+        }
+        setSaving(true);
+        try {
+            const payload: CompanyUpdateInput = {
+                businessName: form.businessName.trim(),
+                ntn: form.ntn.trim(),
+                salesTaxRegNo: form.salesTaxRegNo.trim() || null,
+                businessActivity: (form.businessActivity || null) as CompanyUpdateInput["businessActivity"],
+                sector: (form.sector || null) as CompanyUpdateInput["sector"],
+                province: form.province.trim(),
+                address: form.address.trim(),
+                phone: form.phone.trim() || null,
+                email: form.email.trim() || null,
+            };
+            const res = await companiesService.update(company.uuid, payload);
+            setCompany(res.data);
+            setIsEditing(false);
+            setForm(null);
+            toast.success("Company profile updated.");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to update company profile.");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -92,15 +162,49 @@ export default function CompanyProfilePage() {
                             <p className="text-[11px] text-[#9ca3af]">Update your company photo and details here.</p>
                         </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                        className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-3 text-[12px] font-medium text-[#374151] dark:text-[#d1d5db] hover:bg-[#f3f4f6] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer disabled:opacity-50"
-                    >
-                        <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
-                        {refreshing ? "Refreshing..." : "Refresh"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {isEditing ? (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={handleEditCancel}
+                                    disabled={saving}
+                                    className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-3 text-[12px] font-medium text-[#374151] dark:text-[#d1d5db] hover:bg-[#f3f4f6] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                    <X className="h-3.5 w-3.5" /> Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className="flex h-8 items-center gap-1.5 rounded-lg bg-[#c99d54] px-3 text-[12px] font-medium text-white hover:bg-[#a07830] transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                    <Save className="h-3.5 w-3.5" /> {saving ? "Saving..." : "Save"}
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                {canEdit && (
+                                    <button
+                                        type="button"
+                                        onClick={handleEditStart}
+                                        className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-3 text-[12px] font-medium text-[#374151] dark:text-[#d1d5db] hover:bg-[#f3f4f6] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer"
+                                    >
+                                        <Pencil className="h-3.5 w-3.5" /> Edit
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={handleRefresh}
+                                    disabled={refreshing}
+                                    className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#242424] px-3 text-[12px] font-medium text-[#374151] dark:text-[#d1d5db] hover:bg-[#f3f4f6] dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                    <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+                                    {refreshing ? "Refreshing..." : "Refresh"}
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 {/* Detail card */}
@@ -116,7 +220,11 @@ export default function CompanyProfilePage() {
                                 <Building2 className="h-6 w-6" />
                             </div>
                             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                                <Field label="Company name" value={company?.businessName ?? "--"} />
+                                {isEditing && form ? (
+                                    <EditInput label="Company name" value={form.businessName} onChange={(v) => handleFieldChange("businessName", v)} />
+                                ) : (
+                                    <Field label="Company name" value={company?.businessName ?? "--"} />
+                                )}
                                 <Field label="System company ID" value={String(company?.id ?? "--").padStart(5, "0")} />
                                 <Field label="Logo" value="Not set" />
                             </div>
@@ -129,10 +237,21 @@ export default function CompanyProfilePage() {
                         subtitle="Legal identifiers used on FBR and tax documents."
                     >
                         <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                            <Field label="NTN" value={company?.ntn ?? "--"} />
-                            <Field label="STRN" value={strn ?? "--"} />
-                            <Field label="Business Activity" value={company?.businessActivity ?? "--"} />
-                            <Field label="Sector" value={company?.sector ?? "--"} />
+                            {isEditing && form ? (
+                                <>
+                                    <EditInput label="NTN" value={form.ntn} onChange={(v) => handleFieldChange("ntn", v)} />
+                                    <EditInput label="STRN" value={form.salesTaxRegNo} onChange={(v) => handleFieldChange("salesTaxRegNo", v)} />
+                                    <EditSelect label="Business Activity" value={form.businessActivity} options={FBR_BUSINESS_ACTIVITIES} onChange={(v) => handleFieldChange("businessActivity", v)} />
+                                    <EditSelect label="Sector" value={form.sector} options={FBR_SECTORS} onChange={(v) => handleFieldChange("sector", v)} />
+                                </>
+                            ) : (
+                                <>
+                                    <Field label="NTN" value={company?.ntn ?? "--"} />
+                                    <Field label="STRN" value={strn ?? "--"} />
+                                    <Field label="Business Activity" value={company?.businessActivity ?? "--"} />
+                                    <Field label="Sector" value={company?.sector ?? "--"} />
+                                </>
+                            )}
                         </div>
                     </ProfileSection>
 
@@ -142,10 +261,20 @@ export default function CompanyProfilePage() {
                         subtitle="Registered business address shown on invoices and compliance forms."
                     >
                         <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                            <Field label="Province" value={company?.province ?? "--"} />
-                            <Field label="City" value="--" />
-                            <Field label="Postal code" value="--" />
-                            <Field label="Street address" value={company?.address ?? "--"} />
+                            {isEditing && form ? (
+                                <>
+                                    <EditSelect label="Province" value={form.province} options={PROVINCES} onChange={(v) => handleFieldChange("province", v)} />
+                                    <div />
+                                    <EditInput label="Street address" value={form.address} onChange={(v) => handleFieldChange("address", v)} className="col-span-2" />
+                                </>
+                            ) : (
+                                <>
+                                    <Field label="Province" value={company?.province ?? "--"} />
+                                    <Field label="City" value="--" />
+                                    <Field label="Postal code" value="--" />
+                                    <Field label="Street address" value={company?.address ?? "--"} />
+                                </>
+                            )}
                         </div>
                     </ProfileSection>
 
@@ -155,8 +284,17 @@ export default function CompanyProfilePage() {
                         subtitle="How customers and partners can reach your business."
                     >
                         <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                            <Field label="Phone" value={company?.phone ?? "--"} />
-                            <Field label="Email" value={company?.email ?? "--"} />
+                            {isEditing && form ? (
+                                <>
+                                    <EditInput label="Phone" value={form.phone} onChange={(v) => handleFieldChange("phone", v)} />
+                                    <EditInput label="Email" value={form.email} onChange={(v) => handleFieldChange("email", v)} />
+                                </>
+                            ) : (
+                                <>
+                                    <Field label="Phone" value={company?.phone ?? "--"} />
+                                    <Field label="Email" value={company?.email ?? "--"} />
+                                </>
+                            )}
                         </div>
                     </ProfileSection>
 
@@ -208,10 +346,10 @@ export default function CompanyProfilePage() {
                                                 <td className="px-3 py-2 text-[#6b7280] dark:text-[#9ca3af]">{r.attempts}</td>
                                                 <td className="px-3 py-2">
                                                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${r.status === "Successful"
-                                                            ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400"
-                                                            : r.status === "Attempted"
-                                                                ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
-                                                                : "bg-[#f3f4f6] text-[#6b7280] dark:bg-[#2a2a2a] dark:text-[#9ca3af]"
+                                                        ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400"
+                                                        : r.status === "Attempted"
+                                                            ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                                                            : "bg-[#f3f4f6] text-[#6b7280] dark:bg-[#2a2a2a] dark:text-[#9ca3af]"
                                                         }`}>
                                                         {r.status}
                                                     </span>
@@ -258,6 +396,36 @@ function Field({ label, value }: { label: string; value: string }) {
         <div>
             <p className="text-[12px] font-medium text-[#6b7280] dark:text-[#9ca3af]">{label}</p>
             <p className="mt-0.5 text-[14px] font-semibold text-[#111827] dark:text-[#f0f0f0]">{value}</p>
+        </div>
+    );
+}
+
+function EditInput({ label, value, onChange, className }: { label: string; value: string; onChange: (v: string) => void; className?: string }) {
+    return (
+        <div className={className}>
+            <label className="text-[12px] font-medium text-[#6b7280] dark:text-[#9ca3af]">{label}</label>
+            <input
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="mt-0.5 h-9 w-full rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#1c1c1c] px-3 text-[13px] font-medium text-[#111827] dark:text-[#f0f0f0] focus:outline-none focus:border-[#c99d54]"
+            />
+        </div>
+    );
+}
+
+function EditSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+    return (
+        <div>
+            <label className="text-[12px] font-medium text-[#6b7280] dark:text-[#9ca3af]">{label}</label>
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="mt-0.5 h-9 w-full rounded-lg border border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#1c1c1c] px-3 text-[13px] font-medium text-[#111827] dark:text-[#f0f0f0] focus:outline-none focus:border-[#c99d54]"
+            >
+                <option value="">-- Select --</option>
+                {options.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
         </div>
     );
 }

@@ -43,3 +43,32 @@ export const FBR_SALE_TYPES: string[] = Array.from(
 export const FBR_COMMON_RATES: string[] = ["18%", "17%", "10%", "5%", "3%", "1%", "0%"];
 
 export const HS_CODE_PATTERN = /^\d{4}\.\d{4}$/;
+
+/** Mirrors FBR-Backend/src/constants/fbrScenarios.ts — company profile Business Activity options. */
+export const FBR_BUSINESS_ACTIVITIES: string[] = [
+    "Manufacturer",
+    "Importer",
+    "Distributor",
+    "Wholesaler",
+    "Exporter",
+    "Retailer",
+    "Service Provider",
+    "Other",
+];
+
+/** Mirrors FBR-Backend/src/constants/fbrScenarios.ts — company profile Sector options. */
+export const FBR_SECTORS: string[] = [
+    "All Other Sectors",
+    "Steel",
+    "FMCG",
+    "Textile",
+    "Telecom",
+    "Petroleum",
+    "Electricity Distribution",
+    "Gas Distribution",
+    "Services",
+    "Automobile",
+    "CNG Stations",
+    "Pharmaceuticals",
+    "Wholesale / Retails",
+];

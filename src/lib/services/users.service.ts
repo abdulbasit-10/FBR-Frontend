@@ -66,9 +66,9 @@ export const usersService = {
     resetPassword: (uuid: string, newPassword: string) =>
         api.post<null>(`/admin/users/${uuid}/reset-password`, { newPassword }),
 
-    // Roles
+    // Roles — backend returns a plain array (not paginated) for these.
     listRoles: (q?: ListQuery) =>
-        api.get<Paginated<Role>>(`/admin/roles${toQuery(q as Record<string, unknown>)}`),
+        api.get<Role[]>(`/admin/roles${toQuery(q as Record<string, unknown>)}`),
     getRole: (uuid: string) => api.get<Role>(`/admin/roles/${uuid}`),
     createRole: (data: CreateRoleInput) => api.post<Role>("/admin/roles", data),
     updateRole: (uuid: string, data: UpdateRoleInput) => api.put<Role>(`/admin/roles/${uuid}`, data),

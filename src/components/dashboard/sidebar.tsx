@@ -9,6 +9,8 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { primaryNav, type NavItem } from "@/components/dashboard/nav-data";
+import { auth } from "@/lib/auth";
+import { companiesService } from "@/lib/services";
 
 export type SidebarProps = {
   collapsed?: boolean;
@@ -134,6 +136,19 @@ function NavItemComponent({
 
 export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) {
   const pathname = usePathname();
+  const [companyName, setCompanyName] = useState("");
+
+  useEffect(() => {
+    if (!auth.getUser()?.companyId) { setCompanyName("Platform Admin"); return; }
+    companiesService.list({ limit: 1 })
+      .then((res) => {
+        const payload = res.data as unknown as Record<string, unknown>;
+        const list = (payload.data ?? payload.rows) as { businessName?: string; name?: string }[] | undefined;
+        const company = list?.[0];
+        setCompanyName(company?.businessName ?? company?.name ?? "");
+      })
+      .catch(() => { /* leave blank — not worth a toast for a header label */ });
+  }, []);
 
   // Accordion: only one top-level dropdown open at a time
   const matchingTopLevel = (path: string): string | null =>
@@ -177,7 +192,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
           </button>
         ) : (
           <div className="flex flex-1 items-center gap-2 overflow-hidden">
-            <span className="flex-1 truncate text-sm font-semibold text-[#a87827]">BioWorld Traders</span>
+            <span className="flex-1 truncate text-sm font-semibold text-[#a87827]">{companyName}</span>
             <button
               type="button"
               onClick={() => onCollapsedChange?.(!collapsed)}

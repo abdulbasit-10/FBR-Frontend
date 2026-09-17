@@ -96,8 +96,8 @@ export type { ApiLog, ApiLogListQuery } from "./apiLogs.service";
 export type { Notification, NotificationListQuery } from "./notifications.service";
 export type { Setting, UpsertSettingInput } from "./settings.service";
 export type { FbrToken, UpsertFbrTokenInput } from "./fbrTokens.service";
-export type { AdminUser, Role, Permission } from "./users.service";
-export type { Company } from "./companies.service";
+export type { AdminUser, Role, Permission, CreateUserInput } from "./users.service";
+export type { Company, CompanyCreateInput, CompanyUpdateInput } from "./companies.service";
 export type {
     Province,
     DocType,

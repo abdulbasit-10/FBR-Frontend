@@ -97,5 +97,7 @@ export const primaryNav: NavItem[] = [
   },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
   { title: "Audit Logs", href: "/dashboard/audit-logs", icon: FileText },
+  { title: "Team", href: "/dashboard/team", icon: Users },
+  { title: "Companies", href: "/dashboard/companies", icon: Building2 },
 ];
 
