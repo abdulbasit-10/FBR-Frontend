@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, RefreshCw, ShieldAlert, X, Save, Power, UserPlus } from "lucide-react";
+import { ChevronLeft, Plus, RefreshCw, ShieldAlert, X, Save, Power, UserPlus, Download } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
@@ -107,6 +107,19 @@ export default function CompaniesPage() {
             load();
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to update company.");
+        }
+    };
+
+    const [exportingId, setExportingId] = useState<number | null>(null);
+    const handleExport = async (c: Company) => {
+        setExportingId(c.id);
+        try {
+            await companiesService.exportSql(c.uuid);
+            toast.success(`SQL export downloaded for ${c.businessName}.`);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to export company data.");
+        } finally {
+            setExportingId(null);
         }
     };
 
@@ -275,6 +288,15 @@ export default function CompaniesPage() {
                                                 className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
                                             >
                                                 <UserPlus className="h-3.5 w-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                title="Export this company's data as a SQL dump (offboarding)"
+                                                onClick={() => handleExport(c)}
+                                                disabled={exportingId === c.id}
+                                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                            >
+                                                <Download className="h-3.5 w-3.5" />
                                             </button>
                                         </div>
                                     </td>
