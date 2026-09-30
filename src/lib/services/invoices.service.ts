@@ -145,6 +145,7 @@ export interface InvoiceListQuery {
     limit?: number;
     /** "unposted" is a virtual backend filter meaning not-posted-and-not-cancelled. */
     status?: InvoiceStatus | "unposted";
+    invoiceType?: InvoiceType;
     customerId?: number;
     from?: string;
     to?: string;

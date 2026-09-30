@@ -2,16 +2,16 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, RefreshCw, ShieldAlert, X, Save, Power, UserPlus, Download, Eye, Pencil, HardDrive } from "lucide-react";
+import { ChevronLeft, Plus, RefreshCw, ShieldAlert, ShieldCheck, X, Save, Power, UserPlus, Download, Eye, Pencil, HardDrive, KeyRound } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
-import { companiesService, usersService, type Company, type CompanyCreateInput, type Role, type CreateUserInput, type AdminUser } from "@/lib/services";
+import { companiesService, usersService, fbrTokensService, type Company, type CompanyCreateInput, type Role, type CreateUserInput, type AdminUser, type FbrToken, type FbrTokenEnvironment } from "@/lib/services";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { FBR_BUSINESS_ACTIVITIES, FBR_SECTORS } from "@/lib/constants/fbr";
 
 const PROVINCES = ["Khyber Pakhtunkhwa", "Punjab", "Sindh", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir", "Islamabad"];
-const ENVIRONMENTS = ["sandbox", "production"] as const;
+const ENVIRONMENTS = ["sandbox", "production", "both"] as const;
 
 const inputCls = "h-9 rounded-[6px] border border-[#D1D5DB] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[12px] text-[#1E293B] dark:text-[#f0f0f0] px-3 focus:outline-none focus:border-[#C69A52]";
 const labelCls = "text-[12px] font-medium text-[#374151] dark:text-[#9ca3af] block mb-1";
@@ -59,6 +59,19 @@ export default function CompaniesPage() {
     const [editForm, setEditForm] = useState({ name: "", email: "", newPassword: "" });
     const [savingEdit, setSavingEdit] = useState(false);
     const [dataSizes, setDataSizes] = useState<Record<number, number | null>>({});
+
+    const [envTargetCompany, setEnvTargetCompany] = useState<Company | null>(null);
+    const [envChoice, setEnvChoice] = useState<(typeof ENVIRONMENTS)[number]>("sandbox");
+    const [hasProdToken, setHasProdToken] = useState<boolean | null>(null);
+    const [checkingToken, setCheckingToken] = useState(false);
+    const [savingEnv, setSavingEnv] = useState(false);
+
+    const [tokenTargetCompany, setTokenTargetCompany] = useState<Company | null>(null);
+    const [tokens, setTokens] = useState<FbrToken[]>([]);
+    const [tokensLoading, setTokensLoading] = useState(false);
+    const [tokenForm, setTokenForm] = useState({ environment: "sandbox" as FbrTokenEnvironment, token: "", expiresAt: "" });
+    const [savingToken, setSavingToken] = useState(false);
+    const [deactivatingUuid, setDeactivatingUuid] = useState<string | null>(null);
 
     const load = useCallback((showToast = false) => {
         if (!canManage) { setIsLoading(false); return; }
@@ -132,6 +145,99 @@ export default function CompaniesPage() {
             load();
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to update company.");
+        }
+    };
+
+    const handleOpenEnvSwitch = async (c: Company) => {
+        setEnvTargetCompany(c);
+        setEnvChoice(c.fbrEnvironment);
+        setHasProdToken(null);
+        setCheckingToken(true);
+        try {
+            const res = await fbrTokensService.list(c.id);
+            const active = res.data.some((t) => t.environment === "production" && t.isActive);
+            setHasProdToken(active);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to check FBR tokens for this company.");
+            setHasProdToken(false);
+        } finally {
+            setCheckingToken(false);
+        }
+    };
+
+    const handleSaveEnvSwitch = async () => {
+        if (!envTargetCompany) return;
+        const needsProdToken = envChoice === "production" || envChoice === "both";
+        if (needsProdToken && !hasProdToken) {
+            toast.error("This company has no active production FBR token yet — add one first.");
+            return;
+        }
+        setSavingEnv(true);
+        try {
+            await companiesService.update(envTargetCompany.uuid, { fbrEnvironment: envChoice });
+            toast.success(`${envTargetCompany.businessName} switched to ${envChoice}.`);
+            setEnvTargetCompany(null);
+            load();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to change FBR environment.");
+        } finally {
+            setSavingEnv(false);
+        }
+    };
+
+    const loadTokens = useCallback(async (companyId: number) => {
+        setTokensLoading(true);
+        try {
+            const res = await fbrTokensService.list(companyId);
+            setTokens(res.data);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to load FBR tokens.");
+        } finally {
+            setTokensLoading(false);
+        }
+    }, []);
+
+    const handleOpenTokens = (c: Company) => {
+        setTokenTargetCompany(c);
+        setTokenForm({ environment: "sandbox", token: "", expiresAt: "" });
+        loadTokens(c.id);
+    };
+
+    const handleSaveToken = async () => {
+        if (!tokenTargetCompany) return;
+        if (!tokenForm.token.trim()) {
+            toast.error("Paste the token string copied from the client's IRIS account.");
+            return;
+        }
+        setSavingToken(true);
+        try {
+            await fbrTokensService.upsert({
+                companyId: tokenTargetCompany.id,
+                environment: tokenForm.environment,
+                token: tokenForm.token.trim(),
+                expiresAt: tokenForm.expiresAt || null,
+            });
+            toast.success(`${tokenForm.environment} token saved for ${tokenTargetCompany.businessName}.`);
+            setTokenForm({ environment: "sandbox", token: "", expiresAt: "" });
+            loadTokens(tokenTargetCompany.id);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to save FBR token.");
+        } finally {
+            setSavingToken(false);
+        }
+    };
+
+    const handleDeactivateToken = async (t: FbrToken) => {
+        if (!tokenTargetCompany) return;
+        setDeactivatingUuid(t.uuid);
+        try {
+            await fbrTokensService.deactivate(t.uuid, tokenTargetCompany.id);
+            toast.success(`${t.environment} token deactivated.`);
+            loadTokens(tokenTargetCompany.id);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to deactivate token.");
+        } finally {
+            setDeactivatingUuid(null);
         }
     };
 
@@ -301,9 +407,12 @@ export default function CompaniesPage() {
                         </div>
                         <div>
                             <label className={labelCls}>FBR Environment</label>
-                            <select className={cn(inputCls, "w-full")} value={form.fbrEnvironment} onChange={(e) => handleChange("fbrEnvironment", e.target.value)}>
-                                {ENVIRONMENTS.map((o) => <option key={o} value={o}>{o}</option>)}
+                            <select className={cn(inputCls, "w-full")} value="sandbox" disabled>
+                                <option value="sandbox">sandbox</option>
                             </select>
+                            <p className="mt-1 text-[10.5px] text-[#9CA3AF] italic">
+                                New companies always start in Sandbox. Add a production FBR token and switch environment from the company&apos;s row actions once it&apos;s ready.
+                            </p>
                         </div>
                     </div>
                     <div className="flex justify-end">
@@ -385,6 +494,22 @@ export default function CompaniesPage() {
                                                 className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
                                             >
                                                 <Eye className="h-3.5 w-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                title="Switch FBR environment (Sandbox / Production)"
+                                                onClick={() => handleOpenEnvSwitch(c)}
+                                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                                            >
+                                                <ShieldCheck className="h-3.5 w-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                title="Manage FBR sandbox/production tokens"
+                                                onClick={() => handleOpenTokens(c)}
+                                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                                            >
+                                                <KeyRound className="h-3.5 w-3.5" />
                                             </button>
                                         </div>
                                     </td>
@@ -491,6 +616,146 @@ export default function CompaniesPage() {
                             <button type="button" onClick={handleSaveAdminEdit} disabled={savingEdit} className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer disabled:opacity-50">
                                 <Save className="h-3.5 w-3.5" /> {savingEdit ? "Saving..." : "Save Changes"}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {envTargetCompany && (
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 px-4" onClick={() => setEnvTargetCompany(null)}>
+                    <div className="w-full max-w-sm rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between">
+                            <p className="text-[13px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">FBR Environment — {envTargetCompany.businessName}</p>
+                            <button type="button" onClick={() => setEnvTargetCompany(null)} className="text-[#9CA3AF] hover:text-[#4F5967] cursor-pointer"><X className="h-4 w-4" /></button>
+                        </div>
+                        <div>
+                            <label className={labelCls}>Environment</label>
+                            <select
+                                className={cn(inputCls, "w-full")}
+                                value={envChoice}
+                                onChange={(e) => setEnvChoice(e.target.value as (typeof ENVIRONMENTS)[number])}
+                            >
+                                {ENVIRONMENTS.map((o) => <option key={o} value={o}>{o}</option>)}
+                            </select>
+                        </div>
+                        {(envChoice === "production" || envChoice === "both") && (
+                            checkingToken ? (
+                                <p className="text-[11px] text-[#9CA3AF] italic">Checking for an active production FBR token...</p>
+                            ) : hasProdToken ? (
+                                <p className="rounded-[6px] border border-[#E3D2BA] bg-[#FAF6EE] px-3 py-2 text-[11px] text-[#7a5520] dark:border-[#4a3a20] dark:bg-[#2a2110] dark:text-[#c99d54]">
+                                    ⚠️ This will allow real, legally-binding invoices to be sent to FBR for this company. Make sure the client is genuinely ready to go live.
+                                </p>
+                            ) : (
+                                <div className="rounded-[6px] border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400 space-y-1.5">
+                                    <p>No active production FBR token found for this company.</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => { const c = envTargetCompany; setEnvTargetCompany(null); if (c) handleOpenTokens(c); }}
+                                        className="font-medium underline underline-offset-2 hover:text-red-800 dark:hover:text-red-300 cursor-pointer"
+                                    >
+                                        Add one now →
+                                    </button>
+                                </div>
+                            )
+                        )}
+                        <div className="flex justify-end gap-2 pt-1">
+                            <button type="button" onClick={() => setEnvTargetCompany(null)} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSaveEnvSwitch}
+                                disabled={savingEnv || checkingToken || ((envChoice === "production" || envChoice === "both") && !hasProdToken)}
+                                className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <ShieldCheck className="h-3.5 w-3.5" /> {savingEnv ? "Saving..." : "Confirm & Save"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {tokenTargetCompany && (
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 px-4" onClick={() => setTokenTargetCompany(null)}>
+                    <div className="w-full max-w-lg rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between">
+                            <p className="text-[13px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">FBR Tokens — {tokenTargetCompany.businessName}</p>
+                            <button type="button" onClick={() => setTokenTargetCompany(null)} className="text-[#9CA3AF] hover:text-[#4F5967] cursor-pointer"><X className="h-4 w-4" /></button>
+                        </div>
+                        <p className="text-[11px] text-[#9CA3AF] italic">
+                            Copy this from the client&apos;s IRIS account (Digital Invoicing → API Integration → Sandbox/Production Environment tab). Saving a new token for an environment automatically deactivates the previous one.
+                        </p>
+
+                        {tokensLoading ? (
+                            <div className="py-6"><LogoSpinner label="Loading..." className="mx-auto" /></div>
+                        ) : tokens.length === 0 ? (
+                            <p className="py-2 text-center text-[12px] text-[#9CA3AF] italic">No tokens saved yet for this company.</p>
+                        ) : (
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                                {tokens.map((t) => (
+                                    <div key={t.uuid} className="flex items-center justify-between rounded-[8px] border border-[#E5E7EB] dark:border-[#3a3a3a] px-3 py-2">
+                                        <div>
+                                            <p className="text-[12.5px] font-semibold uppercase text-[#1E293B] dark:text-[#f0f0f0]">
+                                                {t.environment}
+                                                <span className={cn("ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold normal-case", t.isActive ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200")}>
+                                                    {t.isActive ? "Active" : "Inactive"}
+                                                </span>
+                                            </p>
+                                            <p className="text-[11px] text-[#4F5967] dark:text-[#9ca3af]">
+                                                Issued {t.issuedAt ? new Date(t.issuedAt).toLocaleDateString() : "—"}{t.expiresAt ? ` · Expires ${new Date(t.expiresAt).toLocaleDateString()}` : ""}
+                                            </p>
+                                        </div>
+                                        {t.isActive && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeactivateToken(t)}
+                                                disabled={deactivatingUuid === t.uuid}
+                                                className="flex h-8 items-center gap-1.5 rounded-[6px] border border-red-200 bg-white dark:bg-[#2a2a2a] px-2.5 text-[12px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer disabled:opacity-50"
+                                            >
+                                                {deactivatingUuid === t.uuid ? "..." : "Deactivate"}
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="border-t border-[#E5E7EB] dark:border-[#3a3a3a] pt-3 space-y-3">
+                            <p className="text-[12px] font-semibold text-[#1E293B] dark:text-[#f0f0f0]">Add / replace a token</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className={labelCls}>Environment *</label>
+                                    <select
+                                        className={cn(inputCls, "w-full")}
+                                        value={tokenForm.environment}
+                                        onChange={(e) => setTokenForm((prev) => ({ ...prev, environment: e.target.value as FbrTokenEnvironment }))}
+                                    >
+                                        <option value="sandbox">sandbox</option>
+                                        <option value="production">production</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={labelCls}>Expiry (optional)</label>
+                                    <input type="date" className={cn(inputCls, "w-full")} value={tokenForm.expiresAt} onChange={(e) => setTokenForm((prev) => ({ ...prev, expiresAt: e.target.value }))} />
+                                </div>
+                            </div>
+                            <div>
+                                <label className={labelCls}>Token *</label>
+                                <textarea
+                                    className={cn(inputCls, "w-full h-20 py-2 resize-none")}
+                                    value={tokenForm.token}
+                                    onChange={(e) => setTokenForm((prev) => ({ ...prev, token: e.target.value }))}
+                                    placeholder="Paste the Bearer token copied from IRIS"
+                                />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button type="button" onClick={() => setTokenTargetCompany(null)} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                                    Close
+                                </button>
+                                <button type="button" onClick={handleSaveToken} disabled={savingToken} className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer disabled:opacity-50">
+                                    <KeyRound className="h-3.5 w-3.5" /> {savingToken ? "Saving..." : "Save Token"}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -123,6 +123,7 @@ function PurchaseInvoiceContent() {
             limit: rowsPerPage,
             search: search.trim() || undefined,
             status: apiStatus(status),
+            purchaseType: "Purchase Invoice",
             from: dateFrom || undefined,
             to: dateTo || undefined,
         })

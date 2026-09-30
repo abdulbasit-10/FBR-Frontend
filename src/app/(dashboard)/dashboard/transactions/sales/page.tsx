@@ -163,6 +163,7 @@ function SalesInvoicesContent() {
             limit: rowsPerPage,
             search: search.trim() || undefined,
             status: apiStatus(status),
+            invoiceType: "Sale Invoice",
             from: dateFrom || undefined,
             to: dateTo || undefined,
             sortBy: "invoice_date",

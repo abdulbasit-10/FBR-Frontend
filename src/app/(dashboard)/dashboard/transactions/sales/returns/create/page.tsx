@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { ChevronLeft, RotateCcw, Save, Send, ShieldCheck } from "lucide-react";
+import { ChevronLeft, RotateCcw, Save, Send, ShieldCheck, TriangleAlert } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,6 +93,9 @@ function CreateReturnContent() {
     const [lines, setLines] = useState<ReturnLine[]>([]);
     const [submitting, setSubmitting] = useState<null | "draft" | "validate" | "post">(null);
 
+    // FBR compliance heads-up (soft warnings only — FBR's own API enforces the real limits).
+    const [capCheck, setCapCheck] = useState<{ priorMonthSales: number; currentMonthDebitNotes: number } | null>(null);
+
     useEffect(() => {
         if (!originalUuid) {
             setLoadError("No original invoice selected.");
@@ -115,6 +118,47 @@ function CreateReturnContent() {
             .catch((err) => setLoadError(err instanceof Error ? err.message : "Failed to load invoice."))
             .finally(() => setIsLoading(false));
     }, [originalUuid]);
+
+    // FBR rejects a Debit Note referencing an invoice more than 180 days old (error 0034).
+    const daysSinceOriginal = useMemo(() => {
+        if (!original?.invoiceDate || !documentDate) return null;
+        const originalDate = new Date(original.invoiceDate.slice(0, 10));
+        const returnDate = new Date(documentDate);
+        return Math.round((returnDate.getTime() - originalDate.getTime()) / 86_400_000);
+    }, [original, documentDate]);
+
+    // Heads-up only — FBR caps total cancelled/modified value at 10% of the prior month's
+    // posted sales. We approximate it from already-posted documents; FBR enforces the real rule.
+    useEffect(() => {
+        if (!documentDate) return;
+        const returnMonthStart = new Date(documentDate.slice(0, 7) + "-01");
+        const priorMonthEnd = new Date(returnMonthStart.getTime() - 86_400_000);
+        const priorMonthStart = new Date(priorMonthEnd.getFullYear(), priorMonthEnd.getMonth(), 1);
+        const toIso = (d: Date) => d.toISOString().slice(0, 10);
+
+        Promise.all([
+            invoicesService.list({
+                invoiceType: "Sale Invoice",
+                status: "posted",
+                from: toIso(priorMonthStart),
+                to: toIso(priorMonthEnd),
+                limit: 200,
+            }),
+            invoicesService.list({
+                invoiceType: "Debit Note",
+                status: "posted",
+                from: toIso(returnMonthStart),
+                to: documentDate,
+                limit: 200,
+            }),
+        ])
+            .then(([priorSales, currentReturns]) => {
+                const priorMonthSales = priorSales.data.rows.reduce((sum, i) => sum + Number(i.totalValueIncludingST || 0), 0);
+                const currentMonthDebitNotes = currentReturns.data.rows.reduce((sum, i) => sum + Number(i.totalValueIncludingST || 0), 0);
+                setCapCheck({ priorMonthSales, currentMonthDebitNotes });
+            })
+            .catch(() => setCapCheck(null)); // silent — this is a soft heads-up, not a blocking check
+    }, [documentDate]);
 
     const updateQuantity = (index: number, qty: number) => {
         setLines((prev) =>
@@ -144,6 +188,14 @@ function CreateReturnContent() {
             grandTotal: round2(amtInclST + furtherTax + advanceTax),
         };
     }, [lines, advanceTax]);
+
+    // Projected % of prior month's sales this month's cancelled/modified value would reach
+    // if THIS return is posted too (FBR's soft cap is 10%).
+    const capRatioPercent = useMemo(() => {
+        if (!capCheck || capCheck.priorMonthSales <= 0) return null;
+        const projected = capCheck.currentMonthDebitNotes + totals.grandTotal;
+        return round2((projected / capCheck.priorMonthSales) * 100);
+    }, [capCheck, totals.grandTotal]);
 
     const buildPayload = (): CreateInvoiceInput | null => {
         if (!original) return null;
@@ -319,6 +371,19 @@ function CreateReturnContent() {
                         </p>
                     </div>
                 </div>
+                {daysSinceOriginal !== null && daysSinceOriginal >= 150 && (
+                    <div
+                        className={`mt-2.5 flex items-start gap-2 rounded-[8px] border px-3 py-2 text-[11.5px] ${daysSinceOriginal > 180
+                            ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400"
+                            : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-400"
+                            }`}
+                    >
+                        <TriangleAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                        {daysSinceOriginal > 180
+                            ? <span>This return date is <strong>{daysSinceOriginal} days</strong> after the original invoice — FBR only allows Debit Notes within <strong>180 days</strong> of the original (error 0034). This will likely be rejected.</span>
+                            : <span>This return date is <strong>{daysSinceOriginal} days</strong> after the original invoice, approaching FBR&apos;s <strong>180-day</strong> reference limit.</span>}
+                    </div>
+                )}
             </div>
 
             {/* ── Return details ── */}
@@ -407,6 +472,19 @@ function CreateReturnContent() {
                     <div><p className="text-[#9CA3AF]">Further tax</p><p className="font-semibold text-[#1E293B] dark:text-[#f0f0f0]">{fmt(totals.furtherTax)}</p></div>
                     <div><p className="text-[#9CA3AF]">Grand total</p><p className="font-bold text-[#A27B3A]">{fmt(totals.grandTotal)}</p></div>
                 </div>
+                {capRatioPercent !== null && capRatioPercent >= 8 && (
+                    <div
+                        className={`mt-2.5 flex items-start gap-2 rounded-[8px] border px-3 py-2 text-[11.5px] ${capRatioPercent > 10
+                            ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400"
+                            : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-400"
+                            }`}
+                    >
+                        <TriangleAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                        {capRatioPercent > 10
+                            ? <span>Posting this return would put this month&apos;s cancelled/modified value at <strong>{capRatioPercent}%</strong> of last month&apos;s posted sales — over FBR&apos;s <strong>10%</strong> cap.</span>
+                            : <span>This month&apos;s cancelled/modified value would reach <strong>{capRatioPercent}%</strong> of last month&apos;s posted sales, approaching FBR&apos;s <strong>10%</strong> cap.</span>}
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -95,7 +95,7 @@ export type { DashboardResponse } from "./dashboard.service";
 export type { ApiLog, ApiLogListQuery } from "./apiLogs.service";
 export type { Notification, NotificationListQuery } from "./notifications.service";
 export type { Setting, UpsertSettingInput } from "./settings.service";
-export type { FbrToken, UpsertFbrTokenInput } from "./fbrTokens.service";
+export type { FbrToken, FbrTokenEnvironment, UpsertFbrTokenInput } from "./fbrTokens.service";
 export type { AdminUser, Role, Permission, CreateUserInput } from "./users.service";
 export type { Company, CompanyCreateInput, CompanyUpdateInput, PlatformStats } from "./companies.service";
 export type {
