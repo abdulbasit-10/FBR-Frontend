@@ -14,7 +14,7 @@ export interface Company {
     address: string;
     phone?: string | null;
     email?: string | null;
-    businessActivity?: string | null;
+    businessActivities?: string[] | null;
     sector?: string | null;
     fbrEnvironment: "sandbox" | "production" | "both";
     isActive: boolean;

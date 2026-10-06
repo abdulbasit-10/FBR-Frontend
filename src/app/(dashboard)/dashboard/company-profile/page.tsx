@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { companiesService, reportsService, type Company, type CompanyUpdateInput, type ScenarioProgressResult } from "@/lib/services";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { auth } from "@/lib/auth";
 import { FBR_BUSINESS_ACTIVITIES, FBR_SECTORS } from "@/lib/constants/fbr";
 
@@ -15,7 +16,7 @@ type EditForm = {
     businessName: string;
     ntn: string;
     salesTaxRegNo: string;
-    businessActivity: string;
+    businessActivities: string[];
     sector: string;
     province: string;
     address: string;
@@ -27,7 +28,7 @@ const toForm = (c: Company): EditForm => ({
     businessName: c.businessName ?? "",
     ntn: c.ntn ?? "",
     salesTaxRegNo: c.salesTaxRegNo ?? c.strn ?? "",
-    businessActivity: c.businessActivity ?? "",
+    businessActivities: c.businessActivities ?? [],
     sector: c.sector ?? "",
     province: c.province ?? "",
     address: c.address ?? "",
@@ -79,6 +80,8 @@ export default function CompanyProfilePage() {
     const handleEditCancel = () => { setIsEditing(false); setForm(null); };
     const handleFieldChange = (field: keyof EditForm, value: string) =>
         setForm((prev) => (prev ? { ...prev, [field]: value } : prev));
+    const handleActivitiesChange = (next: string[]) =>
+        setForm((prev) => (prev ? { ...prev, businessActivities: next } : prev));
 
     const handleSave = async () => {
         if (!company || !form) return;
@@ -92,7 +95,7 @@ export default function CompanyProfilePage() {
                 businessName: form.businessName.trim(),
                 ntn: form.ntn.trim(),
                 salesTaxRegNo: form.salesTaxRegNo.trim() || null,
-                businessActivity: (form.businessActivity || null) as CompanyUpdateInput["businessActivity"],
+                businessActivities: form.businessActivities.length ? form.businessActivities : null,
                 sector: (form.sector || null) as CompanyUpdateInput["sector"],
                 province: form.province.trim(),
                 address: form.address.trim(),
@@ -241,14 +244,24 @@ export default function CompanyProfilePage() {
                                 <>
                                     <EditInput label="NTN" value={form.ntn} onChange={(v) => handleFieldChange("ntn", v)} />
                                     <EditInput label="STRN" value={form.salesTaxRegNo} onChange={(v) => handleFieldChange("salesTaxRegNo", v)} />
-                                    <EditSelect label="Business Activity" value={form.businessActivity} options={FBR_BUSINESS_ACTIVITIES} onChange={(v) => handleFieldChange("businessActivity", v)} />
+                                    <div>
+                                        <label className="text-[12px] font-medium text-[#6b7280] dark:text-[#9ca3af]">Business Activity</label>
+                                        <div className="mt-0.5">
+                                            <MultiSelect
+                                                className="border-[#e8e9eb] dark:border-[#3a3a3a] bg-white dark:bg-[#1c1c1c] text-[#111827] dark:text-[#f0f0f0] focus:border-[#c99d54]"
+                                                options={FBR_BUSINESS_ACTIVITIES}
+                                                value={form.businessActivities}
+                                                onChange={handleActivitiesChange}
+                                            />
+                                        </div>
+                                    </div>
                                     <EditSelect label="Sector" value={form.sector} options={FBR_SECTORS} onChange={(v) => handleFieldChange("sector", v)} />
                                 </>
                             ) : (
                                 <>
                                     <Field label="NTN" value={company?.ntn ?? "--"} />
                                     <Field label="STRN" value={strn ?? "--"} />
-                                    <Field label="Business Activity" value={company?.businessActivity ?? "--"} />
+                                    <Field label="Business Activity" value={company?.businessActivities?.join(", ") || "--"} />
                                     <Field label="Sector" value={company?.sector ?? "--"} />
                                 </>
                             )}

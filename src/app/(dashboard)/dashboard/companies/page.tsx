@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { companiesService, usersService, fbrTokensService, type Company, type CompanyCreateInput, type Role, type CreateUserInput, type AdminUser, type FbrToken, type FbrTokenEnvironment } from "@/lib/services";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { FBR_BUSINESS_ACTIVITIES, FBR_SECTORS } from "@/lib/constants/fbr";
 
 const PROVINCES = ["Khyber Pakhtunkhwa", "Punjab", "Sindh", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir", "Islamabad"];
@@ -32,7 +33,7 @@ const emptyForm: CompanyCreateInput = {
     phone: "",
     email: "",
     salesTaxRegNo: "",
-    businessActivity: null,
+    businessActivities: [],
     sector: null,
     fbrEnvironment: "sandbox",
 };
@@ -122,7 +123,7 @@ export default function CompaniesPage() {
             await companiesService.create({
                 ...form,
                 salesTaxRegNo: form.salesTaxRegNo || null,
-                businessActivity: form.businessActivity || null,
+                businessActivities: form.businessActivities?.length ? form.businessActivities : null,
                 sector: form.sector || null,
                 phone: form.phone || null,
                 email: form.email || null,
@@ -393,10 +394,12 @@ export default function CompaniesPage() {
                         <div><label className={labelCls}>STRN</label><input className={cn(inputCls, "w-full")} value={form.salesTaxRegNo ?? ""} onChange={(e) => handleChange("salesTaxRegNo", e.target.value)} /></div>
                         <div>
                             <label className={labelCls}>Business Activity</label>
-                            <select className={cn(inputCls, "w-full")} value={form.businessActivity ?? ""} onChange={(e) => handleChange("businessActivity", e.target.value)}>
-                                <option value="">-- Select --</option>
-                                {FBR_BUSINESS_ACTIVITIES.map((o) => <option key={o} value={o}>{o}</option>)}
-                            </select>
+                            <MultiSelect
+                                className={inputCls}
+                                options={FBR_BUSINESS_ACTIVITIES}
+                                value={form.businessActivities ?? []}
+                                onChange={(next) => setForm((prev) => ({ ...prev, businessActivities: next }))}
+                            />
                         </div>
                         <div>
                             <label className={labelCls}>Sector</label>

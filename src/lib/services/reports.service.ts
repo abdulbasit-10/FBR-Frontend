@@ -59,7 +59,7 @@ export interface ScenarioProgressRow {
 }
 
 export interface ScenarioProgressResult {
-    businessActivity: string | null;
+    businessActivities: string[] | null;
     sector: string | null;
     environment: string;
     completed: number;
