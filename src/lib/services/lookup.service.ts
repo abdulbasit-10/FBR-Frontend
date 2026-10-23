@@ -77,7 +77,7 @@ export const lookupService = {
         api.get<Sro[]>(
             `/lookup/sro-schedules?rateId=${rateId}${date ? `&date=${encodeURIComponent(date)}` : ""}${originationSupplier !== undefined ? `&originationSupplier=${originationSupplier}` : ""}`,
         ),
-    /** Admin: sync all reference tables from FBR. */
-    syncAll: () => api.post<{ synced: Record<string, number> }>("/lookup/sync", {}),
-    syncOne: (kind: LookupKind) => api.post<{ synced: number }>(`/lookup/sync/${kind}`, {}),
+    /** Admin: sync all reference tables from FBR. Returns a count per dataset (e.g. { uoms: 112, hsCodes: 5438, ... }). */
+    syncAll: () => api.post<Record<string, number>>("/lookup/sync", {}),
+    syncOne: (kind: LookupKind) => api.post<{ kind: string; count: number }>(`/lookup/sync/${kind}`, {}),
 };
