@@ -11,6 +11,7 @@ export interface InvoiceCustomerSummary {
     id: number;
     businessName: string;
     ntnCnic: string | null;
+    customerNo?: string | null;
 }
 
 export interface Invoice {
