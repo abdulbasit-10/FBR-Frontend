@@ -190,12 +190,18 @@ export default function CreateSalesInvoicePage() {
     const onSelectProduct = (id: string, productId: number) => {
         const p = products.find((x) => x.id === productId);
         if (!p) return;
+        // Sandbox certification requires the line's Sale Type to match the selected Scenario ID
+        // (see the scenario-sync effect above) — keep that in sync instead of letting the
+        // product's own saved Sale Type override it and silently desync from the scenario.
+        const scenarioSaleType = environment === "sandbox"
+            ? FBR_SANDBOX_SCENARIOS.find((s) => s.id === scenarioId)?.saleType
+            : undefined;
         updateItem(id, {
             productId: p.id,
             productDescription: p.description ?? p.name,
             hsCode: p.hsCode,
             uom: p.uom,
-            saleType: p.saleType,
+            saleType: scenarioSaleType ?? p.saleType,
             rate: p.rate,
             unitPrice: p.unitPrice,
             fixedNotifiedValueOrRetailPrice: p.fixedNotifiedValueOrRetailPrice,
