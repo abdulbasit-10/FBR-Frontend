@@ -268,8 +268,10 @@ function CreateReturnContent() {
             } else if (submitted.data.status === "validated") {
                 toast.success("Sales return validated by FBR.");
             } else {
+                // Prefer FBR's own real-time error text over the generic static
+                // code-to-description table — it's often far more specific.
                 const entry = resolveFbrError(submitted.data.fbrErrorCode);
-                const msg = entry?.briefMsgDesc ?? submitted.data.fbrError ?? "FBR rejected";
+                const msg = submitted.data.fbrError ?? entry?.briefMsgDesc ?? "FBR rejected";
                 toast.error(`[${submitted.data.fbrErrorCode}] ${msg}`);
             }
             router.refresh();
