@@ -25,7 +25,7 @@ const COSTING_METHOD = "FIFO";
 interface Category { code: string; name: string; }
 interface HsCode { code: string; description: string; }
 interface SaleType { id: string; saleType: string; }
-interface TaxRate { id: string; name: string; rate: string; }
+interface TaxRate { id: string; name: string; rate: string; synthetic?: boolean; }
 interface SroSchedule { id: string; name: string; }
 interface Uom { code: string; name: string; }
 
@@ -320,11 +320,20 @@ export default function NewItemPage() {
                 setHsCodes(hs.data.map((h) => ({ code: h.hsCode, description: h.description })));
                 setUoms(uomRes.data.map((u) => ({ code: String(u.uomId), name: u.description })));
                 setSros(sroRes.data.map((s) => ({ id: String(s.sroId), name: s.sroDesc })));
-                setRates(rateRes.data.map((r) => ({
+                const syncedRates = rateRes.data.map((r) => ({
                     id: String(r.rateId),
                     name: r.rateDesc,
                     rate: `${r.rateValue}%`,
-                })));
+                }));
+                // FBR's live SaleTypeToRate sync is scoped to this company's province/date and
+                // sometimes omits "18%" (PRAL's economy-wide standard GST rate) entirely for a
+                // given query combination — confirmed live: posting an invoice with the literal
+                // rate "18%" succeeds even when it's absent from the synced list. Keep it always
+                // selectable so "Goods at Standard Rate" items aren't blocked by that sync gap.
+                const rates = syncedRates.some((r) => r.rate === "18%")
+                    ? syncedRates
+                    : [...syncedRates, { id: "standard-18", name: "18%", rate: "18%", synthetic: true }];
+                setRates(rates);
             })
             .catch(() => toast.error("Some lookup data failed to load."))
             .finally(() => setLookupLoading(false));
@@ -425,7 +434,7 @@ export default function NewItemPage() {
             printUom: printUom.trim() || null,
             saleType: saleType!.saleType,
             rate: rateText,
-            rateId: taxRate?.id ?? null,
+            rateId: taxRate && !taxRate.synthetic ? taxRate.id : null,
             rateValue,
             sroScheduleNo: sroSchedule?.name ?? null,
             sroItemSerialNo: itemSerial?.name ?? null,
