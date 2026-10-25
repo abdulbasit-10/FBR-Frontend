@@ -345,21 +345,34 @@ export default function NewItemPage() {
     }, [taxRate]);
 
     // ── Required field checks ──────────────────────────────────────────────────
+    // Category, SRO Schedule, and Item Serial are genuinely optional in the backend
+    // (FBR-Backend/src/validators/product.validator.ts) — and SRO Schedule in
+    // particular can legitimately have ZERO options for a given HS Code/Tax Rate
+    // combination (not every item falls under an SRO notification), so blocking
+    // Save on it made some perfectly valid items impossible to create at all.
     const requiredChecks = useMemo(() => [
-        { label: "Category", done: !!category },
         { label: "HS code", done: !!hsCode },
         { label: "FBR UOM", done: !!fbrUom },
         { label: "Print UOM", done: printUom.trim() !== "" },
         { label: "Sale Type", done: !!saleType },
-        { label: "SRO Schedule", done: !!sroSchedule },
-        { label: "Item Serial", done: !!itemSerial },
         { label: "Costing Method", done: true, fixed: COSTING_METHOD },
         { label: "Unit Cost", done: unitCost.trim() !== "" },
         { label: "Assessed/Unit", done: assessedUnit.trim() !== "" },
         { label: "Retail Price", done: retailPrice.trim() !== "" },
-    ], [category, hsCode, fbrUom, printUom, saleType, sroSchedule, itemSerial, unitCost, assessedUnit, retailPrice]);
+    ], [hsCode, fbrUom, printUom, saleType, unitCost, assessedUnit, retailPrice]);
 
-    const progressPct = Math.round((requiredChecks.filter((r) => r.done).length / requiredChecks.length) * 100);
+    // Shown in the sidebar progress list only — not required to save.
+    const optionalChecks = useMemo(() => [
+        { label: "Category", done: !!category, fixed: undefined as string | undefined },
+        { label: "SRO Schedule", done: !!sroSchedule, fixed: undefined as string | undefined },
+        { label: "Item Serial", done: !!itemSerial, fixed: undefined as string | undefined },
+    ], [category, sroSchedule, itemSerial]);
+
+    const progressPct = Math.round(
+        ([...requiredChecks, ...optionalChecks].filter((r) => r.done).length) /
+        (requiredChecks.length + optionalChecks.length) * 100,
+    );
+
 
     const handleReset = useCallback(() => {
         setItemName(""); setItemsType("Select"); setCategory(null);
@@ -677,7 +690,7 @@ export default function NewItemPage() {
 
                         {/* Checklist */}
                         <ul className="space-y-1.5 border-t border-[#F3F4F6] dark:border-[#2e2e2e] pt-3">
-                            {requiredChecks.map((check) => (
+                            {[...requiredChecks, ...optionalChecks].map((check) => (
                                 <li key={check.label} className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
                                         <div className={cn(

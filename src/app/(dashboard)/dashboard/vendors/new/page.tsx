@@ -48,20 +48,31 @@ export default function NewVendorPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [verifying, setVerifying] = useState(false);
 
+    // Only what the backend genuinely requires (FBR-Backend/src/validators/vendor.validator.ts)
+    // blocks Save — businessName (Vendor Name, falling back to Contact person), Province,
+    // Address. NTN/CNIC, STRN, etc. are all genuinely optional fields for a vendor record.
     const requiredChecks = useMemo(() => [
+        { label: "Vendor Name", done: vendorName.trim() !== "" || contactPerson.trim() !== "" },
+        { label: "Province", done: ntnProvince !== "Select" },
+        { label: "Address", done: address.trim() !== "" },
+    ], [vendorName, contactPerson, ntnProvince, address]);
+
+    // Shown in the sidebar progress checklist only — not required to save.
+    const optionalChecks = useMemo(() => [
         { label: "Vendors type", done: vendorType !== "Select" },
         { label: "NTN / CNIC", done: ntn.trim() !== "" },
         { label: "STRN", done: strn.trim() !== "" },
-        { label: "Province", done: ntnProvince !== "Select" },
         { label: "City", done: city.trim() !== "" },
-        { label: "Address", done: address.trim() !== "" },
         { label: "Contact person", done: contactPerson.trim() !== "" },
         { label: "Phone / WhatsApp", done: phoneNumber.trim() !== "" || whatsapp.trim() !== "" },
         { label: "Email", done: email.trim() !== "" },
         { label: "Website", done: website.trim() !== "" },
-    ], [vendorType, ntn, strn, ntnProvince, city, address, contactPerson, phoneNumber, whatsapp, email, website]);
+    ], [vendorType, ntn, strn, city, contactPerson, phoneNumber, whatsapp, email, website]);
 
-    const progressPct = Math.round((requiredChecks.filter((r) => r.done).length / requiredChecks.length) * 100);
+    const progressPct = Math.round(
+        ([...requiredChecks, ...optionalChecks].filter((r) => r.done).length) /
+        (requiredChecks.length + optionalChecks.length) * 100,
+    );
 
     const handleReset = () => {
         setVendorName(""); setVendorType("Select");
@@ -291,7 +302,7 @@ export default function NewVendorPage() {
                     </div>
 
                     <div className="space-y-3">
-                        {requiredChecks.map(({ label, done }) => (
+                        {[...requiredChecks, ...optionalChecks].map(({ label, done }) => (
                             <div key={label} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2.5">
                                     <div className={cn("h-4 w-4 rounded-full border-2 shrink-0 transition-colors",
