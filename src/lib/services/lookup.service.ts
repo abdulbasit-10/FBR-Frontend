@@ -55,7 +55,9 @@ export const lookupService = {
     uoms: () => api.get<Uom[]>("/lookup/uoms"),
     transactionTypes: () => api.get<TransactionType[]>("/lookup/transaction-types"),
     sros: () => api.get<Sro[]>("/lookup/sros"),
-    rates: () => api.get<Rate[]>("/lookup/rates"),
+    /** Rates scoped to one Sale Type's transactionTypeId — each sale type has its own valid rate set. */
+    rates: (transactionTypeId?: number) =>
+        api.get<Rate[]>(`/lookup/rates${transactionTypeId !== undefined ? `?transactionTypeId=${transactionTypeId}` : ""}`),
     /** Live proxy: returns Registered / Unregistered for an NTN or CNIC. */
     registrationType: (registrationNo: string) =>
         api.get<{ statuscode?: string; REGISTRATION_TYPE?: string; message?: string }>(
