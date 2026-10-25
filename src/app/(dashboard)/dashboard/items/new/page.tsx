@@ -25,7 +25,7 @@ const COSTING_METHOD = "FIFO";
 interface Category { code: string; name: string; }
 interface HsCode { code: string; description: string; }
 interface SaleType { id: string; saleType: string; }
-interface TaxRate { id: string; name: string; rate: string; }
+interface TaxRate { id: string; name: string; rate: string; synthetic?: boolean; }
 interface SroSchedule { id: string; name: string; }
 interface Uom { code: string; name: string; }
 
@@ -299,7 +299,9 @@ export default function NewItemPage() {
     const [hsCodes, setHsCodes] = useState<HsCode[]>([]);
     const [uoms, setUoms] = useState<Uom[]>([]);
     const [sros, setSros] = useState<SroSchedule[]>([]);
+    const [saleTypes, setSaleTypes] = useState<SaleType[]>([]);
     const [rates, setRates] = useState<TaxRate[]>([]);
+    const [ratesLoading, setRatesLoading] = useState(false);
     const [lookupLoading, setLookupLoading] = useState(false);
     // SRO Schedule (§5.7) is rate-dependent — fetched live per selected Tax Rate, not cached like `sros` (Item Serial No / sroitemcode).
     const [sroSchedules, setSroSchedules] = useState<SroSchedule[]>([]);
@@ -314,26 +316,48 @@ export default function NewItemPage() {
             lookupService.hsCodes(),
             lookupService.uoms(),
             lookupService.sros(),
-            lookupService.rates(),
+            lookupService.transactionTypes(),
         ])
-            .then(([hs, uomRes, sroRes, rateRes]) => {
+            .then(([hs, uomRes, sroRes, ttRes]) => {
                 setHsCodes(hs.data.map((h) => ({ code: h.hsCode, description: h.description })));
                 setUoms(uomRes.data.map((u) => ({ code: String(u.uomId), name: u.description })));
                 setSros(sroRes.data.map((s) => ({ id: String(s.sroId), name: s.sroDesc })));
-                setRates(rateRes.data.map((r) => ({
-                    id: String(r.rateId),
-                    name: r.rateDesc,
-                    rate: `${r.rateValue}%`,
-                })));
+                // Real FBR Sale Types (§5.8's transTypeId) — NOT derived from rates. Each sale type
+                // (Cement, Potassium Chlorate, Mobile Phones, ...) has its own distinct transTypeId
+                // with its own valid rate set (confirmed live: a generic "18%" accepted for Standard
+                // Rate goods is rejected with [0046] for Potassium Chlorate/Cement).
+                setSaleTypes(ttRes.data.map((t) => ({ id: String(t.transactionTypeId), saleType: t.transactionDesc })));
             })
             .catch(() => toast.error("Some lookup data failed to load."))
             .finally(() => setLookupLoading(false));
     }, []);
 
-    // Derive SaleTypes from rates (unique rate descriptions as sale types)
-    const saleTypes = useMemo<SaleType[]>(() =>
-        rates.map((r) => ({ id: r.id, saleType: `${r.name} (${r.rate})` }))
-        , [rates]);
+    // Fetch the Tax Rate options scoped to the selected Sale Type's transactionTypeId.
+    useEffect(() => {
+        if (!saleType) { setRates([]); return; }
+        const transactionTypeId = Number(saleType.id);
+        if (!Number.isFinite(transactionTypeId)) { setRates([]); return; }
+        setRatesLoading(true);
+        lookupService.rates(transactionTypeId)
+            .then((res) => {
+                const syncedRates = res.data.map((r) => ({
+                    id: String(r.rateId),
+                    name: r.rateDesc,
+                    rate: `${r.rateValue}%`,
+                }));
+                // "Goods at standard rate (default)" sometimes omits the literal "18%" from FBR's
+                // live sync for this company's province/date — confirmed live: posting with "18%"
+                // still succeeds even when absent from the synced list. Keep it always selectable
+                // for that one sale type so it isn't blocked by that narrow sync gap.
+                const isStandardRate = saleType.saleType.toLowerCase().includes("standard rate");
+                const rates = isStandardRate && !syncedRates.some((r) => r.rate === "18%")
+                    ? [...syncedRates, { id: "standard-18", name: "18%", rate: "18%", synthetic: true }]
+                    : syncedRates;
+                setRates(rates);
+            })
+            .catch(() => { setRates([]); toast.error("Failed to load tax rates for this sale type."); })
+            .finally(() => setRatesLoading(false));
+    }, [saleType]);
 
     // Fetch the rate-dependent SRO Schedule list whenever the Tax Rate changes.
     useEffect(() => {
@@ -425,7 +449,7 @@ export default function NewItemPage() {
             printUom: printUom.trim() || null,
             saleType: saleType!.saleType,
             rate: rateText,
-            rateId: taxRate?.id ?? null,
+            rateId: taxRate && !taxRate.synthetic ? taxRate.id : null,
             rateValue,
             sroScheduleNo: sroSchedule?.name ?? null,
             sroItemSerialNo: itemSerial?.name ?? null,
@@ -839,7 +863,7 @@ export default function NewItemPage() {
             <SearchModal<TaxRate>
                 isOpen={showTaxRateModal}
                 title="Select Tax Rate"
-                subtitle="Select the applicable tax rate for this sale type."
+                subtitle={ratesLoading ? "Loading rates for the selected sale type…" : "Select the applicable tax rate for this sale type."}
                 columns={[
                     { key: "id", label: "ID" },
                     { key: "name", label: "Rate Name" },
@@ -850,7 +874,6 @@ export default function NewItemPage() {
                 onSelect={(r) => { setTaxRate(r); setSroSchedule(null); setItemSerial(null); }}
                 onClose={() => setShowTaxRateModal(false)}
             />
-
             {/* SRO Schedule */}
             <SearchModal<SroSchedule>
                 isOpen={showSroModal}
