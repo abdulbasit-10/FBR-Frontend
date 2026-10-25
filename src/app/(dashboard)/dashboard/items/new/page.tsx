@@ -304,6 +304,9 @@ export default function NewItemPage() {
     // SRO Schedule (§5.7) is rate-dependent — fetched live per selected Tax Rate, not cached like `sros` (Item Serial No / sroitemcode).
     const [sroSchedules, setSroSchedules] = useState<SroSchedule[]>([]);
     const [sroSchedulesLoading, setSroSchedulesLoading] = useState(false);
+    // Item Serial No (§SROItem v2) is scoped to the selected SRO Schedule — fetched live, not from the static `sros` list.
+    const [itemSerials, setItemSerials] = useState<SroSchedule[]>([]);
+    const [itemSerialsLoading, setItemSerialsLoading] = useState(false);
 
     useEffect(() => {
         setLookupLoading(true);
@@ -343,6 +346,21 @@ export default function NewItemPage() {
             .catch(() => { setSroSchedules([]); toast.error("Failed to load SRO schedules for this tax rate."); })
             .finally(() => setSroSchedulesLoading(false));
     }, [taxRate]);
+
+    // Fetch the Item Serial No list scoped to the selected SRO Schedule (§SROItem v2) —
+    // NOT the generic static /lookup/sros list, which isn't tied to the chosen schedule
+    // at all (confirmed live: FBR rejects invoices with [0078] "Valid Item Sr. No. is
+    // mandatory where SRO/Schedule No. is provided" when a mismatched serial is sent).
+    useEffect(() => {
+        if (!sroSchedule) { setItemSerials([]); return; }
+        const sroId = Number(sroSchedule.id);
+        if (!Number.isFinite(sroId)) { setItemSerials([]); return; }
+        setItemSerialsLoading(true);
+        lookupService.sroItems(sroId)
+            .then((res) => setItemSerials(res.data.map((s) => ({ id: String(s.sroItemId), name: s.sroItemDesc }))))
+            .catch(() => { setItemSerials([]); toast.error("Failed to load item serials for this SRO schedule."); })
+            .finally(() => setItemSerialsLoading(false));
+    }, [sroSchedule]);
 
     // ── Required field checks ──────────────────────────────────────────────────
     // Category, SRO Schedule, and Item Serial are genuinely optional in the backend
@@ -390,8 +408,13 @@ export default function NewItemPage() {
             return;
         }
         // Backend Product schema (see FBR-Backend/src/models/Product.ts)
-        const rateText = taxRate?.rate ?? "0%";
-        const rateValue = parseFloat(rateText.replace("%", "")) || 0;
+        // `rate` must be FBR's exact ratE_DESC string (e.g. "Exempt", "50/SqY") —
+        // NOT a synthesized "{rateValue}%" — since FBR's postinvoicedata API
+        // rejects invoices whose item `rate` doesn't match the literal rateE_DESC
+        // for the selected ratE_ID (confirmed live: rate_id 28 "Exempt" sent as
+        // "0%" was rejected with [0046] "Provided Rate is not correct").
+        const rateText = taxRate?.name ?? "0%";
+        const rateValue = parseFloat((taxRate?.rate ?? "0%").replace("%", "")) || 0;
         const payload: ProductCreateInput = {
             name: itemName.trim() || category!.name,
             itemType: itemsType === "Select" ? null : itemsType,
@@ -581,17 +604,17 @@ export default function NewItemPage() {
 
                             {/* Item Serial */}
                             <div className="space-y-1.5">
-                                <Label className={cn(labelCls, !taxRate && "opacity-50")}>
+                                <Label className={cn(labelCls, !sroSchedule && "opacity-50")}>
                                     Item Serial No <span className="text-red-500">*</span>
                                 </Label>
                                 <SelectButton
                                     icon={Package}
                                     label="Select item serial"
-                                    helperText={taxRate ? "Select item serial" : "Select tax rate first"}
+                                    helperText={sroSchedule ? "Select item serial" : "Select SRO schedule first"}
                                     selectedLabel={itemSerial ? itemSerial.name : undefined}
                                     selectedSub={itemSerial ? itemSerial.id : undefined}
                                     onClick={() => setShowItemSerialModal(true)}
-                                    disabled={!taxRate}
+                                    disabled={!sroSchedule}
                                 />
                             </div>
 
@@ -839,7 +862,7 @@ export default function NewItemPage() {
                 ]}
                 rows={sroSchedules}
                 filterFn={(r, q) => r.id.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)}
-                onSelect={(r) => setSroSchedule(r)}
+                onSelect={(r) => { setSroSchedule(r); setItemSerial(null); }}
                 onClose={() => setShowSroModal(false)}
             />
 
@@ -847,12 +870,12 @@ export default function NewItemPage() {
             <SearchModal<SroSchedule>
                 isOpen={showItemSerialModal}
                 title="Select Item Serial"
-                subtitle="Select the serial number schedule for this item."
+                subtitle={itemSerialsLoading ? "Loading item serials for the selected SRO schedule…" : "Select the serial number for this item."}
                 columns={[
                     { key: "id", label: "ID" },
                     { key: "name", label: "Serial Name" },
                 ]}
-                rows={sros}
+                rows={itemSerials}
                 filterFn={(r, q) => r.id.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)}
                 onSelect={(r) => setItemSerial(r)}
                 onClose={() => setShowItemSerialModal(false)}

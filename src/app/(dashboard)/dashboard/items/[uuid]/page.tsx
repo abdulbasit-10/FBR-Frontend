@@ -45,6 +45,7 @@ export default function EditItemPage({ params }: { params: Promise<{ uuid: strin
     const [uom, setUom] = useState("");
     const [printUom, setPrintUom] = useState("");
     const [saleType, setSaleType] = useState("Select");
+    const [rate, setRate] = useState("");
     const [rateId, setRateId] = useState("");
     const [rateValue, setRateValue] = useState(0);
     const [taxDescription, setTaxDescription] = useState("");
@@ -70,6 +71,7 @@ export default function EditItemPage({ params }: { params: Promise<{ uuid: strin
             setUom(p.uom);
             setPrintUom(p.printUom ?? "");
             setSaleType(p.saleType || "Select");
+            setRate(p.rate ?? "");
             setRateId(p.rateId ?? "");
             setRateValue(Number(p.rateValue ?? 0));
             setTaxDescription(p.taxDescription ?? "");
@@ -114,7 +116,10 @@ export default function EditItemPage({ params }: { params: Promise<{ uuid: strin
             uom: uom.trim(),
             printUom: printUom.trim() || null,
             saleType: saleType === "Select" ? "Exempt" : saleType,
-            rate: `${rateValue}%`,
+            // Preserve FBR's exact ratE_DESC string (e.g. "Exempt", "50/SqY") —
+            // NOT a synthesized "{rateValue}%", which FBR's postinvoicedata API
+            // rejects for non-standard-percentage rates (e.g. rate_id 28 "Exempt").
+            rate: rate || `${rateValue}%`,
             rateId: rateId.trim() || null,
             rateValue,
             taxDescription: taxDescription.trim() || null,

@@ -340,9 +340,14 @@ export default function CreateSalesInvoicePage() {
             } else if (submitted.data.status === "validated") {
                 toast.success("Invoice validated by FBR.");
             } else {
+                // Prefer FBR's own real-time error text — it's often far more specific than
+                // our static code-to-description table (e.g. FBR's live "Provided Rate is not
+                // correct for selected Sales Type" vs. the generic "Rate cannot be empty" for
+                // the same code 0046), and only fall back to the static table when FBR didn't
+                // return any error text at all.
                 const entry = resolveFbrError(fbrErrorCode);
                 const msg =
-                    entry?.briefMsgDesc ?? fbrError ?? `FBR ${fbrStatus ?? "rejected"} the invoice.`;
+                    fbrError ?? entry?.briefMsgDesc ?? `FBR ${fbrStatus ?? "rejected"} the invoice.`;
                 toast.error(fbrErrorCode ? `[${fbrErrorCode}] ${msg}` : msg);
             }
             router.refresh(); // bust Next.js router cache so the list shows fresh data

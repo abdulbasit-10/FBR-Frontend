@@ -77,6 +77,11 @@ export const lookupService = {
         api.get<Sro[]>(
             `/lookup/sro-schedules?rateId=${rateId}${date ? `&date=${encodeURIComponent(date)}` : ""}${originationSupplier !== undefined ? `&originationSupplier=${originationSupplier}` : ""}`,
         ),
+    /** Live proxy: FBR SROItem v2 — Item Serial No list scoped to a chosen SRO Schedule (sroId from `sroSchedules`). */
+    sroItems: (sroId: number, date?: string) =>
+        api.get<{ sroItemId: number; sroItemDesc: string }[]>(
+            `/lookup/sro-items?sroId=${sroId}${date ? `&date=${encodeURIComponent(date)}` : ""}`,
+        ),
     /** Admin: sync all reference tables from FBR. Returns a count per dataset (e.g. { uoms: 112, hsCodes: 5438, ... }). */
     syncAll: () => api.post<Record<string, number>>("/lookup/sync", {}),
     syncOne: (kind: LookupKind) => api.post<{ kind: string; count: number }>(`/lookup/sync/${kind}`, {}),
