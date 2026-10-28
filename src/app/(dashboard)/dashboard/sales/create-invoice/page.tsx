@@ -882,22 +882,21 @@ export default function CreateSalesInvoicePage() {
                                             </td>
 
                                             <td className="py-1.5 px-2 text-center">
-                                                <select
-                                                    className={cellInput}
+                                                <Input
+                                                    type="text"
+                                                    list={`rate-options-${item.id}`}
+                                                    placeholder="18%"
                                                     value={item.rate}
                                                     onChange={(e) =>
                                                         updateItem(item.id, { rate: e.target.value })
                                                     }
-                                                >
+                                                    className={cellInput}
+                                                />
+                                                <datalist id={`rate-options-${item.id}`}>
                                                     {FBR_COMMON_RATES.map((r) => (
-                                                        <option key={r} value={r}>
-                                                            {r}
-                                                        </option>
+                                                        <option key={r} value={r} />
                                                     ))}
-                                                    {!FBR_COMMON_RATES.includes(item.rate) && item.rate && (
-                                                        <option value={item.rate}>{item.rate}</option>
-                                                    )}
-                                                </select>
+                                                </datalist>
                                             </td>
 
                                             <td className="py-1.5 px-2">
@@ -950,7 +949,7 @@ export default function CreateSalesInvoicePage() {
                                                     <Input
                                                         type="number"
                                                         step="0.01"
-                                                        value={(item[key] as number) || ""}
+                                                        value={item[key] as number}
                                                         placeholder="0"
                                                         onChange={(e) =>
                                                             updateItem(
