@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
-import { productsService, type ProductUpdateInput } from "@/lib/services";
+import { productsService, lookupService, type ProductUpdateInput } from "@/lib/services";
+import { FBR_SALE_TYPES } from "@/lib/constants/fbr";
 
 const ITEM_TYPES = ["Select", "Goods", "Service", "Digital", "Raw Material", "Finished Goods"];
-const SALE_TYPES = ["Select", "Taxable", "Exempt", "Zero-Rated"];
 
 const selectArrow = {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
@@ -45,6 +45,7 @@ export default function EditItemPage({ params }: { params: Promise<{ uuid: strin
     const [uom, setUom] = useState("");
     const [printUom, setPrintUom] = useState("");
     const [saleType, setSaleType] = useState("Select");
+    const [fbrSaleTypes, setFbrSaleTypes] = useState<string[]>(FBR_SALE_TYPES);
     const [rate, setRate] = useState("");
     const [rateId, setRateId] = useState("");
     const [rateValue, setRateValue] = useState(0);
@@ -91,6 +92,23 @@ export default function EditItemPage({ params }: { params: Promise<{ uuid: strin
 
     useEffect(() => { load(); }, [load]);
 
+    // Same real FBR sale types the New Item page offers; constants stay as the fallback.
+    useEffect(() => {
+        lookupService
+            .transactionTypes()
+            .then((res) => {
+                const names = res.data.map((t) => t.transactionDesc).filter(Boolean);
+                if (names.length) setFbrSaleTypes(names);
+            })
+            .catch(() => { });
+    }, []);
+
+    // Always include the item's saved value so it is never silently replaced on save.
+    const saleTypeOptions = useMemo(
+        () => (saleType !== "Select" && !fbrSaleTypes.includes(saleType) ? [saleType, ...fbrSaleTypes] : fbrSaleTypes),
+        [fbrSaleTypes, saleType],
+    );
+
     const requiredChecks = useMemo(() => [
         { label: "Item type", done: itemType !== "Select" },
         { label: "HS Code", done: hsCode.trim() !== "" },
@@ -107,6 +125,10 @@ export default function EditItemPage({ params }: { params: Promise<{ uuid: strin
             toast.error("Item Name, HS Code and FBR UOM are required.");
             return;
         }
+        if (saleType === "Select") {
+            toast.error("Please select a Sale Type.");
+            return;
+        }
         const payload: ProductUpdateInput = {
             name: name.trim(),
             description: description.trim() || null,
@@ -115,7 +137,7 @@ export default function EditItemPage({ params }: { params: Promise<{ uuid: strin
             hsCode: hsCode.trim(),
             uom: uom.trim(),
             printUom: printUom.trim() || null,
-            saleType: saleType === "Select" ? "Exempt" : saleType,
+            saleType,
             // Preserve FBR's exact ratE_DESC string (e.g. "Exempt", "50/SqY") —
             // NOT a synthesized "{rateValue}%", which FBR's postinvoicedata API
             // rejects for non-standard-percentage rates (e.g. rate_id 28 "Exempt").
@@ -235,7 +257,8 @@ export default function EditItemPage({ params }: { params: Promise<{ uuid: strin
                             <div className="space-y-1">
                                 <Label className={labelCls}>Sale Type <span className="text-red-500">*</span></Label>
                                 <select value={saleType} onChange={(e) => setSaleType(e.target.value)} className={selectCls} style={selectArrow}>
-                                    {SALE_TYPES.map((s) => <option key={s}>{s}</option>)}
+                                    <option value="Select">Select</option>
+                                    {saleTypeOptions.map((s) => <option key={s} value={s}>{s}</option>)}
                                 </select>
                             </div>
                             <div className="space-y-1">
