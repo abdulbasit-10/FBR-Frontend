@@ -95,6 +95,9 @@ const parseRatePercent = (rate: string): number => {
 
 const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
 
+// "18% and Rs. 80 per Liter" — percentage plus a fixed FED amount per unit.
+const COMPOUND_RATE = /(\d+(?:\.\d+)?)\s*%\s*and\s*Rs\.?\s*(\d+(?:\.\d+)?)\s*per/i;
+
 // â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CreateSalesInvoicePage() {
@@ -173,7 +176,16 @@ export default function CreateSalesInvoicePage() {
         const discountAmt = round2(line.unitPrice * line.quantity * (line.discountPercent / 100));
         const valueSalesExcludingST = round2(line.unitPrice * line.quantity - discountAmt);
         const ratePct = parseRatePercent(line.rate);
-        const salesTaxApplicable = round2((valueSalesExcludingST * ratePct) / 100);
+        // FBR's SN017 sample: FED = Rs/unit x qty; sales tax = pct x (value + FED) + FED.
+        const compound =
+            line.saleType === "Goods (FED in ST Mode)" ? line.rate.match(COMPOUND_RATE) : null;
+        let salesTaxApplicable: number;
+        if (compound) {
+            const fed = round2(parseFloat(compound[2]) * line.quantity);
+            salesTaxApplicable = round2((ratePct * (valueSalesExcludingST + fed)) / 100 + fed);
+        } else {
+            salesTaxApplicable = round2((valueSalesExcludingST * ratePct) / 100);
+        }
         return { ...line, discount: discountAmt, valueSalesExcludingST, salesTaxApplicable };
     };
 
