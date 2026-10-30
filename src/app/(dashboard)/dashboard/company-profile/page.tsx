@@ -4,7 +4,7 @@ import { ArrowLeft, Building2, RefreshCw, ShieldCheck, Pencil, X, Save } from "l
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { companiesService, reportsService, type Company, type CompanyUpdateInput, type ScenarioProgressResult } from "@/lib/services";
+import { companiesService, reportsService, lookupService, type Company, type CompanyUpdateInput, type ScenarioProgressResult } from "@/lib/services";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { auth } from "@/lib/auth";
@@ -46,6 +46,21 @@ export default function CompanyProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState<EditForm | null>(null);
+    const [syncingRefs, setSyncingRefs] = useState(false);
+
+    const handleSyncReferenceData = async () => {
+        setSyncingRefs(true);
+        try {
+            const res = await lookupService.syncAll();
+            const counts = res.data;
+            const total = Object.values(counts).reduce((s, n) => s + Math.max(n, 0), 0);
+            toast.success(`Synced ${total} reference rows from FBR (provinces, HS codes, UOMs, rates, etc.).`);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to sync FBR reference data. Make sure a Sandbox/Production token is saved first.");
+        } finally {
+            setSyncingRefs(false);
+        }
+    };
 
     useEffect(() => { setCanEdit(auth.hasPermission("company.update")); }, []);
 
@@ -325,6 +340,20 @@ export default function CompanyProfilePage() {
                             title="FBR sandbox certification"
                             subtitle="FBR auto-issues your Production Token once every scenario below has at least one successful sandbox invoice."
                         >
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                                <p className="text-[11px] text-[#9ca3af]">
+                                    HS Codes / UOMs / Rates empty on the invoice form? Sync FBR&apos;s reference data first.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={handleSyncReferenceData}
+                                    disabled={syncingRefs}
+                                    className="flex h-8 shrink-0 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#A27B3A] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                    <RefreshCw className={`h-3.5 w-3.5 ${syncingRefs ? "animate-spin" : ""}`} />
+                                    {syncingRefs ? "Syncing..." : "Sync FBR Reference Data"}
+                                </button>
+                            </div>
                             <div className="mb-4 flex items-center gap-3">
                                 <div className="h-2 flex-1 rounded-full bg-[#f3f4f6] dark:bg-[#1c1c1c] overflow-hidden">
                                     <div

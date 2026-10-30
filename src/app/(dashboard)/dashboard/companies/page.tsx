@@ -2,13 +2,14 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, RefreshCw, ShieldAlert, ShieldCheck, X, Save, Power, UserPlus, Download, Eye, Pencil, HardDrive, KeyRound } from "lucide-react";
+import { ChevronLeft, Plus, RefreshCw, ShieldAlert, ShieldCheck, X, Save, Power, UserPlus, Download, Eye, Pencil, Trash2, HardDrive, KeyRound } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
-import { companiesService, usersService, fbrTokensService, type Company, type CompanyCreateInput, type Role, type CreateUserInput, type AdminUser, type FbrToken, type FbrTokenEnvironment } from "@/lib/services";
+import { companiesService, usersService, fbrTokensService, type Company, type CompanyCreateInput, type CompanyUpdateInput, type Role, type CreateUserInput, type AdminUser, type FbrToken, type FbrTokenEnvironment } from "@/lib/services";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FBR_BUSINESS_ACTIVITIES, FBR_SECTORS } from "@/lib/constants/fbr";
 
 const PROVINCES = ["Khyber Pakhtunkhwa", "Punjab", "Sindh", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir", "Islamabad"];
@@ -73,6 +74,12 @@ export default function CompaniesPage() {
     const [tokenForm, setTokenForm] = useState({ environment: "sandbox" as FbrTokenEnvironment, token: "", expiresAt: "" });
     const [savingToken, setSavingToken] = useState(false);
     const [deactivatingUuid, setDeactivatingUuid] = useState<string | null>(null);
+
+    const [editCompanyTarget, setEditCompanyTarget] = useState<Company | null>(null);
+    const [editCompanyForm, setEditCompanyForm] = useState<CompanyUpdateInput>({});
+    const [savingCompanyEdit, setSavingCompanyEdit] = useState(false);
+    const [deleteCompanyTarget, setDeleteCompanyTarget] = useState<Company | null>(null);
+    const [deletingCompany, setDeletingCompany] = useState(false);
 
     const load = useCallback((showToast = false) => {
         if (!canManage) { setIsLoading(false); return; }
@@ -146,6 +153,66 @@ export default function CompaniesPage() {
             load();
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to update company.");
+        }
+    };
+
+    const handleOpenCompanyEdit = (c: Company) => {
+        setEditCompanyTarget(c);
+        setEditCompanyForm({
+            name: c.name,
+            businessName: c.businessName,
+            ntn: c.ntn,
+            province: c.province,
+            address: c.address,
+            phone: c.phone ?? "",
+            email: c.email ?? "",
+            salesTaxRegNo: c.salesTaxRegNo ?? "",
+            businessActivities: c.businessActivities ?? [],
+            sector: c.sector ?? null,
+        });
+    };
+
+    const handleCompanyEditChange = (field: keyof CompanyUpdateInput, value: string) =>
+        setEditCompanyForm((prev) => ({ ...prev, [field]: value }));
+
+    const handleSaveCompanyEdit = async () => {
+        if (!editCompanyTarget) return;
+        if (!editCompanyForm.name?.trim() || !editCompanyForm.businessName?.trim() || !editCompanyForm.ntn?.trim() || !editCompanyForm.province?.trim() || !editCompanyForm.address?.trim()) {
+            toast.error("Name, business name, NTN, province, and address are required.");
+            return;
+        }
+        setSavingCompanyEdit(true);
+        try {
+            await companiesService.update(editCompanyTarget.uuid, {
+                ...editCompanyForm,
+                salesTaxRegNo: editCompanyForm.salesTaxRegNo || null,
+                businessActivities: editCompanyForm.businessActivities?.length ? editCompanyForm.businessActivities : null,
+                sector: editCompanyForm.sector || null,
+                phone: editCompanyForm.phone || null,
+                email: editCompanyForm.email || null,
+            });
+            toast.success(`${editCompanyForm.businessName} updated.`);
+            setEditCompanyTarget(null);
+            load();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to update company.");
+        } finally {
+            setSavingCompanyEdit(false);
+        }
+    };
+
+    const handleConfirmDeleteCompany = async () => {
+        if (!deleteCompanyTarget) return;
+        setDeletingCompany(true);
+        try {
+            await companiesService.remove(deleteCompanyTarget.uuid);
+            toast.success(`${deleteCompanyTarget.businessName} deleted.`);
+            setDeleteCompanyTarget(null);
+            load();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to delete company.");
+        } finally {
+            setDeletingCompany(false);
         }
     };
 
@@ -514,6 +581,22 @@ export default function CompaniesPage() {
                                             >
                                                 <KeyRound className="h-3.5 w-3.5" />
                                             </button>
+                                            <button
+                                                type="button"
+                                                title="Edit company details"
+                                                onClick={() => handleOpenCompanyEdit(c)}
+                                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-[#FAF6F0] dark:hover:bg-[#333] hover:text-[#A27B3A] transition-colors cursor-pointer"
+                                            >
+                                                <Pencil className="h-3.5 w-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                title="Delete company"
+                                                onClick={() => setDeleteCompanyTarget(c)}
+                                                className="flex h-6 w-6 items-center justify-center rounded-[4px] border border-[#E5E7EB] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#4F5967] dark:text-[#9ca3af] hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors cursor-pointer"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -763,6 +846,91 @@ export default function CompaniesPage() {
                     </div>
                 </div>
             )}
+
+            {editCompanyTarget && (
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 px-4 overflow-y-auto py-8" onClick={() => setEditCompanyTarget(null)}>
+                    <div className="w-full max-w-2xl rounded-[10px] border border-[#E5E7EB] dark:border-[#2e2e2e] bg-white dark:bg-[#242424] p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between">
+                            <p className="text-[13px] font-bold text-[#1E293B] dark:text-[#f0f0f0]">Edit company — {editCompanyTarget.businessName}</p>
+                            <button type="button" onClick={() => setEditCompanyTarget(null)} className="text-[#9CA3AF] hover:text-[#4F5967] cursor-pointer"><X className="h-4 w-4" /></button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label className={labelCls}>Company Name *</label>
+                                <input type="text" className={cn(inputCls, "w-full")} value={editCompanyForm.name ?? ""} onChange={(e) => handleCompanyEditChange("name", e.target.value)} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Legal Business Name *</label>
+                                <input type="text" className={cn(inputCls, "w-full")} value={editCompanyForm.businessName ?? ""} onChange={(e) => handleCompanyEditChange("businessName", e.target.value)} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>NTN / CNIC *</label>
+                                <input type="text" className={cn(inputCls, "w-full")} value={editCompanyForm.ntn ?? ""} onChange={(e) => handleCompanyEditChange("ntn", e.target.value)} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Province *</label>
+                                <select className={cn(inputCls, "w-full")} value={editCompanyForm.province ?? ""} onChange={(e) => handleCompanyEditChange("province", e.target.value)}>
+                                    <option value="">-- Select --</option>
+                                    {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+                                </select>
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className={labelCls}>Address *</label>
+                                <input type="text" className={cn(inputCls, "w-full")} value={editCompanyForm.address ?? ""} onChange={(e) => handleCompanyEditChange("address", e.target.value)} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Phone</label>
+                                <input type="text" className={cn(inputCls, "w-full")} value={editCompanyForm.phone ?? ""} onChange={(e) => handleCompanyEditChange("phone", e.target.value)} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Email</label>
+                                <input type="email" className={cn(inputCls, "w-full")} value={editCompanyForm.email ?? ""} onChange={(e) => handleCompanyEditChange("email", e.target.value)} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>STRN</label>
+                                <input type="text" className={cn(inputCls, "w-full")} value={editCompanyForm.salesTaxRegNo ?? ""} onChange={(e) => handleCompanyEditChange("salesTaxRegNo", e.target.value)} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Business Activity</label>
+                                <MultiSelect
+                                    className={inputCls}
+                                    options={FBR_BUSINESS_ACTIVITIES}
+                                    value={editCompanyForm.businessActivities ?? []}
+                                    onChange={(next) => setEditCompanyForm((prev) => ({ ...prev, businessActivities: next }))}
+                                />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Sector</label>
+                                <select className={cn(inputCls, "w-full")} value={editCompanyForm.sector ?? ""} onChange={(e) => handleCompanyEditChange("sector", e.target.value)}>
+                                    <option value="">-- Select --</option>
+                                    {FBR_SECTORS.map((o) => <option key={o} value={o}>{o}</option>)}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-1">
+                            <button type="button" onClick={() => setEditCompanyTarget(null)} className="flex h-9 items-center gap-1.5 rounded-[6px] border border-[#E3D2BA] dark:border-[#4a3a20] bg-white dark:bg-[#2a2a2a] px-3 text-[12px] font-medium text-[#424B56] dark:text-[#c99d54] hover:bg-[#FAF6F0] dark:hover:bg-[#333] transition-colors cursor-pointer">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={handleSaveCompanyEdit} disabled={savingCompanyEdit} className="flex h-9 items-center gap-1.5 rounded-[6px] bg-[#C69A52] px-4 text-[12px] font-medium text-white hover:bg-[#b58b44] transition-colors cursor-pointer disabled:opacity-50">
+                                <Save className="h-3.5 w-3.5" /> {savingCompanyEdit ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <ConfirmDialog
+                isOpen={!!deleteCompanyTarget}
+                onClose={() => setDeleteCompanyTarget(null)}
+                onConfirm={handleConfirmDeleteCompany}
+                title="Delete company?"
+                message={`This will permanently delete "${deleteCompanyTarget?.businessName}" and all of its data (invoices, customers, vendors, etc.). This cannot be undone.`}
+                confirmLabel="Delete"
+                isLoading={deletingCompany}
+                loadingLabel="Deleting..."
+            />
         </div>
     );
 }

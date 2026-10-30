@@ -95,6 +95,9 @@ const parseRatePercent = (rate: string): number => {
 
 const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
 
+// "18% and Rs. 80 per Liter" — percentage plus a fixed FED amount per unit.
+const COMPOUND_RATE = /(\d+(?:\.\d+)?)\s*%\s*and\s*Rs\.?\s*(\d+(?:\.\d+)?)\s*per/i;
+
 // â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CreateSalesInvoicePage() {
@@ -173,7 +176,16 @@ export default function CreateSalesInvoicePage() {
         const discountAmt = round2(line.unitPrice * line.quantity * (line.discountPercent / 100));
         const valueSalesExcludingST = round2(line.unitPrice * line.quantity - discountAmt);
         const ratePct = parseRatePercent(line.rate);
-        const salesTaxApplicable = round2((valueSalesExcludingST * ratePct) / 100);
+        // FBR's SN017 sample: FED = Rs/unit x qty; sales tax = pct x (value + FED) + FED.
+        const compound =
+            line.saleType === "Goods (FED in ST Mode)" ? line.rate.match(COMPOUND_RATE) : null;
+        let salesTaxApplicable: number;
+        if (compound) {
+            const fed = round2(parseFloat(compound[2]) * line.quantity);
+            salesTaxApplicable = round2((ratePct * (valueSalesExcludingST + fed)) / 100 + fed);
+        } else {
+            salesTaxApplicable = round2((valueSalesExcludingST * ratePct) / 100);
+        }
         return { ...line, discount: discountAmt, valueSalesExcludingST, salesTaxApplicable };
     };
 
@@ -190,12 +202,18 @@ export default function CreateSalesInvoicePage() {
     const onSelectProduct = (id: string, productId: number) => {
         const p = products.find((x) => x.id === productId);
         if (!p) return;
+        // Sandbox certification requires the line's Sale Type to match the selected Scenario ID
+        // (see the scenario-sync effect above) — keep that in sync instead of letting the
+        // product's own saved Sale Type override it and silently desync from the scenario.
+        const scenarioSaleType = environment === "sandbox"
+            ? FBR_SANDBOX_SCENARIOS.find((s) => s.id === scenarioId)?.saleType
+            : undefined;
         updateItem(id, {
             productId: p.id,
             productDescription: p.description ?? p.name,
             hsCode: p.hsCode,
             uom: p.uom,
-            saleType: p.saleType,
+            saleType: scenarioSaleType ?? p.saleType,
             rate: p.rate,
             unitPrice: p.unitPrice,
             fixedNotifiedValueOrRetailPrice: p.fixedNotifiedValueOrRetailPrice,
@@ -334,9 +352,14 @@ export default function CreateSalesInvoicePage() {
             } else if (submitted.data.status === "validated") {
                 toast.success("Invoice validated by FBR.");
             } else {
+                // Prefer FBR's own real-time error text — it's often far more specific than
+                // our static code-to-description table (e.g. FBR's live "Provided Rate is not
+                // correct for selected Sales Type" vs. the generic "Rate cannot be empty" for
+                // the same code 0046), and only fall back to the static table when FBR didn't
+                // return any error text at all.
                 const entry = resolveFbrError(fbrErrorCode);
                 const msg =
-                    entry?.briefMsgDesc ?? fbrError ?? `FBR ${fbrStatus ?? "rejected"} the invoice.`;
+                    fbrError ?? entry?.briefMsgDesc ?? `FBR ${fbrStatus ?? "rejected"} the invoice.`;
                 toast.error(fbrErrorCode ? `[${fbrErrorCode}] ${msg}` : msg);
             }
             router.refresh(); // bust Next.js router cache so the list shows fresh data
@@ -871,22 +894,21 @@ export default function CreateSalesInvoicePage() {
                                             </td>
 
                                             <td className="py-1.5 px-2 text-center">
-                                                <select
-                                                    className={cellInput}
+                                                <Input
+                                                    type="text"
+                                                    list={`rate-options-${item.id}`}
+                                                    placeholder="18%"
                                                     value={item.rate}
                                                     onChange={(e) =>
                                                         updateItem(item.id, { rate: e.target.value })
                                                     }
-                                                >
+                                                    className={cellInput}
+                                                />
+                                                <datalist id={`rate-options-${item.id}`}>
                                                     {FBR_COMMON_RATES.map((r) => (
-                                                        <option key={r} value={r}>
-                                                            {r}
-                                                        </option>
+                                                        <option key={r} value={r} />
                                                     ))}
-                                                    {!FBR_COMMON_RATES.includes(item.rate) && item.rate && (
-                                                        <option value={item.rate}>{item.rate}</option>
-                                                    )}
-                                                </select>
+                                                </datalist>
                                             </td>
 
                                             <td className="py-1.5 px-2">
@@ -939,7 +961,7 @@ export default function CreateSalesInvoicePage() {
                                                     <Input
                                                         type="number"
                                                         step="0.01"
-                                                        value={(item[key] as number) || ""}
+                                                        value={item[key] as number}
                                                         placeholder="0"
                                                         onChange={(e) =>
                                                             updateItem(

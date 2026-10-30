@@ -59,20 +59,32 @@ export default function NewCustomerPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [verifying, setVerifying] = useState(false);
 
+    // Only what the backend genuinely requires (FBR-Backend/src/validators/customer.validator.ts)
+    // blocks Save — businessName (Customer Name, falling back to Contact person),
+    // Province, Address, and NTN/CNIC only when Registered. Everything else is a
+    // real optional field for this business (not every customer has a website/STRN/email).
     const requiredChecks = useMemo(() => [
-        { label: "Customer type", done: customerType !== "Select" },
-        { label: "NTN / CNIC", done: ntn.trim() !== "" },
-        { label: "STRN", done: strn.trim() !== "" },
+        { label: "Customer Name", done: customerName.trim() !== "" || contactPerson.trim() !== "" },
+        { label: "NTN / CNIC", done: registrationStatus !== "Registered" || ntn.trim() !== "" },
         { label: "Province", done: ntnProvince !== "Select" },
-        { label: "City", done: city.trim() !== "" },
         { label: "Address", done: address.trim() !== "" },
+    ], [customerName, contactPerson, registrationStatus, ntn, ntnProvince, address]);
+
+    // Shown in the sidebar progress checklist only — not required to save.
+    const optionalChecks = useMemo(() => [
+        { label: "Customer type", done: customerType !== "Select" },
+        { label: "STRN", done: strn.trim() !== "" },
+        { label: "City", done: city.trim() !== "" },
         { label: "Contact person", done: contactPerson.trim() !== "" },
         { label: "Phone / WhatsApp", done: phoneNumber.trim() !== "" || whatsapp.trim() !== "" },
         { label: "Email", done: email.trim() !== "" },
         { label: "Website", done: website.trim() !== "" },
-    ], [customerType, ntn, strn, ntnProvince, city, address, contactPerson, phoneNumber, whatsapp, email, website]);
+    ], [customerType, strn, city, contactPerson, phoneNumber, whatsapp, email, website]);
 
-    const progressPct = Math.round((requiredChecks.filter((r) => r.done).length / requiredChecks.length) * 100);
+    const progressPct = Math.round(
+        ([...requiredChecks, ...optionalChecks].filter((r) => r.done).length) /
+        (requiredChecks.length + optionalChecks.length) * 100,
+    );
 
     const handleReset = () => {
         setCustomerName(""); setCustomerType("Select"); setNote("");
@@ -323,7 +335,7 @@ export default function NewCustomerPage() {
                     </div>
 
                     <div className="space-y-2.5">
-                        {requiredChecks.map(({ label, done }) => (
+                        {[...requiredChecks, ...optionalChecks].map(({ label, done }) => (
                             <div key={label} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className={cn("h-3 w-3 rounded-full border-2 flex-shrink-0 transition-colors",

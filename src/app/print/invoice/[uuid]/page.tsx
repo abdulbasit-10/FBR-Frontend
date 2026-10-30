@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, use as usePromise, Suspense } from "react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 import { ArrowLeft, Printer } from "lucide-react";
@@ -99,18 +98,37 @@ function PrintInvoiceContent(
                         </p>
                     </div>
 
-                    {/* FBR Digital Invoicing System logo (mandatory, spec §6). */}
+                    {/* FBR Digital Invoicing System logo + QR code (mandatory, spec §6). Plain <img>,
+                        not next/image, so this never depends on the image-optimization pipeline
+                        (sharp / the /_next/image route) being available on the production server. */}
                     <div className="flex flex-col items-end gap-1.5">
-                        <Image
-                            src="/brand/fbr-official-logo.jpg"
-                            alt="FBR Pakistan"
-                            width={140}
-                            height={75}
-                            priority
-                        />
+                        <div className="flex items-start gap-2">
+                            <div className="border border-neutral-300 p-1 bg-white" style={{ width: "0.85in", height: "0.85in" }}>
+                                <QRCodeCanvas
+                                    value={qrValue}
+                                    size={78}
+                                    level="M"
+                                    marginSize={0}
+                                    bgColor="#FFFFFF"
+                                    fgColor="#000000"
+                                />
+                            </div>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="/brand/fbr-official-logo.jpg"
+                                alt="FBR Pakistan"
+                                width={110}
+                                height={59}
+                            />
+                        </div>
                         <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-500">
                             {invoice.environment === "production" ? "Live" : "Sandbox"}
                         </span>
+                        {invoice.fbrInvoiceNumber && (
+                            <span className="text-[9px] text-neutral-500">
+                                FBR Invoice No: <span className="font-mono font-medium text-neutral-700">{invoice.fbrInvoiceNumber}</span>
+                            </span>
+                        )}
                     </div>
                 </header>
 
@@ -131,48 +149,53 @@ function PrintInvoiceContent(
 
                 {/* ── PARTIES ── */}
                 <section className="mt-4 grid grid-cols-2 gap-8 text-xs">
-                    <div>
-                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-                            Buyer
-                        </p>
-                        <p className="font-semibold text-neutral-900">
-                            {invoice.buyerBusinessName}
-                        </p>
-                        <p className="text-neutral-700">{invoice.buyerAddress}</p>
-                        <p className="text-neutral-700">Province: {invoice.buyerProvince}</p>
-                        <p className="text-neutral-700">
-                            NTN/CNIC: {invoice.buyerNtnCnic ?? "—"} ·{" "}
-                            <span className="font-medium">{invoice.buyerRegistrationType}</span>
-                        </p>
-                    </div>
-                    <div className="text-right">
-                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-                            Invoice Details
+                    <div className="space-y-0.5">
+                        <p>
+                            <span className="text-neutral-500">Customer No: </span>
+                            <span className="font-medium">{invoice.customer?.customerNo ?? "—"}</span>
                         </p>
                         <p>
-                            <span className="text-neutral-500">Date: </span>
+                            <span className="text-neutral-500">Customer Name: </span>
+                            <span className="font-medium">{invoice.buyerBusinessName}</span>
+                        </p>
+                        <p>
+                            <span className="text-neutral-500">Province: </span>
+                            <span className="font-medium">{invoice.buyerProvince}</span>
+                        </p>
+                        <p>
+                            <span className="text-neutral-500">Address: </span>
+                            <span className="font-medium">{invoice.buyerAddress}</span>
+                        </p>
+                        <p>
+                            <span className="text-neutral-500">NTN No: </span>
+                            <span className="font-medium">{invoice.buyerNtnCnic ?? "—"}</span>
+                        </p>
+                    </div>
+                    <div className="text-right space-y-0.5">
+                        <p>
+                            <span className="text-neutral-500">Invoice No: </span>
+                            <span className="font-medium">SI-{String(invoice.id).padStart(8, "0")}</span>
+                        </p>
+                        <p>
+                            <span className="text-neutral-500">Document Date: </span>
                             <span className="font-medium">{invoice.invoiceDate}</span>
                         </p>
-                        {invoice.invoiceRefNo && (
-                            <p>
-                                <span className="text-neutral-500">Ref Invoice: </span>
-                                <span className="font-mono font-medium">{invoice.invoiceRefNo}</span>
-                            </p>
-                        )}
-                        {invoice.scenarioId && (
-                            <p>
-                                <span className="text-neutral-500">Scenario: </span>
-                                <span className="font-medium">{invoice.scenarioId}</span>
-                            </p>
-                        )}
-                        {invoice.fbrDated && (
-                            <p>
-                                <span className="text-neutral-500">Posted: </span>
-                                <span className="font-medium">
-                                    {new Date(invoice.fbrDated).toLocaleString()}
-                                </span>
-                            </p>
-                        )}
+                        <p>
+                            <span className="text-neutral-500">Posting Date: </span>
+                            <span className="font-medium">{invoice.postingDate ?? "—"}</span>
+                        </p>
+                        <p>
+                            <span className="text-neutral-500">PO Date: </span>
+                            <span className="font-medium">{invoice.poDate ?? "—"}</span>
+                        </p>
+                        <p>
+                            <span className="text-neutral-500">PO Number: </span>
+                            <span className="font-medium">{invoice.poNumber ?? "—"}</span>
+                        </p>
+                        <p>
+                            <span className="text-neutral-500">Posted By: </span>
+                            <span className="font-medium">{invoice.creator?.name ?? "—"}</span>
+                        </p>
                     </div>
                 </section>
 
@@ -224,29 +247,16 @@ function PrintInvoiceContent(
                 {/* ── TOTALS + QR ── */}
                 <section className="mt-5 grid grid-cols-[1fr_auto] gap-6">
                     <div>
-                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-                            Notes
-                        </p>
-                        <p className="text-[11px] text-neutral-700 whitespace-pre-line">
-                            {invoice.notes ?? "—"}
-                        </p>
-
-                        {/* QR Code — spec §6: Version 2 (25×25), 1.0 × 1.0 inch. */}
-                        <div className="mt-4 flex items-start gap-3">
-                            <div className="border border-neutral-300 p-1 bg-white" style={{ width: "1in", height: "1in" }}>
-                                <QRCodeCanvas
-                                    value={qrValue}
-                                    size={94}
-                                    level="M"
-                                    marginSize={0}
-                                    bgColor="#FFFFFF"
-                                    fgColor="#000000"
-                                />
-                            </div>
-                            <div className="text-[10px] text-neutral-500 pt-1 max-w-35">
-                                Scan to view invoice details.
-                            </div>
-                        </div>
+                        {invoice.notes && (
+                            <>
+                                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                                    Notes
+                                </p>
+                                <p className="text-[11px] text-neutral-700 whitespace-pre-line">
+                                    {invoice.notes}
+                                </p>
+                            </>
+                        )}
                     </div>
 
                     <div className="min-w-[240px] rounded border border-neutral-300 p-3 text-[11px]">
@@ -257,7 +267,13 @@ function PrintInvoiceContent(
                             ["Further tax", invoice.totalFurtherTax],
                             ["Extra tax", invoice.totalExtraTax],
                             ["FED payable", invoice.totalFedPayable],
-                            ["Advance tax", invoice.advanceTax],
+                            [
+                                `Advance tax (${Number(invoice.totalValueExcludingST) > 0
+                                    ? Math.round((Number(invoice.advanceTax) / Number(invoice.totalValueExcludingST)) * 100)
+                                    : 0
+                                }%)`,
+                                invoice.advanceTax,
+                            ],
                         ].map(([label, value]) => (
                             <div key={label as string} className="flex justify-between py-0.5">
                                 <span className="text-neutral-600">{label}</span>

@@ -55,7 +55,9 @@ export const lookupService = {
     uoms: () => api.get<Uom[]>("/lookup/uoms"),
     transactionTypes: () => api.get<TransactionType[]>("/lookup/transaction-types"),
     sros: () => api.get<Sro[]>("/lookup/sros"),
-    rates: () => api.get<Rate[]>("/lookup/rates"),
+    /** Rates scoped to one Sale Type's transactionTypeId — each sale type has its own valid rate set. */
+    rates: (transactionTypeId?: number) =>
+        api.get<Rate[]>(`/lookup/rates${transactionTypeId !== undefined ? `?transactionTypeId=${transactionTypeId}` : ""}`),
     /** Live proxy: returns Registered / Unregistered for an NTN or CNIC. */
     registrationType: (registrationNo: string) =>
         api.get<{ statuscode?: string; REGISTRATION_TYPE?: string; message?: string }>(
@@ -77,7 +79,12 @@ export const lookupService = {
         api.get<Sro[]>(
             `/lookup/sro-schedules?rateId=${rateId}${date ? `&date=${encodeURIComponent(date)}` : ""}${originationSupplier !== undefined ? `&originationSupplier=${originationSupplier}` : ""}`,
         ),
-    /** Admin: sync all reference tables from FBR. */
-    syncAll: () => api.post<{ synced: Record<string, number> }>("/lookup/sync", {}),
-    syncOne: (kind: LookupKind) => api.post<{ synced: number }>(`/lookup/sync/${kind}`, {}),
+    /** Live proxy: FBR SROItem v2 — Item Serial No list scoped to a chosen SRO Schedule (sroId from `sroSchedules`). */
+    sroItems: (sroId: number, date?: string) =>
+        api.get<{ sroItemId: number; sroItemDesc: string }[]>(
+            `/lookup/sro-items?sroId=${sroId}${date ? `&date=${encodeURIComponent(date)}` : ""}`,
+        ),
+    /** Admin: sync all reference tables from FBR. Returns a count per dataset (e.g. { uoms: 112, hsCodes: 5438, ... }). */
+    syncAll: () => api.post<Record<string, number>>("/lookup/sync", {}),
+    syncOne: (kind: LookupKind) => api.post<{ kind: string; count: number }>(`/lookup/sync/${kind}`, {}),
 };

@@ -81,10 +81,12 @@ export default function InvoiceDetailPage(
             } else if (res.data.status === "validated") {
                 toast.success("Invoice validated by FBR.");
             } else {
+                // Prefer FBR's own real-time error text over the generic static
+                // code-to-description table — it's often far more specific.
                 const entry = resolveFbrError(res.data.fbrErrorCode);
                 const msg =
-                    entry?.briefMsgDesc ??
                     res.data.fbrError ??
+                    entry?.briefMsgDesc ??
                     `FBR ${res.data.fbrStatus ?? "rejected"} the invoice.`;
                 toast.error(
                     res.data.fbrErrorCode ? `[${res.data.fbrErrorCode}] ${msg}` : msg,
